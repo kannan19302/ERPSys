@@ -37,7 +37,8 @@ class ServiceManagementRepositoryImpl implements ServiceManagementRepository {
       final jsonItems = page.data
           .map((dynamic e) => (e as dynamic).toJson() as Map<String, dynamic>)
           .toList(growable: false);
-      await _cache.write(_tenantId, namespace, query.cacheKey, <String, Object?>{
+      await _cache
+          .write(_tenantId, namespace, query.cacheKey, <String, Object?>{
         'data': jsonItems,
         'meta': page.meta.toJson(),
       });
@@ -45,9 +46,11 @@ class ServiceManagementRepositoryImpl implements ServiceManagementRepository {
         Cacheable<Paginated<T>>(value: page),
       );
     } on NetworkException catch (error) {
-      final cached = _cache.read<Map<String, dynamic>>(_tenantId, namespace, query.cacheKey);
+      final cached = _cache.read<Map<String, dynamic>>(
+          _tenantId, namespace, query.cacheKey);
       if (cached == null) {
-        return Result<Cacheable<Paginated<T>>>.err(mapExceptionToFailure(error));
+        return Result<Cacheable<Paginated<T>>>.err(
+            mapExceptionToFailure(error));
       }
       return Result<Cacheable<Paginated<T>>>.ok(
         Cacheable<Paginated<T>>(
@@ -89,36 +92,45 @@ class ServiceManagementRepositoryImpl implements ServiceManagementRepository {
   }
 
   @override
-  Future<Result<Cacheable<Paginated<ServiceCatalog>>>> listCatalogs(ListQuery q) =>
-      _paginated(_catalogNamespace, q, () => _remote.listCatalogs(q), ServiceCatalogModel.fromJson);
+  Future<Result<Cacheable<Paginated<ServiceCatalog>>>> listCatalogs(
+          ListQuery q) =>
+      _paginated(_catalogNamespace, q, () => _remote.listCatalogs(q),
+          ServiceCatalogModel.fromJson);
 
   @override
-  Future<Result<ServiceCatalog>> getCatalog(String id) => _single(() => _remote.getCatalog(id));
+  Future<Result<ServiceCatalog>> getCatalog(String id) =>
+      _single(() => _remote.getCatalog(id));
 
   @override
   Future<Result<ServiceCatalog>> createCatalog(Map<String, dynamic> p) =>
       _write(() => _remote.createCatalog(p));
 
   @override
-  Future<Result<ServiceCatalog>> updateCatalog(String id, Map<String, dynamic> p) =>
+  Future<Result<ServiceCatalog>> updateCatalog(
+          String id, Map<String, dynamic> p) =>
       _write(() => _remote.updateCatalog(id, p));
 
   @override
-  Future<Result<void>> deleteCatalog(String id) => _delete(() => _remote.deleteCatalog(id));
+  Future<Result<void>> deleteCatalog(String id) =>
+      _delete(() => _remote.deleteCatalog(id));
 
   @override
-  Future<Result<Cacheable<Paginated<ServiceRequest>>>> listRequests(ListQuery q) =>
-      _paginated(_requestNamespace, q, () => _remote.listRequests(q), ServiceRequestModel.fromJson);
+  Future<Result<Cacheable<Paginated<ServiceRequest>>>> listRequests(
+          ListQuery q) =>
+      _paginated(_requestNamespace, q, () => _remote.listRequests(q),
+          ServiceRequestModel.fromJson);
 
   @override
-  Future<Result<ServiceRequest>> getRequest(String id) => _single(() => _remote.getRequest(id));
+  Future<Result<ServiceRequest>> getRequest(String id) =>
+      _single(() => _remote.getRequest(id));
 
   @override
   Future<Result<ServiceRequest>> createRequest(Map<String, dynamic> p) =>
       _write(() => _remote.createRequest(p));
 
   @override
-  Future<Result<ServiceRequest>> updateRequest(String id, Map<String, dynamic> p) =>
+  Future<Result<ServiceRequest>> updateRequest(
+          String id, Map<String, dynamic> p) =>
       _write(() => _remote.updateRequest(id, p));
 
   @override
@@ -134,18 +146,22 @@ class ServiceManagementRepositoryImpl implements ServiceManagementRepository {
       _write(() => _remote.closeRequest(id));
 
   @override
-  Future<Result<Cacheable<Paginated<ServiceContract>>>> listContracts(ListQuery q) =>
-      _paginated(_contractNamespace, q, () => _remote.listContracts(q), ServiceContractModel.fromJson);
+  Future<Result<Cacheable<Paginated<ServiceContract>>>> listContracts(
+          ListQuery q) =>
+      _paginated(_contractNamespace, q, () => _remote.listContracts(q),
+          ServiceContractModel.fromJson);
 
   @override
-  Future<Result<ServiceContract>> getContract(String id) => _single(() => _remote.getContract(id));
+  Future<Result<ServiceContract>> getContract(String id) =>
+      _single(() => _remote.getContract(id));
 
   @override
   Future<Result<ServiceContract>> createContract(Map<String, dynamic> p) =>
       _write(() => _remote.createContract(p));
 
   @override
-  Future<Result<ServiceContract>> updateContract(String id, Map<String, dynamic> p) =>
+  Future<Result<ServiceContract>> updateContract(
+          String id, Map<String, dynamic> p) =>
       _write(() => _remote.updateContract(id, p));
 
   @override
@@ -153,23 +169,29 @@ class ServiceManagementRepositoryImpl implements ServiceManagementRepository {
       _write(() => _remote.renewContract(id));
 
   @override
-  Future<Result<void>> terminateContract(String id) => _delete(() => _remote.terminateContract(id));
+  Future<Result<void>> terminateContract(String id) =>
+      _delete(() => _remote.terminateContract(id));
 
   @override
-  Future<Result<Cacheable<Paginated<ServiceLevelAgreement>>>> listSlas(ListQuery q) =>
-      _paginated(_slaNamespace, q, () => _remote.listSlas(q), ServiceLevelAgreementModel.fromJson);
+  Future<Result<Cacheable<Paginated<ServiceLevelAgreement>>>> listSlas(
+          ListQuery q) =>
+      _paginated(_slaNamespace, q, () => _remote.listSlas(q),
+          ServiceLevelAgreementModel.fromJson);
 
   @override
-  Future<Result<ServiceLevelAgreement>> getSla(String id) => _single(() => _remote.getSla(id));
+  Future<Result<ServiceLevelAgreement>> getSla(String id) =>
+      _single(() => _remote.getSla(id));
 
   @override
   Future<Result<ServiceLevelAgreement>> createSla(Map<String, dynamic> p) =>
       _write(() => _remote.createSla(p));
 
   @override
-  Future<Result<ServiceLevelAgreement>> updateSla(String id, Map<String, dynamic> p) =>
+  Future<Result<ServiceLevelAgreement>> updateSla(
+          String id, Map<String, dynamic> p) =>
       _write(() => _remote.updateSla(id, p));
 
   @override
-  Future<Result<void>> deleteSla(String id) => _delete(() => _remote.deleteSla(id));
+  Future<Result<void>> deleteSla(String id) =>
+      _delete(() => _remote.deleteSla(id));
 }

@@ -1,138 +1,147 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-vi.mock("@unerp/database", () => ({
-  prisma: {
-    opportunity: {
-      findFirst: vi.fn(),
-      findMany: vi.fn(),
-      count: vi.fn(),
-      aggregate: vi.fn(),
-      create: vi.fn(),
-      update: vi.fn(),
+vi.mock("@unerp/database", () => {
+  // Identity models (user, role, userSession, ...) are read through
+  // `idpPrisma`, not `prisma` — this spec predates that split and stubs
+  // them under `prisma`. Exporting the same stub object under both names
+  // keeps every `vi.mocked(prisma.user.*)` setup pointing at exactly the
+  // function the service calls.
+  const mocked = {
+    prisma: {
+      opportunity: {
+        findFirst: vi.fn(),
+        findMany: vi.fn(),
+        count: vi.fn(),
+        aggregate: vi.fn(),
+        create: vi.fn(),
+        update: vi.fn(),
+      },
+      opportunityLineItem: {
+        count: vi.fn(),
+        create: vi.fn(),
+      },
+      activity: {
+        count: vi.fn(),
+        findFirst: vi.fn(),
+        findMany: vi.fn(),
+      },
+      user: {
+        findFirst: vi.fn(),
+        findMany: vi.fn(),
+        count: vi.fn(),
+      },
+      customer: {
+        findFirst: vi.fn(),
+        findMany: vi.fn(),
+        count: vi.fn(),
+        update: vi.fn(),
+      },
+      contact: {
+        findMany: vi.fn(),
+        count: vi.fn(),
+      },
+      salesTarget: {
+        findMany: vi.fn(),
+      },
+      salesOrder: {
+        findMany: vi.fn(),
+        count: vi.fn(),
+        create: vi.fn(),
+        update: vi.fn(),
+      },
+      salesOrderItem: {
+        deleteMany: vi.fn(),
+        create: vi.fn(),
+        update: vi.fn(),
+        findMany: vi.fn(),
+      },
+      inventoryItem: {
+        aggregate: vi.fn(),
+      },
+      product: {
+        findFirst: vi.fn(),
+        findMany: vi.fn(),
+      },
+      priceBookEntry: {
+        findFirst: vi.fn(),
+      },
+      quotation: {
+        findFirst: vi.fn(),
+        findMany: vi.fn(),
+      },
+      case: {
+        findFirst: vi.fn(),
+        findMany: vi.fn(),
+        count: vi.fn(),
+        update: vi.fn(),
+        create: vi.fn(),
+      },
+      caseComment: {
+        updateMany: vi.fn(),
+        create: vi.fn(),
+      },
+      campaign: {
+        findFirst: vi.fn(),
+        findMany: vi.fn(),
+        count: vi.fn(),
+        create: vi.fn(),
+        update: vi.fn(),
+        deleteMany: vi.fn(),
+      },
+      lead: {
+        count: vi.fn(),
+      },
+      segment: {
+        findMany: vi.fn(),
+        create: vi.fn(),
+      },
+      contract: {
+        findMany: vi.fn(),
+      },
+      battlecard: {
+        findFirst: vi.fn(),
+        findMany: vi.fn(),
+      },
+      salesReturn: {
+        findMany: vi.fn(),
+      },
+      forecastSnapshot: {
+        create: vi.fn(),
+        findMany: vi.fn(),
+        update: vi.fn(),
+      },
+      quota: {
+        create: vi.fn(),
+        findMany: vi.fn(),
+      },
+      dealTag: {
+        create: vi.fn(),
+        delete: vi.fn(),
+        findUnique: vi.fn(),
+      },
+      dealTeamMember: {
+        create: vi.fn(),
+        delete: vi.fn(),
+      },
+      accountPlan: {
+        create: vi.fn(),
+        findMany: vi.fn(),
+      },
+      contactRole: {
+        upsert: vi.fn(),
+        delete: vi.fn(),
+      },
+      customerHealthLog: {
+        create: vi.fn(),
+        findMany: vi.fn(),
+      },
     },
-    opportunityLineItem: {
-      count: vi.fn(),
-      create: vi.fn(),
-    },
-    activity: {
-      count: vi.fn(),
-      findFirst: vi.fn(),
-      findMany: vi.fn(),
-    },
-    user: {
-      findFirst: vi.fn(),
-      findMany: vi.fn(),
-      count: vi.fn(),
-    },
-    customer: {
-      findFirst: vi.fn(),
-      findMany: vi.fn(),
-      count: vi.fn(),
-      update: vi.fn(),
-    },
-    contact: {
-      findMany: vi.fn(),
-      count: vi.fn(),
-    },
-    salesTarget: {
-      findMany: vi.fn(),
-    },
-    salesOrder: {
-      findMany: vi.fn(),
-      count: vi.fn(),
-      create: vi.fn(),
-      update: vi.fn(),
-    },
-    salesOrderItem: {
-      deleteMany: vi.fn(),
-      create: vi.fn(),
-      update: vi.fn(),
-      findMany: vi.fn(),
-    },
-    inventoryItem: {
-      aggregate: vi.fn(),
-    },
-    product: {
-      findFirst: vi.fn(),
-      findMany: vi.fn(),
-    },
-    priceBookEntry: {
-      findFirst: vi.fn(),
-    },
-    quotation: {
-      findFirst: vi.fn(),
-      findMany: vi.fn(),
-    },
-    case: {
-      findFirst: vi.fn(),
-      findMany: vi.fn(),
-      count: vi.fn(),
-      update: vi.fn(),
-      create: vi.fn(),
-    },
-    caseComment: {
-      updateMany: vi.fn(),
-      create: vi.fn(),
-    },
-    campaign: {
-      findFirst: vi.fn(),
-      findMany: vi.fn(),
-      count: vi.fn(),
-      create: vi.fn(),
-      update: vi.fn(),
-      deleteMany: vi.fn(),
-    },
-    lead: {
-      count: vi.fn(),
-    },
-    segment: {
-      findMany: vi.fn(),
-      create: vi.fn(),
-    },
-    contract: {
-      findMany: vi.fn(),
-    },
-    battlecard: {
-      findFirst: vi.fn(),
-      findMany: vi.fn(),
-    },
-    salesReturn: {
-      findMany: vi.fn(),
-    },
-    forecastSnapshot: {
-      create: vi.fn(),
-      findMany: vi.fn(),
-      update: vi.fn(),
-    },
-    quota: {
-      create: vi.fn(),
-      findMany: vi.fn(),
-    },
-    dealTag: {
-      create: vi.fn(),
-      delete: vi.fn(),
-      findUnique: vi.fn(),
-    },
-    dealTeamMember: {
-      create: vi.fn(),
-      delete: vi.fn(),
-    },
-    accountPlan: {
-      create: vi.fn(),
-      findMany: vi.fn(),
-    },
-    contactRole: {
-      upsert: vi.fn(),
-      delete: vi.fn(),
-    },
-    customerHealthLog: {
-      create: vi.fn(),
-      findMany: vi.fn(),
-    },
-  },
-}));
+  };
+  return { ...mocked, idpPrisma: mocked.prisma };
+});
 
 import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 import { CrmForecastingService } from "../crm-forecasting.service";
 import { CrmAccountManagementService } from "../crm-account-management.service";
 import { CrmCampaignManagementService } from "../crm-campaign-management.service";
@@ -347,7 +356,7 @@ describe("CRM Expansion Services", () => {
           assignedToId: "user-1",
         },
       ]);
-      (prisma.user.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([
+      (idpPrisma.user.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([
         { id: "user-1", firstName: "John", lastName: "Doe" },
       ]);
 

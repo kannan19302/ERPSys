@@ -163,7 +163,11 @@ export default function CommunicationDashboard() {
             config={{
               xAxisKey: "name",
               series: [
-                { dataKey: "messages", name: "Messages", color: "#6366f1" },
+                {
+                  dataKey: "messages",
+                  name: "Messages",
+                  color: "var(--chart-10)",
+                },
               ],
             }}
             defaultChartType="line"

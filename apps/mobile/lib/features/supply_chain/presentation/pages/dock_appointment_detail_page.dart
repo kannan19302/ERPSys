@@ -21,10 +21,14 @@ class DockAppointmentDetailPage extends ConsumerWidget {
       body: async.when(
         loading: () => const LoadingView(),
         error: (Object error, _) => FailureView(
-          failure: error is Failure ? error : const ServerFailure('Could not load appointment.'),
-          onRetry: () => ref.invalidate(dockAppointmentDetailProvider(appointmentId)),
+          failure: error is Failure
+              ? error
+              : const ServerFailure('Could not load appointment.'),
+          onRetry: () =>
+              ref.invalidate(dockAppointmentDetailProvider(appointmentId)),
         ),
-        data: (DockAppointment appt) => _DockAppointmentDetail(appointment: appt),
+        data: (DockAppointment appt) =>
+            _DockAppointmentDetail(appointment: appt),
       ),
     );
   }
@@ -35,12 +39,12 @@ class _DockAppointmentDetail extends StatelessWidget {
   final DockAppointment appointment;
 
   UiTone _statusTone(String status) => switch (status) {
-    'SCHEDULED' => UiTone.info,
-    'CHECKED_IN' => UiTone.warning,
-    'COMPLETED' => UiTone.success,
-    'CANCELLED' => UiTone.danger,
-    _ => UiTone.neutral,
-  };
+        'SCHEDULED' => UiTone.info,
+        'CHECKED_IN' => UiTone.warning,
+        'COMPLETED' => UiTone.success,
+        'CANCELLED' => UiTone.danger,
+        _ => UiTone.neutral,
+      };
 
   @override
   Widget build(BuildContext context) {
@@ -51,11 +55,19 @@ class _DockAppointmentDetail extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(children: [
-                Expanded(child: Text(appointment.reference ?? 'Dock Appointment',
-                    style: Theme.of(context).textTheme.titleLarge,),),
-                UiStatusBadge(label: appointment.status, tone: _statusTone(appointment.status)),
-              ],),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      appointment.reference ?? 'Dock Appointment',
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                  ),
+                  UiStatusBadge(
+                      label: appointment.status,
+                      tone: _statusTone(appointment.status)),
+                ],
+              ),
             ],
           ),
         ),
@@ -65,8 +77,10 @@ class _DockAppointmentDetail extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const UiSectionHeader(title: 'Details'),
-              _Row('Warehouse', appointment.warehouseName ?? appointment.warehouseId ?? '—'),
-              _Row('Carrier', appointment.carrierName ?? appointment.carrierId ?? '—'),
+              _Row('Warehouse',
+                  appointment.warehouseName ?? appointment.warehouseId ?? '—'),
+              _Row('Carrier',
+                  appointment.carrierName ?? appointment.carrierId ?? '—'),
               _Row('Reference', appointment.reference ?? '—'),
             ],
           ),
@@ -78,12 +92,17 @@ class _DockAppointmentDetail extends StatelessWidget {
             children: [
               const UiSectionHeader(title: 'Timeline'),
               if (appointment.scheduledAt != null)
-                _Row('Scheduled', Formatters.dateTime(appointment.scheduledAt!)),
+                _Row(
+                    'Scheduled', Formatters.dateTime(appointment.scheduledAt!)),
               if (appointment.arrivedAt != null)
                 _Row('Arrived', Formatters.dateTime(appointment.arrivedAt!)),
               if (appointment.departedAt != null)
                 _Row('Departed', Formatters.dateTime(appointment.departedAt!)),
-              _Row('Created', appointment.createdAt != null ? Formatters.date(appointment.createdAt!) : '—'),
+              _Row(
+                  'Created',
+                  appointment.createdAt != null
+                      ? Formatters.date(appointment.createdAt!)
+                      : '—'),
             ],
           ),
         ),
@@ -94,7 +113,8 @@ class _DockAppointmentDetail extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const UiSectionHeader(title: 'Notes'),
-                Text(appointment.notes!, style: Theme.of(context).textTheme.bodyMedium),
+                Text(appointment.notes!,
+                    style: Theme.of(context).textTheme.bodyMedium),
               ],
             ),
           ),
@@ -113,10 +133,13 @@ class _Row extends StatelessWidget {
     final t = context.tokens;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: Spacing.x1_5),
-      child: Row(children: [
-        Expanded(child: Text(label, style: TextStyle(color: t.textSecondary))),
-        Text(value, style: Theme.of(context).textTheme.labelLarge),
-      ],),
+      child: Row(
+        children: [
+          Expanded(
+              child: Text(label, style: TextStyle(color: t.textSecondary))),
+          Text(value, style: Theme.of(context).textTheme.labelLarge),
+        ],
+      ),
     );
   }
 }

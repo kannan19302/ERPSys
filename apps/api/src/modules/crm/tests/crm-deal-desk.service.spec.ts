@@ -1,35 +1,44 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { CrmDealDeskService } from "../crm-deal-desk.service";
 
-vi.mock("@unerp/database", () => ({
-  prisma: {
-    opportunity: { findFirst: vi.fn(), findMany: vi.fn() },
-    dealDeskRequest: {
-      findMany: vi.fn(),
-      findFirst: vi.fn(),
-      create: vi.fn(),
-      update: vi.fn(),
-      count: vi.fn(),
-      groupBy: vi.fn(),
+vi.mock("@unerp/database", () => {
+  // Identity models (user, role, userSession, ...) are read through
+  // `idpPrisma`, not `prisma` — this spec predates that split and stubs
+  // them under `prisma`. Exporting the same stub object under both names
+  // keeps every `vi.mocked(prisma.user.*)` setup pointing at exactly the
+  // function the service calls.
+  const mocked = {
+    prisma: {
+      opportunity: { findFirst: vi.fn(), findMany: vi.fn() },
+      dealDeskRequest: {
+        findMany: vi.fn(),
+        findFirst: vi.fn(),
+        create: vi.fn(),
+        update: vi.fn(),
+        count: vi.fn(),
+        groupBy: vi.fn(),
+      },
+      dealAlert: {
+        findMany: vi.fn(),
+        create: vi.fn(),
+        findFirst: vi.fn(),
+        update: vi.fn(),
+      },
+      dealAutomationRule: {
+        findMany: vi.fn(),
+        create: vi.fn(),
+        findFirst: vi.fn(),
+        update: vi.fn(),
+        delete: vi.fn(),
+      },
+      user: { findMany: vi.fn() },
     },
-    dealAlert: {
-      findMany: vi.fn(),
-      create: vi.fn(),
-      findFirst: vi.fn(),
-      update: vi.fn(),
-    },
-    dealAutomationRule: {
-      findMany: vi.fn(),
-      create: vi.fn(),
-      findFirst: vi.fn(),
-      update: vi.fn(),
-      delete: vi.fn(),
-    },
-    user: { findMany: vi.fn() },
-  },
-}));
+  };
+  return { ...mocked, idpPrisma: mocked.prisma };
+});
 
 import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 
 const TENANT = "tenant-1";
 const ORG = "org-1";
@@ -402,7 +411,9 @@ describe("CrmDealDeskService", () => {
 
   describe("getDiscountApprovalMatrix", () => {
     it("returns role-based discount thresholds", async () => {
-      (prisma.user.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([]);
+      (idpPrisma.user.findMany as ReturnType<typeof vi.fn>).mockResolvedValue(
+        [],
+      );
 
       const result = await service.getDiscountApprovalMatrix(TENANT);
 

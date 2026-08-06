@@ -4,6 +4,14 @@ import { NotFoundException, BadRequestException } from "@nestjs/common";
 
 const { db } = vi.hoisted(() => {
   const mockDb: Record<string, Record<string, ReturnType<typeof vi.fn>>> = {
+    fieldServiceTechnician: { findMany: vi.fn().mockResolvedValue([]) },
+    fieldServiceTicket: { findMany: vi.fn().mockResolvedValue([]) },
+    fieldServiceVanStock: {
+      findMany: vi.fn().mockResolvedValue([]),
+      findFirst: vi.fn().mockResolvedValue(null),
+      upsert: vi.fn().mockResolvedValue(null),
+      update: vi.fn().mockResolvedValue(null),
+    },
     fieldServicePartRequest: {
       findMany: vi.fn().mockResolvedValue([]),
       findFirst: vi.fn().mockResolvedValue(null),

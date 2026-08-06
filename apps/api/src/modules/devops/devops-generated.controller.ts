@@ -58,7 +58,7 @@ export class DevopsGeneratedController {
   @Permissions("devops.devopsEntity1.create")
   async createDevopsEntity1(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createDevopsEntity1(req.user.tenantId, body);
   }
@@ -69,7 +69,7 @@ export class DevopsGeneratedController {
   async updateDevopsEntity1(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateDevopsEntity1(req.user.tenantId, id, body);
   }
@@ -107,7 +107,7 @@ export class DevopsGeneratedController {
   @Permissions("devops.devopsEntity2.create")
   async createDevopsEntity2(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createDevopsEntity2(req.user.tenantId, body);
   }
@@ -118,7 +118,7 @@ export class DevopsGeneratedController {
   async updateDevopsEntity2(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateDevopsEntity2(req.user.tenantId, id, body);
   }
@@ -156,7 +156,7 @@ export class DevopsGeneratedController {
   @Permissions("devops.devopsEntity3.create")
   async createDevopsEntity3(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createDevopsEntity3(req.user.tenantId, body);
   }
@@ -167,7 +167,7 @@ export class DevopsGeneratedController {
   async updateDevopsEntity3(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateDevopsEntity3(req.user.tenantId, id, body);
   }
@@ -205,7 +205,7 @@ export class DevopsGeneratedController {
   @Permissions("devops.devopsEntity4.create")
   async createDevopsEntity4(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createDevopsEntity4(req.user.tenantId, body);
   }
@@ -216,7 +216,7 @@ export class DevopsGeneratedController {
   async updateDevopsEntity4(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateDevopsEntity4(req.user.tenantId, id, body);
   }
@@ -254,7 +254,7 @@ export class DevopsGeneratedController {
   @Permissions("devops.devopsEntity5.create")
   async createDevopsEntity5(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createDevopsEntity5(req.user.tenantId, body);
   }
@@ -265,7 +265,7 @@ export class DevopsGeneratedController {
   async updateDevopsEntity5(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateDevopsEntity5(req.user.tenantId, id, body);
   }
@@ -303,7 +303,7 @@ export class DevopsGeneratedController {
   @Permissions("devops.devopsEntity6.create")
   async createDevopsEntity6(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createDevopsEntity6(req.user.tenantId, body);
   }
@@ -314,7 +314,7 @@ export class DevopsGeneratedController {
   async updateDevopsEntity6(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateDevopsEntity6(req.user.tenantId, id, body);
   }
@@ -352,7 +352,7 @@ export class DevopsGeneratedController {
   @Permissions("devops.devopsEntity7.create")
   async createDevopsEntity7(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createDevopsEntity7(req.user.tenantId, body);
   }
@@ -363,7 +363,7 @@ export class DevopsGeneratedController {
   async updateDevopsEntity7(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateDevopsEntity7(req.user.tenantId, id, body);
   }
@@ -401,7 +401,7 @@ export class DevopsGeneratedController {
   @Permissions("devops.devopsEntity8.create")
   async createDevopsEntity8(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createDevopsEntity8(req.user.tenantId, body);
   }
@@ -412,7 +412,7 @@ export class DevopsGeneratedController {
   async updateDevopsEntity8(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateDevopsEntity8(req.user.tenantId, id, body);
   }
@@ -450,7 +450,7 @@ export class DevopsGeneratedController {
   @Permissions("devops.devopsEntity9.create")
   async createDevopsEntity9(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createDevopsEntity9(req.user.tenantId, body);
   }
@@ -461,7 +461,7 @@ export class DevopsGeneratedController {
   async updateDevopsEntity9(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateDevopsEntity9(req.user.tenantId, id, body);
   }
@@ -499,7 +499,7 @@ export class DevopsGeneratedController {
   @Permissions("devops.devopsEntity10.create")
   async createDevopsEntity10(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createDevopsEntity10(req.user.tenantId, body);
   }
@@ -510,7 +510,7 @@ export class DevopsGeneratedController {
   async updateDevopsEntity10(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateDevopsEntity10(req.user.tenantId, id, body);
   }
@@ -548,7 +548,7 @@ export class DevopsGeneratedController {
   @Permissions("devops.devopsEntity11.create")
   async createDevopsEntity11(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createDevopsEntity11(req.user.tenantId, body);
   }
@@ -559,7 +559,7 @@ export class DevopsGeneratedController {
   async updateDevopsEntity11(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateDevopsEntity11(req.user.tenantId, id, body);
   }
@@ -597,7 +597,7 @@ export class DevopsGeneratedController {
   @Permissions("devops.devopsEntity12.create")
   async createDevopsEntity12(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createDevopsEntity12(req.user.tenantId, body);
   }
@@ -608,7 +608,7 @@ export class DevopsGeneratedController {
   async updateDevopsEntity12(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateDevopsEntity12(req.user.tenantId, id, body);
   }

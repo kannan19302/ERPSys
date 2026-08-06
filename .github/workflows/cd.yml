@@ -43,6 +43,7 @@ permissions:
   id-token: write # keyless signing via cosign
   deployments: write
 
+
 env:
   REGISTRY: ghcr.io
   IMAGE_PREFIX: ${{ github.repository }}
@@ -239,3 +240,52 @@ jobs:
         run: |
           git tag -a "v${{ needs.preflight.outputs.version }}" -m "Production release"
           git push origin "v${{ needs.preflight.outputs.version }}"
+
+      - name: Emit release telemetry
+        if: always()
+        # Per PLATFORM_ARCHITECTURE.md § 11: "Build/release telemetry — lead time from L0 commit
+        # to deployed train, choreography PR latency, and manifest drift.
+        # In a fifteen-repo topology the release pipeline is itself a production system."
+        env:
+          DEPLOY_STATUS: ${{ job.status }}
+          DEPLOY_SHA: ${{ needs.preflight.outputs.sha }}
+          DEPLOY_VERSION: ${{ needs.preflight.outputs.version }}
+          OTEL_EXPORTER_OTLP_ENDPOINT: ${{ secrets.OTEL_ENDPOINT || 'http://otel-collector:4318' }}
+        run: |
+          COMMIT_TIMESTAMP=$(git log -1 --format='%ct' $DEPLOY_SHA)
+          NOW=$(date +%s)
+          LEAD_TIME_SECONDS=$((NOW - COMMIT_TIMESTAMP))
+          # Emit as OTLP metric via curl to the configured OTel collector
+          cat > /tmp/telemetry.json <<EOF
+          {
+            "resourceMetrics": [{
+              "resource": {
+                "attributes": [
+                  {"key": "service.name", "value": {"stringValue": "unierp-release-pipeline"}},
+                  {"key": "deployment.environment", "value": {"stringValue": "production"}},
+                  {"key": "release.version", "value": {"stringValue": "$DEPLOY_VERSION"}},
+                  {"key": "release.sha", "value": {"stringValue": "$DEPLOY_SHA"}},
+                  {"key": "release.status", "value": {"stringValue": "$DEPLOY_STATUS"}}
+                ]
+              },
+              "scopeMetrics": [{
+                "metrics": [
+                  {
+                    "name": "unierp.release.lead_time_seconds",
+                    "description": "Lead time from L0 commit to deployed train (seconds)",
+                    "gauge": {"dataPoints": [{"asInt": "$LEAD_TIME_SECONDS", "timeUnixNano": "$(date +%s%N)"}]}
+                  },
+                  {
+                    "name": "unierp.release.deploy_count",
+                    "description": "Number of production deployments",
+                    "sum": {"dataPoints": [{"asInt": "1", "timeUnixNano": "$(date +%s%N)"}], "isMonotonic": true}
+                  }
+                ]
+              }]
+            }]
+          }
+          EOF
+          curl -s -X POST "$OTEL_EXPORTER_OTLP_ENDPOINT/v1/metrics" \
+            -H 'Content-Type: application/json' \
+            -d @/tmp/telemetry.json || echo "Telemetry emit failed (non-blocking)"
+          echo "Release telemetry emitted: lead_time=${LEAD_TIME_SECONDS}s status=$DEPLOY_STATUS version=$DEPLOY_VERSION"

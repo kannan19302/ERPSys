@@ -50,10 +50,10 @@ restored (I.4); minimum quarterly drill per roadmap § 11c.
 
 ## 4. RPO / RTO (current single-node dev topology)
 
-| Metric | Target | Basis (2026-07-18 drill) |
-|---|---|---|
-| RPO | ≤ 24h (scheduled daily backup) — tighten with WAL archiving at production topology | backup runtime 1.9s @ 1.6 MB |
-| RTO | ≤ 30 min manual | restore+verify of full DB took 20.3s at seed scale; budget scales with data volume |
+| Metric | Target                                                                             | Basis (2026-07-18 drill)                                                           |
+| ------ | ---------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| RPO    | ≤ 24h (scheduled daily backup) — tighten with WAL archiving at production topology | backup runtime 1.9s @ 1.6 MB                                                       |
+| RTO    | ≤ 30 min manual                                                                    | restore+verify of full DB took 20.3s at seed scale; budget scales with data volume |
 
 ## 5. PITR (point-in-time recovery) — production requirement, not yet wired
 

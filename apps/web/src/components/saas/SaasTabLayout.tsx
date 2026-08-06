@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Thin re-export. The canonical implementation lives in @unerp/ui-layout as
+ * Thin re-export. The canonical implementation lives in @unerp/ui/layout as
  * ModuleTabLayout — follows the same convention as
  * @/components/finance/FinanceTabLayout and CrmTabLayout.
  */
@@ -10,7 +10,7 @@ export {
   ModuleTabLayout as SaasTabLayout,
   type ModuleTab as SaasTab,
   type ModuleTabLayoutProps as SaasTabLayoutProps,
-} from "@unerp/ui-layout";
+} from "@unerp/ui/layout";
 
 import {
   Cloud,
@@ -23,7 +23,7 @@ import {
   Activity,
   Layers,
 } from "lucide-react";
-import type { ModuleTab } from "@unerp/ui-layout";
+import type { ModuleTab } from "@unerp/ui/layout";
 
 export const SAAS_TABS: ModuleTab[] = [
   {

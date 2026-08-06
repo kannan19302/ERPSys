@@ -41,7 +41,8 @@ class AuthRepositoryImpl implements AuthRepository {
     String? country,
   }) async {
     try {
-      final RegisteredAccountModel account = await _remote.register(<String, dynamic>{
+      final RegisteredAccountModel account =
+          await _remote.register(<String, dynamic>{
         'email': email,
         'password': password,
         'confirmPassword': confirmPassword,

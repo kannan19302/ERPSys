@@ -199,14 +199,14 @@ export default function FxRevaluationPage() {
               label: "Posted Adjustments",
               value: runs.filter((r) => r.status === "POSTED").length,
               icon: <ShieldCheck size={20} />,
-              color: "#22c55e",
+              color: "var(--chart-2)",
               bg: "rgba(34,197,94,0.08)",
             },
             {
               label: "Draft Calculations",
               value: runs.filter((r) => r.status === "DRAFT").length,
               icon: <Calculator size={20} />,
-              color: "#f59e0b",
+              color: "var(--chart-3)",
               bg: "rgba(245,158,11,0.08)",
             },
           ].map((kpi) => (
@@ -257,7 +257,8 @@ export default function FxRevaluationPage() {
                           v === "POSTED"
                             ? "rgba(34,197,94,0.1)"
                             : "rgba(245,158,11,0.1)",
-                        color: v === "POSTED" ? "#22c55e" : "#f59e0b",
+                        color:
+                          v === "POSTED" ? "var(--chart-2)" : "var(--chart-3)",
                       }}
                       className={styles.s6}
                     >
@@ -452,7 +453,10 @@ export default function FxRevaluationPage() {
                         render: (v) => (
                           <span
                             style={{
-                              color: Number(v) >= 0 ? "#22c55e" : "#ef4444",
+                              color:
+                                Number(v) >= 0
+                                  ? "var(--chart-2)"
+                                  : "var(--chart-4)",
                             }}
                             className={styles.s14}
                           >

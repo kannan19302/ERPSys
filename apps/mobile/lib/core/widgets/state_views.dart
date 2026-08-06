@@ -152,7 +152,8 @@ class StaleDataBanner extends StatelessWidget {
       ),
       child: Row(
         children: <Widget>[
-          Icon(Icons.cloud_off_outlined, size: TypeScale.base, color: t.warning),
+          Icon(Icons.cloud_off_outlined,
+              size: TypeScale.base, color: t.warning),
           const SizedBox(width: Spacing.x2),
           Expanded(
             child: Text(

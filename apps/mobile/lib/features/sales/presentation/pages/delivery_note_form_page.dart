@@ -16,7 +16,8 @@ class DeliveryNoteFormPage extends ConsumerStatefulWidget {
   final String? deliveryNoteId;
 
   @override
-  ConsumerState<DeliveryNoteFormPage> createState() => _DeliveryNoteFormPageState();
+  ConsumerState<DeliveryNoteFormPage> createState() =>
+      _DeliveryNoteFormPageState();
 }
 
 class _DeliveryNoteFormPageState extends ConsumerState<DeliveryNoteFormPage> {
@@ -46,10 +47,12 @@ class _DeliveryNoteFormPageState extends ConsumerState<DeliveryNoteFormPage> {
 
   void _addItem() {
     setState(() {
-      _items.add(_LineItem(
-        productCtrl: TextEditingController(),
-        qtyCtrl: TextEditingController(text: '1'),
-      ),);
+      _items.add(
+        _LineItem(
+          productCtrl: TextEditingController(),
+          qtyCtrl: TextEditingController(text: '1'),
+        ),
+      );
     });
   }
 
@@ -67,19 +70,26 @@ class _DeliveryNoteFormPageState extends ConsumerState<DeliveryNoteFormPage> {
 
     final Map<String, dynamic> payload = <String, dynamic>{
       'customerName': _customerCtrl.text.trim(),
-      'salesOrderId': _salesOrderCtrl.text.trim().isEmpty ? null : _salesOrderCtrl.text.trim(),
-      'shippingAddress': _shippingCtrl.text.trim().isEmpty ? null : _shippingCtrl.text.trim(),
+      'salesOrderId': _salesOrderCtrl.text.trim().isEmpty
+          ? null
+          : _salesOrderCtrl.text.trim(),
+      'shippingAddress':
+          _shippingCtrl.text.trim().isEmpty ? null : _shippingCtrl.text.trim(),
       'notes': _notesCtrl.text.trim().isEmpty ? null : _notesCtrl.text.trim(),
-      if (_deliveryDate != null) 'deliveryDate': _deliveryDate!.toIso8601String(),
-      'items': _items.map((_LineItem item) => <String, dynamic>{
-        'productName': item.productCtrl.text.trim(),
-        'quantity': double.tryParse(item.qtyCtrl.text) ?? 1,
-      },).toList(),
+      if (_deliveryDate != null)
+        'deliveryDate': _deliveryDate!.toIso8601String(),
+      'items': _items
+          .map(
+            (_LineItem item) => <String, dynamic>{
+              'productName': item.productCtrl.text.trim(),
+              'quantity': double.tryParse(item.qtyCtrl.text) ?? 1,
+            },
+          )
+          .toList(),
     };
 
-    final Result<DeliveryNote> result = await ref
-        .read(deliveryNotesProvider.notifier)
-        .create(payload);
+    final Result<DeliveryNote> result =
+        await ref.read(deliveryNotesProvider.notifier).create(payload);
 
     if (!context.mounted) return;
     setState(() => _saving = false);
@@ -190,8 +200,9 @@ class _DeliveryNoteFormPageState extends ConsumerState<DeliveryNoteFormPage> {
               ],
             ),
             ..._items.asMap().entries.map(
-              (MapEntry<int, _LineItem> entry) => _buildItemRow(entry.key, entry.value),
-            ),
+                  (MapEntry<int, _LineItem> entry) =>
+                      _buildItemRow(entry.key, entry.value),
+                ),
             if (_items.isEmpty)
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: Spacing.x6),

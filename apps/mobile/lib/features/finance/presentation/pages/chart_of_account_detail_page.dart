@@ -36,8 +36,11 @@ class ChartOfAccountDetailPage extends ConsumerWidget {
       body: accountAsync.when(
         loading: () => const LoadingView(),
         error: (Object error, StackTrace _) => FailureView(
-          failure: error is Failure ? error : const ServerFailure('Could not load account.'),
-          onRetry: () => ref.invalidate(chartOfAccountDetailProvider(accountId)),
+          failure: error is Failure
+              ? error
+              : const ServerFailure('Could not load account.'),
+          onRetry: () =>
+              ref.invalidate(chartOfAccountDetailProvider(accountId)),
         ),
         data: (ChartOfAccount acc) => _AccountDetail(account: acc),
       ),
@@ -64,9 +67,8 @@ class ChartOfAccountDetailPage extends ConsumerWidget {
     );
     if (confirmed != true || !context.mounted) return;
 
-    final result = await ref
-        .read(chartOfAccountsProvider.notifier)
-        .delete(accountId);
+    final result =
+        await ref.read(chartOfAccountsProvider.notifier).delete(accountId);
 
     if (!context.mounted) return;
     result.fold(
@@ -108,7 +110,8 @@ class _AccountDetail extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: Spacing.x2),
-              Text('Code: ${account.code}', style: TextStyle(color: t.textSecondary)),
+              Text('Code: ${account.code}',
+                  style: TextStyle(color: t.textSecondary)),
             ],
           ),
         ),
@@ -124,7 +127,11 @@ class _AccountDetail extends StatelessWidget {
               _FieldRow('Parent ID', account.parentId ?? '—'),
               _FieldRow('Balance', Formatters.currency(account.balance)),
               _FieldRow('Status', account.isActive ? 'Active' : 'Inactive'),
-              _FieldRow('Created', account.createdAt != null ? Formatters.date(account.createdAt!) : '—'),
+              _FieldRow(
+                  'Created',
+                  account.createdAt != null
+                      ? Formatters.date(account.createdAt!)
+                      : '—'),
             ],
           ),
         ),
@@ -165,7 +172,8 @@ class _FieldRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: Spacing.x1_5),
       child: Row(
         children: <Widget>[
-          Expanded(child: Text(label, style: TextStyle(color: t.textSecondary))),
+          Expanded(
+              child: Text(label, style: TextStyle(color: t.textSecondary))),
           Text(value, style: Theme.of(context).textTheme.labelLarge),
         ],
       ),

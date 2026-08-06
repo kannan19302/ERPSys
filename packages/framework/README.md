@@ -6,46 +6,71 @@ Sits **above** `@unerp/ui` (design system) and **below** each host app (`apps/we
 
 ## Layers
 
-| Layer | Import | What it does |
-|---|---|---|
-| Metadata | `ResourceSchema`, `FieldDef`, `ModuleDefinition` | Declarative description of a module and its entities |
-| Registry | `defineModule`, `createRegistry` | Modules self-register; hosts derive routes/nav from it |
-| Client | `ApiClient` | One configured HTTP gateway (auth, CSRF, tenant, errors) |
-| Data | `useResourceList/Doc`, `useCreate/Update/DeleteResource` | Tenant-scoped TanStack Query hooks with cache invalidation |
-| Schema | `buildZodSchema`, `validateValues` | Zod validation generated from FieldDefs + custom validators |
-| Permissions | `Guarded`, `RouteGuard`, `usePermission` | RBAC (`module.resource.action`) gating for nav, routes, actions, fields |
-| Views | `ListView`, `FormView`, `DetailView` | Schema-driven pages with escape hatches (custom cells, sections, children) |
+| Layer       | Import                                                   | What it does                                                               |
+| ----------- | -------------------------------------------------------- | -------------------------------------------------------------------------- |
+| Metadata    | `ResourceSchema`, `FieldDef`, `ModuleDefinition`         | Declarative description of a module and its entities                       |
+| Registry    | `defineModule`, `createRegistry`                         | Modules self-register; hosts derive routes/nav from it                     |
+| Client      | `ApiClient`                                              | One configured HTTP gateway (auth, CSRF, tenant, errors)                   |
+| Data        | `useResourceList/Doc`, `useCreate/Update/DeleteResource` | Tenant-scoped TanStack Query hooks with cache invalidation                 |
+| Schema      | `buildZodSchema`, `validateValues`                       | Zod validation generated from FieldDefs + custom validators                |
+| Permissions | `Guarded`, `RouteGuard`, `usePermission`                 | RBAC (`module.resource.action`) gating for nav, routes, actions, fields    |
+| Views       | `ListView`, `FormView`, `DetailView`                     | Schema-driven pages with escape hatches (custom cells, sections, children) |
 
 ## Quick start
 
 **1. Define a module** (one file per module, e.g. `modules/crm.ts`):
 
 ```ts
-import { defineModule, defineResource } from '@unerp/framework';
+import { defineModule, defineResource } from "@unerp/framework";
 
 const customer = defineResource({
-  name: 'customer',
-  labelSingular: 'Customer',
-  labelPlural: 'Customers',
-  endpoint: '/crm/customers',
-  titleField: 'name',
-  permissions: { read: 'crm.customer.read', create: 'crm.customer.create', update: 'crm.customer.update' },
-  status: { field: 'status', tones: { ACTIVE: 'success', CHURNED: 'danger' } },
+  name: "customer",
+  labelSingular: "Customer",
+  labelPlural: "Customers",
+  endpoint: "/crm/customers",
+  titleField: "name",
+  permissions: {
+    read: "crm.customer.read",
+    create: "crm.customer.create",
+    update: "crm.customer.update",
+  },
+  status: { field: "status", tones: { ACTIVE: "success", CHURNED: "danger" } },
   fields: [
-    { name: 'name', label: 'Name', type: 'text', required: true },
-    { name: 'email', label: 'Email', type: 'email', required: true },
-    { name: 'type', label: 'Type', type: 'select', options: [
-      { value: 'COMPANY', label: 'Company' }, { value: 'INDIVIDUAL', label: 'Individual' },
-    ]},
-    { name: 'creditLimit', label: 'Credit Limit', type: 'currency', min: 0,
-      visibleIf: (v) => v.type === 'COMPANY' },
+    { name: "name", label: "Name", type: "text", required: true },
+    { name: "email", label: "Email", type: "email", required: true },
+    {
+      name: "type",
+      label: "Type",
+      type: "select",
+      options: [
+        { value: "COMPANY", label: "Company" },
+        { value: "INDIVIDUAL", label: "Individual" },
+      ],
+    },
+    {
+      name: "creditLimit",
+      label: "Credit Limit",
+      type: "currency",
+      min: 0,
+      visibleIf: (v) => v.type === "COMPANY",
+    },
   ],
-  list: { columns: ['name', 'email', 'type', 'status'], searchable: true, pageSize: 25 },
-  form: { sections: [{ title: 'General', fields: ['name', 'email', 'type', 'creditLimit'] }] },
+  list: {
+    columns: ["name", "email", "type", "status"],
+    searchable: true,
+    pageSize: 25,
+  },
+  form: {
+    sections: [
+      { title: "General", fields: ["name", "email", "type", "creditLimit"] },
+    ],
+  },
 });
 
 export const crmModule = defineModule({
-  id: 'crm', title: 'CRM', basePath: '/crm',
+  id: "crm",
+  title: "CRM",
+  basePath: "/crm",
   resources: [customer],
 });
 ```
@@ -55,9 +80,9 @@ export const crmModule = defineModule({
 ```tsx
 <FrameworkProvider
   api={{
-    baseUrl: process.env.NEXT_PUBLIC_API_URL || '/api/v1',
-    getToken: () => localStorage.getItem('token'),
-    getCsrfToken: () => readCookie('csrf_token'),
+    baseUrl: process.env.NEXT_PUBLIC_API_URL || "/api/v1",
+    getToken: () => localStorage.getItem("token"),
+    getCsrfToken: () => readCookie("csrf_token"),
     getTenantId: () => activeTenantId,
   }}
   modules={[crmModule]}

@@ -12,14 +12,15 @@
     }
   },
   "scripts": {
-    "build": "node --max-old-space-size=8192 ../../node_modules/typescript/bin/tsc",
+    "build": "node --max-old-space-size=8192 ../../node_modules/typescript/bin/tsc && node ../../scripts/copy-generated-client.mjs",
     "typecheck": "node --max-old-space-size=8192 ../../node_modules/typescript/bin/tsc --noEmit",
-    "db:generate": "prisma generate",
-    "db:migrate": "prisma migrate dev",
-    "db:deploy": "prisma migrate deploy",
+    "db:generate": "prisma generate --schema prisma/schema && prisma generate --schema prisma/idp-schema.prisma",
+    "db:migrate": "prisma migrate dev --schema prisma/schema && prisma migrate dev --schema prisma/idp-schema.prisma",
+    "db:deploy": "prisma migrate deploy --schema prisma/schema && prisma migrate deploy --schema prisma/idp-schema.prisma",
     "db:push": "node ../../scripts/forbid-db-push.mjs",
     "db:seed": "tsx prisma/seed.ts",
     "db:seed:demo": "tsx prisma/seed-demo.ts",
+    "db:seed:platform": "tsx prisma/seed-platform.ts",
     "db:studio": "prisma studio",
     "db:reset": "prisma migrate reset",
     "lint": "eslint src/",
@@ -28,8 +29,7 @@
     "clean": "rimraf dist"
   },
   "dependencies": {
-    "@prisma/client": "^6.2.0",
-    "@unerp/shared": "workspace:*"
+    "@prisma/client": "^6.2.0"
   },
   "devDependencies": {
     "@unerp/config": "workspace:*",

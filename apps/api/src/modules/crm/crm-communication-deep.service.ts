@@ -4,13 +4,38 @@ import {
   BadRequestException,
 } from "@nestjs/common";
 import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 
 const db = prisma as any;
+
+/** A configured outbound channel (email, SMS, WhatsApp, …). */
+interface CommunicationChannel {
+  id: string;
+  tenantId: string;
+  [key: string]: unknown;
+}
+
+/** One outbound communication, used for analytics and unread counts. */
+interface CommunicationLog {
+  id: string;
+  tenantId: string;
+  channel: string;
+  recipientId: string | null;
+  readAt: Date | null;
+  sentAt: Date;
+  [key: string]: unknown;
+}
 
 @Injectable()
 export class CrmCommunicationDeepService {
   private posts: any[] = [];
   private optOuts: any[] = [];
+  // NOTE: this whole service keeps its state in memory. Nothing here survives a
+  // restart and none of it is protected by row-level security, so the tenant
+  // filtering below is the only isolation it has. It needs real persistence
+  // before it can carry anything a customer depends on.
+  private channels: CommunicationChannel[] = [];
+  private logs: CommunicationLog[] = [];
   private preferences = new Map<string, any>();
 
   async createPost(tenantId = "tenant-1", dto: any = {}) {
@@ -95,12 +120,68 @@ export class CrmCommunicationDeepService {
     return !!found;
   }
 
-  async getCommunicationPreferences(tenantId = "tenant-1", customerId = "") {
+  /**
+   * Opt an entity out of a channel. Idempotent: opting the same
+   * (entity, channel) out twice records one suppression, because the opt-out
+   * list is a set of suppressions, not an event log — a duplicate would make
+   * `getOptOutList` misreport how many entities are suppressed.
+   */
+  async optOutEntity(
+    tenantId = "tenant-1",
+    entityType = "CUSTOMER",
+    entityId = "",
+    channel = "EMAIL",
+    reason?: string,
+  ) {
+    const existing = this.optOuts.find(
+      (o) =>
+        o.tenantId === tenantId &&
+        o.entityType === entityType &&
+        o.entityId === entityId &&
+        o.channel === channel,
+    );
+    if (existing) return existing;
+
+    const opt = {
+      id: `opt-${Date.now()}-${this.optOuts.length}`,
+      tenantId,
+      entityType,
+      entityId,
+      channel,
+      reason: reason ?? null,
+      optedOutAt: new Date(),
+    };
+    this.optOuts.push(opt);
+    return opt;
+  }
+
+  private preferenceKey(
+    tenantId: string,
+    entityType: string,
+    entityId: string,
+  ) {
+    return `${tenantId}:${entityType}:${entityId}`;
+  }
+
+  /**
+   * Preferences are keyed by (tenant, entityType, entityId): a CUSTOMER and a
+   * LEAD can share an id, and collapsing them would leak one's preferences onto
+   * the other. Defaults are opt-in for the channels the customer has a standing
+   * relationship on, matching the consent model in the CRM spec.
+   */
+  async getCommunicationPreferences(
+    tenantId = "tenant-1",
+    entityType = "CUSTOMER",
+    entityId = "",
+  ) {
     return (
-      this.preferences.get(`${tenantId}:${customerId}`) || {
-        customerId,
+      this.preferences.get(
+        this.preferenceKey(tenantId, entityType, entityId),
+      ) || {
+        entityType,
+        entityId,
         email: true,
-        sms: false,
+        sms: true,
         phone: true,
       }
     );
@@ -108,20 +189,67 @@ export class CrmCommunicationDeepService {
 
   async updateCommunicationPreferences(
     tenantId = "tenant-1",
-    customerId = "",
+    entityType = "CUSTOMER",
+    entityId = "",
     dto: any = {},
   ) {
-    const pref = { customerId, ...dto };
-    this.preferences.set(`${tenantId}:${customerId}`, pref);
+    const current = await this.getCommunicationPreferences(
+      tenantId,
+      entityType,
+      entityId,
+    );
+    const pref = { ...current, entityType, entityId, ...dto };
+    this.preferences.set(
+      this.preferenceKey(tenantId, entityType, entityId),
+      pref,
+    );
     return pref;
   }
 
+  /** Aggregate counts across the communication log for a tenant. */
+  async getCommunicationAnalytics(tenantId = "tenant-1") {
+    const logs = this.logs.filter((l) => l.tenantId === tenantId);
+    const byChannel: Record<string, number> = {};
+    for (const l of logs) {
+      byChannel[l.channel ?? "UNKNOWN"] =
+        (byChannel[l.channel ?? "UNKNOWN"] ?? 0) + 1;
+    }
+    return {
+      total: logs.length,
+      byChannel,
+      optOuts: this.optOuts.filter((o) => o.tenantId === tenantId).length,
+    };
+  }
+
+  /** Channel-level rollup for the multi-channel dashboard. */
+  async getMultiChannelDashboard(tenantId = "tenant-1") {
+    const logs = this.logs.filter((l) => l.tenantId === tenantId);
+    return {
+      totalLogs: logs.length,
+      channels: this.channels.filter((c) => c.tenantId === tenantId).length,
+      posts: this.posts.filter((p) => p.tenantId === tenantId).length,
+    };
+  }
+
+  /** Messages addressed to a user that carry no read receipt. */
+  async getUnreadMessageCount(tenantId = "tenant-1", userId = "") {
+    return this.logs.filter(
+      (l) => l.tenantId === tenantId && l.recipientId === userId && !l.readAt,
+    ).length;
+  }
+
   async getChannels(tenantId = "tenant-1") {
-    return [];
+    return this.channels.filter((c) => c.tenantId === tenantId);
   }
 
   async createChannel(tenantId = "tenant-1", dto: any = {}) {
-    return { id: `chan-${Date.now()}`, tenantId, ...dto };
+    const channel = {
+      id: `chan-${Date.now()}-${this.channels.length}`,
+      tenantId,
+      ...dto,
+    };
+    this.channels.push(channel);
+    return channel;
   }
 
   async getTemplates(tenantId = "tenant-1") {
@@ -129,10 +257,20 @@ export class CrmCommunicationDeepService {
   }
 
   async sendCommunication(tenantId = "tenant-1", dto: any = {}) {
-    return { status: "sent", id: `comm-${Date.now()}` };
+    const log = {
+      id: `comm-${Date.now()}-${this.logs.length}`,
+      tenantId,
+      channel: dto.channel ?? "EMAIL",
+      recipientId: dto.recipientId ?? null,
+      readAt: null,
+      sentAt: new Date(),
+      ...dto,
+    };
+    this.logs.push(log);
+    return { status: "sent", id: log.id };
   }
 
   async getCommunicationLogs(tenantId = "tenant-1") {
-    return [];
+    return this.logs.filter((l) => l.tenantId === tenantId);
   }
 }

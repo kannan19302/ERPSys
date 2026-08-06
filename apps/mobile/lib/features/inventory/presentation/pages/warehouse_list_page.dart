@@ -52,10 +52,14 @@ class _WarehouseListPageState extends ConsumerState<WarehouseListPage> {
       ),
       body: Column(
         children: <Widget>[
-          if (state.cachedAt != null) StaleDataBanner(cachedAt: state.cachedAt!),
+          if (state.cachedAt != null)
+            StaleDataBanner(cachedAt: state.cachedAt!),
           Padding(
             padding: const EdgeInsets.fromLTRB(
-              Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2,
+              Spacing.x4,
+              Spacing.x3,
+              Spacing.x4,
+              Spacing.x2,
             ),
             child: TextField(
               controller: _search,
@@ -99,8 +103,10 @@ class _WarehouseListPageState extends ConsumerState<WarehouseListPage> {
                   underline: const SizedBox.shrink(),
                   items: const <DropdownMenuItem<String?>>[
                     DropdownMenuItem<String?>(value: null, child: Text('All')),
-                    DropdownMenuItem<String?>(value: 'true', child: Text('Active')),
-                    DropdownMenuItem<String?>(value: 'false', child: Text('Inactive')),
+                    DropdownMenuItem<String?>(
+                        value: 'true', child: Text('Active')),
+                    DropdownMenuItem<String?>(
+                        value: 'false', child: Text('Inactive')),
                   ],
                   onChanged: (String? value) {
                     setState(() {
@@ -109,7 +115,8 @@ class _WarehouseListPageState extends ConsumerState<WarehouseListPage> {
                     if (value == null) {
                       controller.applyFilters(const <String, String>{});
                     } else {
-                      controller.applyFilters(<String, String>{'isActive': value});
+                      controller
+                          .applyFilters(<String, String>{'isActive': value});
                     }
                   },
                 ),
@@ -230,7 +237,11 @@ class _WarehouseTile extends StatelessWidget {
                 minHeight: 6,
                 backgroundColor: t.bgSunken,
                 valueColor: AlwaysStoppedAnimation<Color>(
-                  util > 90 ? t.danger : util > 70 ? t.warning : t.success,
+                  util > 90
+                      ? t.danger
+                      : util > 70
+                          ? t.warning
+                          : t.success,
                 ),
               ),
             ),

@@ -180,7 +180,12 @@ export default function WinLossCategoriesPage() {
             >
               <div>
                 <strong>{cat.name}</strong>
-                <div style={{ fontSize: "0.8rem", color: "#666" }}>
+                <div
+                  style={{
+                    fontSize: "0.8rem",
+                    color: "var(--color-text-secondary)",
+                  }}
+                >
                   <Badge variant="info">{cat.type.replace(/_/g, " ")}</Badge>
                   {cat.description && (
                     <span style={{ marginLeft: "0.5rem" }}>
@@ -208,7 +213,7 @@ export default function WinLossCategoriesPage() {
             </div>
           ))}
           {!loading && categories.length === 0 && (
-            <p style={{ color: "#666" }}>
+            <p style={{ color: "var(--color-text-secondary)" }}>
               No categories yet. Create your first win/loss category.
             </p>
           )}

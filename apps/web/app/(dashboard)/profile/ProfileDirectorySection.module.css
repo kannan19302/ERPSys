@@ -26,7 +26,7 @@
     #7c3aed 55%,
     #a78bfa 100%
   );
-  color: #fff;
+  color: var(--color-text-inverse);
   overflow: hidden;
 }
 
@@ -76,7 +76,7 @@
   font-size: 22px;
   font-weight: var(--weight-bold);
   margin: 0;
-  color: #fff;
+  color: var(--color-text-inverse);
 }
 
 .pronounceBtn,
@@ -90,7 +90,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #fff;
+  color: var(--color-text-inverse);
   cursor: pointer;
   transition: background var(--duration-fast);
 }
@@ -101,7 +101,7 @@
 }
 
 .recordBtnActive {
-  background: #ef4444;
+  background: var(--color-danger);
   animation: recordPulse 1s ease-in-out infinite;
 }
 
@@ -131,7 +131,7 @@
 .recError {
   color: #fecaca;
   font-size: var(--text-xs);
-  margin: 4px 0 0;
+  margin: var(--space-1) 0 0;
 }
 
 .heroMetaRow {
@@ -150,7 +150,7 @@
   background: rgba(255, 255, 255, 0.18);
   padding: 3px 10px;
   border-radius: var(--radius-full);
-  color: #fff;
+  color: var(--color-text-inverse);
 }
 
 .employeeIdBadge {
@@ -182,7 +182,7 @@
   display: flex;
   align-items: center;
   gap: var(--space-1-5, 6px);
-  background: #fff;
+  background: var(--color-bg-elevated);
   color: var(--color-primary);
   border: none;
   border-radius: var(--radius-lg);
@@ -202,7 +202,7 @@
 .heroRoleRow .fieldValueBtn {
   background: rgba(255, 255, 255, 0.12);
   border-color: rgba(255, 255, 255, 0.3);
-  color: #fff;
+  color: var(--color-text-inverse);
 }
 .heroMetaRow .fieldEmpty,
 .heroRoleRow .fieldEmpty {
@@ -236,7 +236,7 @@
 .cardTitle {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--space-1-5);
   font-size: var(--text-sm);
   font-weight: var(--weight-bold);
   margin: 0 0 var(--space-3);
@@ -269,16 +269,16 @@
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: var(--color-text-tertiary);
-  margin-bottom: 4px;
+  margin-bottom: var(--space-1);
 }
 
 .fieldReadonly {
   font-size: var(--text-sm);
   color: var(--color-text);
-  padding: 6px 0;
+  padding: var(--space-1-5) 0;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .fieldHint {
@@ -314,13 +314,13 @@
 .fieldPencil {
   color: var(--color-text-tertiary);
   flex-shrink: 0;
-  margin-left: 8px;
+  margin-left: var(--space-2);
 }
 
 .fieldEditRow {
   display: flex;
   align-items: flex-start;
-  gap: 6px;
+  gap: var(--space-1-5);
 }
 
 .fieldInput,
@@ -343,7 +343,7 @@
 
 .fieldEditActions {
   display: flex;
-  gap: 4px;
+  gap: var(--space-1);
   flex-shrink: 0;
 }
 
@@ -370,21 +370,21 @@
 .hoursRow {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .timeInput {
   background: var(--color-bg-sunken);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
-  padding: 6px 8px;
+  padding: var(--space-1-5) var(--space-2);
   font-size: var(--text-sm);
   color: var(--color-text);
 }
 
 .daysRow {
   display: flex;
-  gap: 4px;
+  gap: var(--space-1);
 }
 
 .dayChip,
@@ -403,7 +403,7 @@
 .dayChipActive {
   background: var(--color-primary);
   border-color: var(--color-primary);
-  color: #fff;
+  color: var(--color-text-inverse);
 }
 
 /* ── Manager picker ───────────────────────────────────────────── */
@@ -415,10 +415,10 @@
 .managerChip {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
   background: var(--color-bg-sunken);
   border-radius: var(--radius-lg);
-  padding: 6px 10px;
+  padding: var(--space-1-5) var(--space-2-5);
   font-size: var(--text-sm);
 }
 
@@ -447,17 +447,17 @@
 .managerResults {
   max-height: 220px;
   overflow-y: auto;
-  margin-top: 6px;
+  margin-top: var(--space-1-5);
 }
 
 .managerResultRow {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
   width: 100%;
   background: transparent;
   border: none;
-  padding: 6px 8px;
+  padding: var(--space-1-5) var(--space-2);
   border-radius: var(--radius-md);
   cursor: pointer;
   font-size: var(--text-sm);
@@ -472,13 +472,13 @@
 .peopleList {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--space-1-5);
 }
 
 .personRow {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
   font-size: var(--text-sm);
   color: var(--color-text);
 }
@@ -545,7 +545,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: var(--space-1);
   background: var(--color-bg-sunken);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);

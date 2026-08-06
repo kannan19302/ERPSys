@@ -4,7 +4,8 @@ import '../../../../core/usecase/usecase.dart';
 import '../entities/ai.dart';
 import '../repositories/ai_repository.dart';
 
-class ListAiModelsUseCase extends UseCase<Cacheable<Paginated<AiModel>>, ListQuery> {
+class ListAiModelsUseCase
+    extends UseCase<Cacheable<Paginated<AiModel>>, ListQuery> {
   const ListAiModelsUseCase(this._repository);
   final AiRepository _repository;
   @override
@@ -44,7 +45,8 @@ class DeleteAiModelUseCase extends UseCase<void, String> {
   Future<Result<void>> call(String id) => _repository.deleteModel(id);
 }
 
-class ListAiPromptsUseCase extends UseCase<Cacheable<Paginated<AiPrompt>>, ListQuery> {
+class ListAiPromptsUseCase
+    extends UseCase<Cacheable<Paginated<AiPrompt>>, ListQuery> {
   const ListAiPromptsUseCase(this._repository);
   final AiRepository _repository;
   @override
@@ -84,7 +86,8 @@ class DeleteAiPromptUseCase extends UseCase<void, String> {
   Future<Result<void>> call(String id) => _repository.deletePrompt(id);
 }
 
-class ListAiTrainingDataUseCase extends UseCase<Cacheable<Paginated<AiTrainingData>>, ListQuery> {
+class ListAiTrainingDataUseCase
+    extends UseCase<Cacheable<Paginated<AiTrainingData>>, ListQuery> {
   const ListAiTrainingDataUseCase(this._repository);
   final AiRepository _repository;
   @override
@@ -96,10 +99,12 @@ class GetAiTrainingDataUseCase extends UseCase<AiTrainingData, String> {
   const GetAiTrainingDataUseCase(this._repository);
   final AiRepository _repository;
   @override
-  Future<Result<AiTrainingData>> call(String id) => _repository.getTrainingData(id);
+  Future<Result<AiTrainingData>> call(String id) =>
+      _repository.getTrainingData(id);
 }
 
-class SaveAiTrainingDataUseCase extends UseCase<AiTrainingData, Map<String, dynamic>> {
+class SaveAiTrainingDataUseCase
+    extends UseCase<AiTrainingData, Map<String, dynamic>> {
   const SaveAiTrainingDataUseCase(this._repository);
   final AiRepository _repository;
   @override
@@ -114,7 +119,8 @@ class DeleteAiTrainingDataUseCase extends UseCase<void, String> {
   Future<Result<void>> call(String id) => _repository.deleteTrainingData(id);
 }
 
-class ListAiPredictionsUseCase extends UseCase<Cacheable<Paginated<AiPrediction>>, ListQuery> {
+class ListAiPredictionsUseCase
+    extends UseCase<Cacheable<Paginated<AiPrediction>>, ListQuery> {
   const ListAiPredictionsUseCase(this._repository);
   final AiRepository _repository;
   @override
@@ -122,7 +128,8 @@ class ListAiPredictionsUseCase extends UseCase<Cacheable<Paginated<AiPrediction>
       _repository.listPredictions(params);
 }
 
-class CreateAiPredictionUseCase extends UseCase<AiPrediction, Map<String, dynamic>> {
+class CreateAiPredictionUseCase
+    extends UseCase<AiPrediction, Map<String, dynamic>> {
   const CreateAiPredictionUseCase(this._repository);
   final AiRepository _repository;
   @override
@@ -130,27 +137,31 @@ class CreateAiPredictionUseCase extends UseCase<AiPrediction, Map<String, dynami
       _repository.createPrediction(params);
 }
 
-
 class SaveAiTrainingDataParams {
   const SaveAiTrainingDataParams({this.id, required this.payload});
   final String? id;
   final Map<String, dynamic> payload;
 }
+
 class SaveAiPredictionParams {
   const SaveAiPredictionParams({this.id, required this.payload});
   final String? id;
   final Map<String, dynamic> payload;
 }
-class SaveAiPredictionUseCase extends UseCase<AiPrediction, Map<String, dynamic>> {
+
+class SaveAiPredictionUseCase
+    extends UseCase<AiPrediction, Map<String, dynamic>> {
   SaveAiPredictionUseCase(this.repository);
   final AiRepository repository;
   @override
-  Future<Result<AiPrediction>> call(Map<String, dynamic> params) async => throw UnimplementedError();
+  Future<Result<AiPrediction>> call(Map<String, dynamic> params) async =>
+      throw UnimplementedError();
 }
+
 class GetAiPredictionUseCase extends UseCase<AiPrediction, String> {
   GetAiPredictionUseCase(this.repository);
   final AiRepository repository;
   @override
-  Future<Result<AiPrediction>> call(String params) async => throw UnimplementedError();
+  Future<Result<AiPrediction>> call(String params) async =>
+      throw UnimplementedError();
 }
-

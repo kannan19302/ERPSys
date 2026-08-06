@@ -5,6 +5,7 @@ import {
   ForbiddenException,
 } from "@nestjs/common";
 import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 import { signSessionToken } from "@unerp/auth";
 import { hasPermission } from "@unerp/shared";
 import * as crypto from "node:crypto";
@@ -87,7 +88,7 @@ export class SaasPortalSecurityService {
   /* ── Sessions ───────────────────────────────────── */
 
   async getActiveSessions(tenantId: string) {
-    return prisma.userSession.findMany({
+    return idpPrisma.userSession.findMany({
       where: { tenantId },
       include: { user: true },
       orderBy: { lastActivityAt: "desc" },
@@ -95,11 +96,11 @@ export class SaasPortalSecurityService {
   }
 
   async revokeSession(tenantId: string, sessionId: string) {
-    const session = await prisma.userSession.findFirst({
+    const session = await idpPrisma.userSession.findFirst({
       where: { id: sessionId, tenantId },
     });
     if (!session) throw new NotFoundException("Session not found");
-    await prisma.userSession.delete({ where: { id: sessionId } });
+    await idpPrisma.userSession.delete({ where: { id: sessionId } });
     return { success: true, message: "Session revoked" };
   }
 
@@ -243,9 +244,13 @@ export class SaasPortalSecurityService {
   /* ── Impersonation ──────────────────────────────── */
 
   async impersonateUser(tenantId: string, targetUserId: string) {
-    const user = await prisma.user.findFirst({
+    const user = await idpPrisma.user.findFirst({
       where: { id: targetUserId, tenantId },
-      include: { roles: { include: { role: true } } },
+      include: {
+        roles: {
+          include: { role: true },
+        },
+      },
     });
     if (!user)
       throw new NotFoundException(
@@ -459,7 +464,7 @@ export class SaasPortalSecurityService {
     tenantId: string,
     userId: string,
   ): Promise<string[]> {
-    const userRoles = await prisma.userRole.findMany({
+    const userRoles = await idpPrisma.userRole.findMany({
       where: { userId },
       include: { role: true },
     });

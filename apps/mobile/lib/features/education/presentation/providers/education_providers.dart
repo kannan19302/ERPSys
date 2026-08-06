@@ -30,7 +30,8 @@ final Provider<EducationRepository> educationRepositoryProvider =
 class StudentListState extends Equatable {
   const StudentListState({
     this.items = const <Student>[],
-    this.meta = const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
+    this.meta =
+        const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
     this.query = const ListQuery(sort: '-createdAt'),
     this.isLoading = true,
     this.isLoadingMore = false,
@@ -47,20 +48,36 @@ class StudentListState extends Equatable {
   final Failure? loadMoreFailure;
 
   StudentListState copyWith({
-    List<Student>? items, PaginationMeta? meta, ListQuery? query,
-    bool? isLoading, bool? isLoadingMore, Failure? failure,
-    Failure? loadMoreFailure, bool clearFailures = false,
+    List<Student>? items,
+    PaginationMeta? meta,
+    ListQuery? query,
+    bool? isLoading,
+    bool? isLoadingMore,
+    Failure? failure,
+    Failure? loadMoreFailure,
+    bool clearFailures = false,
   }) =>
       StudentListState(
-        items: items ?? this.items, meta: meta ?? this.meta,
-        query: query ?? this.query, isLoading: isLoading ?? this.isLoading,
+        items: items ?? this.items,
+        meta: meta ?? this.meta,
+        query: query ?? this.query,
+        isLoading: isLoading ?? this.isLoading,
         isLoadingMore: isLoadingMore ?? this.isLoadingMore,
         failure: clearFailures ? null : (failure ?? this.failure),
-        loadMoreFailure: clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
+        loadMoreFailure:
+            clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
       );
 
   @override
-  List<Object?> get props => <Object?>[items, meta, query.cacheKey, isLoading, isLoadingMore, failure, loadMoreFailure];
+  List<Object?> get props => <Object?>[
+        items,
+        meta,
+        query.cacheKey,
+        isLoading,
+        isLoadingMore,
+        failure,
+        loadMoreFailure
+      ];
 }
 
 final NotifierProvider<StudentListController, StudentListState>
@@ -90,8 +107,11 @@ class StudentListController extends Notifier<StudentListState> {
     state = result.fold(
       (f) => state.copyWith(isLoading: false, failure: f, items: const []),
       (page) => state.copyWith(
-        items: page.value.data, meta: page.value.meta, query: query,
-        isLoading: false, clearFailures: true,
+        items: page.value.data,
+        meta: page.value.meta,
+        query: query,
+        isLoading: false,
+        clearFailures: true,
       ),
     );
   }
@@ -104,8 +124,11 @@ class StudentListController extends Notifier<StudentListState> {
     state = result.fold(
       (f) => state.copyWith(isLoadingMore: false, loadMoreFailure: f),
       (page) => state.copyWith(
-        items: [...state.items, ...page.value.data], meta: page.value.meta,
-        query: next, isLoadingMore: false, clearFailures: true,
+        items: [...state.items, ...page.value.data],
+        meta: page.value.meta,
+        query: next,
+        isLoadingMore: false,
+        clearFailures: true,
       ),
     );
   }
@@ -113,7 +136,8 @@ class StudentListController extends Notifier<StudentListState> {
   void search(String term) {
     _searchDebounce?.cancel();
     _searchDebounce = Timer(const Duration(milliseconds: 350), () {
-      state = state.copyWith(query: state.query.copyWith(search: term, page: 1));
+      state =
+          state.copyWith(query: state.query.copyWith(search: term, page: 1));
       refresh();
     });
   }
@@ -125,14 +149,17 @@ class StudentListController extends Notifier<StudentListState> {
 
   Future<Result<void>> delete(String id) async {
     final result = await DeleteStudentUseCase(
-      ref.read(educationRepositoryProvider),)(id);
+      ref.read(educationRepositoryProvider),
+    )(id);
     if (result.isOk) await refresh();
     return result;
   }
 
-  Future<Result<Student>> save(Map<String, dynamic> payload, {String? id}) async {
+  Future<Result<Student>> save(Map<String, dynamic> payload,
+      {String? id}) async {
     final result = await SaveStudentUseCase(
-      ref.read(educationRepositoryProvider),)(
+      ref.read(educationRepositoryProvider),
+    )(
       SaveStudentParams(id: id, payload: payload),
     );
     if (result.isOk) await refresh();
@@ -143,14 +170,16 @@ class StudentListController extends Notifier<StudentListState> {
 final FutureProviderFamily<Student, String> studentDetailProvider =
     FutureProvider.family<Student, String>((Ref ref, String id) async {
   final result = await GetStudentUseCase(
-    ref.watch(educationRepositoryProvider),)(id);
+    ref.watch(educationRepositoryProvider),
+  )(id);
   return result.fold((f) => throw f, (v) => v);
 });
 
 class CourseListState extends Equatable {
   const CourseListState({
     this.items = const <Course>[],
-    this.meta = const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
+    this.meta =
+        const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
     this.query = const ListQuery(sort: '-createdAt'),
     this.isLoading = true,
     this.isLoadingMore = false,
@@ -167,20 +196,36 @@ class CourseListState extends Equatable {
   final Failure? loadMoreFailure;
 
   CourseListState copyWith({
-    List<Course>? items, PaginationMeta? meta, ListQuery? query,
-    bool? isLoading, bool? isLoadingMore, Failure? failure,
-    Failure? loadMoreFailure, bool clearFailures = false,
+    List<Course>? items,
+    PaginationMeta? meta,
+    ListQuery? query,
+    bool? isLoading,
+    bool? isLoadingMore,
+    Failure? failure,
+    Failure? loadMoreFailure,
+    bool clearFailures = false,
   }) =>
       CourseListState(
-        items: items ?? this.items, meta: meta ?? this.meta,
-        query: query ?? this.query, isLoading: isLoading ?? this.isLoading,
+        items: items ?? this.items,
+        meta: meta ?? this.meta,
+        query: query ?? this.query,
+        isLoading: isLoading ?? this.isLoading,
         isLoadingMore: isLoadingMore ?? this.isLoadingMore,
         failure: clearFailures ? null : (failure ?? this.failure),
-        loadMoreFailure: clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
+        loadMoreFailure:
+            clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
       );
 
   @override
-  List<Object?> get props => <Object?>[items, meta, query.cacheKey, isLoading, isLoadingMore, failure, loadMoreFailure];
+  List<Object?> get props => <Object?>[
+        items,
+        meta,
+        query.cacheKey,
+        isLoading,
+        isLoadingMore,
+        failure,
+        loadMoreFailure
+      ];
 }
 
 final NotifierProvider<CourseListController, CourseListState>
@@ -210,8 +255,11 @@ class CourseListController extends Notifier<CourseListState> {
     state = result.fold(
       (f) => state.copyWith(isLoading: false, failure: f, items: const []),
       (page) => state.copyWith(
-        items: page.value.data, meta: page.value.meta, query: query,
-        isLoading: false, clearFailures: true,
+        items: page.value.data,
+        meta: page.value.meta,
+        query: query,
+        isLoading: false,
+        clearFailures: true,
       ),
     );
   }
@@ -224,8 +272,11 @@ class CourseListController extends Notifier<CourseListState> {
     state = result.fold(
       (f) => state.copyWith(isLoadingMore: false, loadMoreFailure: f),
       (page) => state.copyWith(
-        items: [...state.items, ...page.value.data], meta: page.value.meta,
-        query: next, isLoadingMore: false, clearFailures: true,
+        items: [...state.items, ...page.value.data],
+        meta: page.value.meta,
+        query: next,
+        isLoadingMore: false,
+        clearFailures: true,
       ),
     );
   }
@@ -233,14 +284,17 @@ class CourseListController extends Notifier<CourseListState> {
   void search(String term) {
     _searchDebounce?.cancel();
     _searchDebounce = Timer(const Duration(milliseconds: 350), () {
-      state = state.copyWith(query: state.query.copyWith(search: term, page: 1));
+      state =
+          state.copyWith(query: state.query.copyWith(search: term, page: 1));
       refresh();
     });
   }
 
-  Future<Result<Course>> save(Map<String, dynamic> payload, {String? id}) async {
+  Future<Result<Course>> save(Map<String, dynamic> payload,
+      {String? id}) async {
     final result = await SaveCourseUseCase(
-      ref.read(educationRepositoryProvider),)(
+      ref.read(educationRepositoryProvider),
+    )(
       SaveCourseParams(id: id, payload: payload),
     );
     if (result.isOk) await refresh();
@@ -251,21 +305,24 @@ class CourseListController extends Notifier<CourseListState> {
 final FutureProviderFamily<Course, String> courseDetailProvider =
     FutureProvider.family<Course, String>((Ref ref, String id) async {
   final result = await GetCourseUseCase(
-    ref.watch(educationRepositoryProvider),)(id);
+    ref.watch(educationRepositoryProvider),
+  )(id);
   return result.fold((f) => throw f, (v) => v);
 });
 
 final FutureProviderFamily<Enrollment, String> enrollmentDetailProvider =
     FutureProvider.family<Enrollment, String>((Ref ref, String id) async {
   final result = await GetEnrollmentUseCase(
-    ref.watch(educationRepositoryProvider),)(id);
+    ref.watch(educationRepositoryProvider),
+  )(id);
   return result.fold((f) => throw f, (v) => v);
 });
 
 class EnrollmentListState extends Equatable {
   const EnrollmentListState({
     this.items = const <Enrollment>[],
-    this.meta = const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
+    this.meta =
+        const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
     this.query = const ListQuery(sort: '-createdAt'),
     this.isLoading = true,
     this.isLoadingMore = false,
@@ -282,20 +339,36 @@ class EnrollmentListState extends Equatable {
   final Failure? loadMoreFailure;
 
   EnrollmentListState copyWith({
-    List<Enrollment>? items, PaginationMeta? meta, ListQuery? query,
-    bool? isLoading, bool? isLoadingMore, Failure? failure,
-    Failure? loadMoreFailure, bool clearFailures = false,
+    List<Enrollment>? items,
+    PaginationMeta? meta,
+    ListQuery? query,
+    bool? isLoading,
+    bool? isLoadingMore,
+    Failure? failure,
+    Failure? loadMoreFailure,
+    bool clearFailures = false,
   }) =>
       EnrollmentListState(
-        items: items ?? this.items, meta: meta ?? this.meta,
-        query: query ?? this.query, isLoading: isLoading ?? this.isLoading,
+        items: items ?? this.items,
+        meta: meta ?? this.meta,
+        query: query ?? this.query,
+        isLoading: isLoading ?? this.isLoading,
         isLoadingMore: isLoadingMore ?? this.isLoadingMore,
         failure: clearFailures ? null : (failure ?? this.failure),
-        loadMoreFailure: clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
+        loadMoreFailure:
+            clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
       );
 
   @override
-  List<Object?> get props => <Object?>[items, meta, query.cacheKey, isLoading, isLoadingMore, failure, loadMoreFailure];
+  List<Object?> get props => <Object?>[
+        items,
+        meta,
+        query.cacheKey,
+        isLoading,
+        isLoadingMore,
+        failure,
+        loadMoreFailure
+      ];
 }
 
 final NotifierProvider<EnrollmentListController, EnrollmentListState>
@@ -325,8 +398,11 @@ class EnrollmentListController extends Notifier<EnrollmentListState> {
     state = result.fold(
       (f) => state.copyWith(isLoading: false, failure: f, items: const []),
       (page) => state.copyWith(
-        items: page.value.data, meta: page.value.meta, query: query,
-        isLoading: false, clearFailures: true,
+        items: page.value.data,
+        meta: page.value.meta,
+        query: query,
+        isLoading: false,
+        clearFailures: true,
       ),
     );
   }
@@ -339,15 +415,20 @@ class EnrollmentListController extends Notifier<EnrollmentListState> {
     state = result.fold(
       (f) => state.copyWith(isLoadingMore: false, loadMoreFailure: f),
       (page) => state.copyWith(
-        items: [...state.items, ...page.value.data], meta: page.value.meta,
-        query: next, isLoadingMore: false, clearFailures: true,
+        items: [...state.items, ...page.value.data],
+        meta: page.value.meta,
+        query: next,
+        isLoadingMore: false,
+        clearFailures: true,
       ),
     );
   }
 
-  Future<Result<Enrollment>> save(Map<String, dynamic> payload, {String? id}) async {
+  Future<Result<Enrollment>> save(Map<String, dynamic> payload,
+      {String? id}) async {
     final result = await SaveEnrollmentUseCase(
-      ref.read(educationRepositoryProvider),)(
+      ref.read(educationRepositoryProvider),
+    )(
       SaveEnrollmentParams(id: id, payload: payload),
     );
     if (result.isOk) await refresh();
@@ -358,14 +439,16 @@ class EnrollmentListController extends Notifier<EnrollmentListState> {
 final FutureProviderFamily<Exam, String> examDetailProvider =
     FutureProvider.family<Exam, String>((Ref ref, String id) async {
   final result = await GetExamUseCase(
-    ref.watch(educationRepositoryProvider),)(id);
+    ref.watch(educationRepositoryProvider),
+  )(id);
   return result.fold((f) => throw f, (v) => v);
 });
 
 class ExamListState extends Equatable {
   const ExamListState({
     this.items = const <Exam>[],
-    this.meta = const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
+    this.meta =
+        const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
     this.query = const ListQuery(sort: '-createdAt'),
     this.isLoading = true,
     this.isLoadingMore = false,
@@ -382,20 +465,36 @@ class ExamListState extends Equatable {
   final Failure? loadMoreFailure;
 
   ExamListState copyWith({
-    List<Exam>? items, PaginationMeta? meta, ListQuery? query,
-    bool? isLoading, bool? isLoadingMore, Failure? failure,
-    Failure? loadMoreFailure, bool clearFailures = false,
+    List<Exam>? items,
+    PaginationMeta? meta,
+    ListQuery? query,
+    bool? isLoading,
+    bool? isLoadingMore,
+    Failure? failure,
+    Failure? loadMoreFailure,
+    bool clearFailures = false,
   }) =>
       ExamListState(
-        items: items ?? this.items, meta: meta ?? this.meta,
-        query: query ?? this.query, isLoading: isLoading ?? this.isLoading,
+        items: items ?? this.items,
+        meta: meta ?? this.meta,
+        query: query ?? this.query,
+        isLoading: isLoading ?? this.isLoading,
         isLoadingMore: isLoadingMore ?? this.isLoadingMore,
         failure: clearFailures ? null : (failure ?? this.failure),
-        loadMoreFailure: clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
+        loadMoreFailure:
+            clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
       );
 
   @override
-  List<Object?> get props => <Object?>[items, meta, query.cacheKey, isLoading, isLoadingMore, failure, loadMoreFailure];
+  List<Object?> get props => <Object?>[
+        items,
+        meta,
+        query.cacheKey,
+        isLoading,
+        isLoadingMore,
+        failure,
+        loadMoreFailure
+      ];
 }
 
 final NotifierProvider<ExamListController, ExamListState>
@@ -425,8 +524,11 @@ class ExamListController extends Notifier<ExamListState> {
     state = result.fold(
       (f) => state.copyWith(isLoading: false, failure: f, items: const []),
       (page) => state.copyWith(
-        items: page.value.data, meta: page.value.meta, query: query,
-        isLoading: false, clearFailures: true,
+        items: page.value.data,
+        meta: page.value.meta,
+        query: query,
+        isLoading: false,
+        clearFailures: true,
       ),
     );
   }
@@ -439,15 +541,19 @@ class ExamListController extends Notifier<ExamListState> {
     state = result.fold(
       (f) => state.copyWith(isLoadingMore: false, loadMoreFailure: f),
       (page) => state.copyWith(
-        items: [...state.items, ...page.value.data], meta: page.value.meta,
-        query: next, isLoadingMore: false, clearFailures: true,
+        items: [...state.items, ...page.value.data],
+        meta: page.value.meta,
+        query: next,
+        isLoadingMore: false,
+        clearFailures: true,
       ),
     );
   }
 
   Future<Result<Exam>> save(Map<String, dynamic> payload, {String? id}) async {
     final result = await SaveExamUseCase(
-      ref.read(educationRepositoryProvider),)(
+      ref.read(educationRepositoryProvider),
+    )(
       SaveExamParams(id: id, payload: payload),
     );
     if (result.isOk) await refresh();
@@ -458,7 +564,8 @@ class ExamListController extends Notifier<ExamListState> {
 class GradeEntryListState extends Equatable {
   const GradeEntryListState({
     this.items = const <GradeEntry>[],
-    this.meta = const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
+    this.meta =
+        const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
     this.query = const ListQuery(sort: '-createdAt'),
     this.isLoading = true,
     this.isLoadingMore = false,
@@ -475,20 +582,36 @@ class GradeEntryListState extends Equatable {
   final Failure? loadMoreFailure;
 
   GradeEntryListState copyWith({
-    List<GradeEntry>? items, PaginationMeta? meta, ListQuery? query,
-    bool? isLoading, bool? isLoadingMore, Failure? failure,
-    Failure? loadMoreFailure, bool clearFailures = false,
+    List<GradeEntry>? items,
+    PaginationMeta? meta,
+    ListQuery? query,
+    bool? isLoading,
+    bool? isLoadingMore,
+    Failure? failure,
+    Failure? loadMoreFailure,
+    bool clearFailures = false,
   }) =>
       GradeEntryListState(
-        items: items ?? this.items, meta: meta ?? this.meta,
-        query: query ?? this.query, isLoading: isLoading ?? this.isLoading,
+        items: items ?? this.items,
+        meta: meta ?? this.meta,
+        query: query ?? this.query,
+        isLoading: isLoading ?? this.isLoading,
         isLoadingMore: isLoadingMore ?? this.isLoadingMore,
         failure: clearFailures ? null : (failure ?? this.failure),
-        loadMoreFailure: clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
+        loadMoreFailure:
+            clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
       );
 
   @override
-  List<Object?> get props => <Object?>[items, meta, query.cacheKey, isLoading, isLoadingMore, failure, loadMoreFailure];
+  List<Object?> get props => <Object?>[
+        items,
+        meta,
+        query.cacheKey,
+        isLoading,
+        isLoadingMore,
+        failure,
+        loadMoreFailure
+      ];
 }
 
 final NotifierProvider<GradeEntryListController, GradeEntryListState>
@@ -518,8 +641,11 @@ class GradeEntryListController extends Notifier<GradeEntryListState> {
     state = result.fold(
       (f) => state.copyWith(isLoading: false, failure: f, items: const []),
       (page) => state.copyWith(
-        items: page.value.data, meta: page.value.meta, query: query,
-        isLoading: false, clearFailures: true,
+        items: page.value.data,
+        meta: page.value.meta,
+        query: query,
+        isLoading: false,
+        clearFailures: true,
       ),
     );
   }
@@ -532,15 +658,20 @@ class GradeEntryListController extends Notifier<GradeEntryListState> {
     state = result.fold(
       (f) => state.copyWith(isLoadingMore: false, loadMoreFailure: f),
       (page) => state.copyWith(
-        items: [...state.items, ...page.value.data], meta: page.value.meta,
-        query: next, isLoadingMore: false, clearFailures: true,
+        items: [...state.items, ...page.value.data],
+        meta: page.value.meta,
+        query: next,
+        isLoadingMore: false,
+        clearFailures: true,
       ),
     );
   }
 
-  Future<Result<GradeEntry>> save(Map<String, dynamic> payload, {String? id}) async {
+  Future<Result<GradeEntry>> save(Map<String, dynamic> payload,
+      {String? id}) async {
     final result = await SaveGradeEntryUseCase(
-      ref.read(educationRepositoryProvider),)(
+      ref.read(educationRepositoryProvider),
+    )(
       SaveGradeEntryParams(id: id, payload: payload),
     );
     if (result.isOk) await refresh();

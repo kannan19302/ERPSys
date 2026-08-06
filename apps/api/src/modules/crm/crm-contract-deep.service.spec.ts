@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { Test, TestingModule } from "@nestjs/testing";
+import { withTenantSession } from "../../../test/tenant-session";
 import { CrmContractDeepService } from "./crm-contract-deep.service";
 
 describe("CrmContractDeepService", () => {
@@ -9,7 +10,9 @@ describe("CrmContractDeepService", () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [CrmContractDeepService],
     }).compile();
-    svc = module.get<CrmContractDeepService>(CrmContractDeepService);
+    svc = withTenantSession(
+      module.get<CrmContractDeepService>(CrmContractDeepService),
+    );
   });
 
   it("should be defined", () => {

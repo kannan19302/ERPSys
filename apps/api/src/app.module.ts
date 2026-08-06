@@ -12,7 +12,6 @@ import {
 } from "./common/guards/tenant-throttler-storage";
 import { HealthController } from "./health.controller";
 import { MetricsController } from "./metrics.controller";
-import { AuthModule } from "./modules/auth/auth.module";
 import { SearchModule } from "./modules/search/search.module";
 // ═══════════════════════════════════════════════════════════════════════════
 // DEPRECATED — Phase 4/6 of the settings→SaaS-Portal migration is complete.
@@ -52,12 +51,13 @@ import { NotificationsModule } from "./modules/notifications/notifications.modul
 import { StorageModule } from "./modules/storage/storage.module";
 import { ReportingModule } from "./modules/reporting/reporting.module";
 import { ApiPlatformModule } from "./modules/api-platform/api-platform.module";
+import { PlatformModule } from "./platform/platform.module";
 import { ExtGatewayModule } from "./modules/ext-gateway/ext-gateway.module";
 import { LocalizationModule } from "./modules/localization/localization.module";
 import { PwaModule } from "./modules/pwa/pwa.module";
 import { DevopsModule } from "./modules/devops/devops.module";
 import { SaasPortalModule } from "./modules/saas-portal/saas-portal.module";
-import { BuilderModule } from "./modules/builder/builder.module";
+import { BuilderModule } from "./developer/builder/builder.module";
 import { CommonModule } from "./common/common.module";
 import { QueueModule } from "./common/queues/queue.module";
 import { AiModule } from "./modules/ai/ai.module";
@@ -102,7 +102,7 @@ import { RealEstateEnterpriseModule } from "./modules/real-estate/real-estate-en
 import { FieldServiceEnterpriseModule } from "./modules/field-service/field-service-enterprise.module";
 import { PosEnterpriseModule } from "./modules/pos/pos-enterprise.module";
 import { WorkflowEnterpriseModule } from "./modules/workflow/workflow-enterprise.module";
-import { BuilderEnterpriseModule } from "./modules/builder/builder-enterprise.module";
+import { BuilderEnterpriseModule } from "./developer/builder/builder-enterprise.module";
 import { AiEnterpriseModule } from "./modules/ai/ai-enterprise.module";
 import { EcommerceEnterpriseModule } from "./modules/ecommerce/ecommerce-enterprise.module";
 import { MarketplaceEnterpriseModule } from "./modules/marketplace/marketplace-enterprise.module";
@@ -147,7 +147,6 @@ import {
     ]),
 
     // Register ERP Foundation & Core Modules (Phase 0-1)
-    AuthModule,
     SearchModule,
     AdminModule,
     FinanceModule,
@@ -239,6 +238,13 @@ import {
 
     // Phase 16 — API Platform & Integrations
     ApiPlatformModule,
+    // The control plane (§ 3.1). Nest only registers controllers from modules it
+    // imports, and this one was declared and never imported — so every
+    // /api/platform/v1/* route, including tenant lifecycle and provisioning,
+    // simply did not exist at runtime while its unit tests passed by
+    // instantiating the services directly. A module nobody imports is dead code
+    // that looks live.
+    PlatformModule,
 
     // Extension gateway — proxies /ext/<appSlug>/* to out-of-process industry app services
     ExtGatewayModule,

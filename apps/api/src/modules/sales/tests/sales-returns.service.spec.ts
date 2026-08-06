@@ -47,6 +47,7 @@ vi.mock("@unerp/database", () => ({
 }));
 
 import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 import { SalesReturnsService } from "../sales-returns.service";
 
 describe("SalesReturnsService", () => {

@@ -40,7 +40,8 @@ class ProcurementRepositoryImpl implements ProcurementRepository {
       final List<Map<String, dynamic>> jsonItems = page.data
           .map((dynamic e) => (e as dynamic).toJson() as Map<String, dynamic>)
           .toList(growable: false);
-      await _cache.write(_tenantId, namespace, query.cacheKey, <String, Object?>{
+      await _cache
+          .write(_tenantId, namespace, query.cacheKey, <String, Object?>{
         'data': jsonItems,
         'meta': page.meta.toJson(),
       });
@@ -48,9 +49,11 @@ class ProcurementRepositoryImpl implements ProcurementRepository {
         Cacheable<Paginated<T>>(value: page),
       );
     } on NetworkException catch (error) {
-      final cached = _cache.read<Map<String, dynamic>>(_tenantId, namespace, query.cacheKey);
+      final cached = _cache.read<Map<String, dynamic>>(
+          _tenantId, namespace, query.cacheKey);
       if (cached == null) {
-        return Result<Cacheable<Paginated<T>>>.err(mapExceptionToFailure(error));
+        return Result<Cacheable<Paginated<T>>>.err(
+            mapExceptionToFailure(error));
       }
       return Result<Cacheable<Paginated<T>>>.ok(
         Cacheable<Paginated<T>>(
@@ -93,9 +96,14 @@ class ProcurementRepositoryImpl implements ProcurementRepository {
 
   @override
   Future<Result<Cacheable<Paginated<PurchaseOrder>>>> listPurchaseOrders(
-    ListQuery query,) =>
-      _paginated(_poNamespace, query, () => _remote.listPurchaseOrders(query),
-        PurchaseOrderModel.fromJson,);
+    ListQuery query,
+  ) =>
+      _paginated(
+        _poNamespace,
+        query,
+        () => _remote.listPurchaseOrders(query),
+        PurchaseOrderModel.fromJson,
+      );
 
   @override
   Future<Result<PurchaseOrder>> getPurchaseOrder(String id) =>
@@ -106,7 +114,8 @@ class ProcurementRepositoryImpl implements ProcurementRepository {
       _write(() => _remote.createPurchaseOrder(p));
 
   @override
-  Future<Result<PurchaseOrder>> updatePurchaseOrder(String id, Map<String, dynamic> p) =>
+  Future<Result<PurchaseOrder>> updatePurchaseOrder(
+          String id, Map<String, dynamic> p) =>
       _write(() => _remote.updatePurchaseOrder(id, p));
 
   @override
@@ -131,8 +140,12 @@ class ProcurementRepositoryImpl implements ProcurementRepository {
 
   @override
   Future<Result<Cacheable<Paginated<Vendor>>>> listVendors(ListQuery q) =>
-      _paginated(_vendorNamespace, q, () => _remote.listVendors(q),
-        VendorModel.fromJson,);
+      _paginated(
+        _vendorNamespace,
+        q,
+        () => _remote.listVendors(q),
+        VendorModel.fromJson,
+      );
 
   @override
   Future<Result<Vendor>> getVendor(String id) =>
@@ -151,15 +164,19 @@ class ProcurementRepositoryImpl implements ProcurementRepository {
       _delete(() => _remote.deleteVendor(id));
 
   @override
-  Future<Result<Cacheable<Paginated<RFQ>>>> listRFQs(ListQuery q) =>
-      _paginated(_rfqNamespace, q, () => _remote.listRFQs(q),
-        RFQModel.fromJson,);
+  Future<Result<Cacheable<Paginated<RFQ>>>> listRFQs(ListQuery q) => _paginated(
+        _rfqNamespace,
+        q,
+        () => _remote.listRFQs(q),
+        RFQModel.fromJson,
+      );
 
   @override
   Future<Result<RFQ>> getRFQ(String id) => _single(() => _remote.getRFQ(id));
 
   @override
-  Future<Result<RFQ>> createRFQ(Map<String, dynamic> p) => _write(() => _remote.createRFQ(p));
+  Future<Result<RFQ>> createRFQ(Map<String, dynamic> p) =>
+      _write(() => _remote.createRFQ(p));
 
   @override
   Future<Result<RFQ>> updateRFQ(String id, Map<String, dynamic> p) =>
@@ -174,22 +191,29 @@ class ProcurementRepositoryImpl implements ProcurementRepository {
       _single(() => _remote.closeRFQ(id));
 
   @override
-  Future<Result<Cacheable<Paginated<SupplierQuotation>>>> listSupplierQuotations(
-    ListQuery q,) =>
-      _paginated(_sqNamespace, q,
-        () => _remote.listSupplierQuotations(q),
-        SupplierQuotationModel.fromJson,);
+  Future<Result<Cacheable<Paginated<SupplierQuotation>>>>
+      listSupplierQuotations(
+    ListQuery q,
+  ) =>
+          _paginated(
+            _sqNamespace,
+            q,
+            () => _remote.listSupplierQuotations(q),
+            SupplierQuotationModel.fromJson,
+          );
 
   @override
   Future<Result<SupplierQuotation>> getSupplierQuotation(String id) =>
       _single(() => _remote.getSupplierQuotation(id));
 
   @override
-  Future<Result<SupplierQuotation>> createSupplierQuotation(Map<String, dynamic> p) =>
+  Future<Result<SupplierQuotation>> createSupplierQuotation(
+          Map<String, dynamic> p) =>
       _write(() => _remote.createSupplierQuotation(p));
 
   @override
-  Future<Result<SupplierQuotation>> updateSupplierQuotation(String id, Map<String, dynamic> p) =>
+  Future<Result<SupplierQuotation>> updateSupplierQuotation(
+          String id, Map<String, dynamic> p) =>
       _write(() => _remote.updateSupplierQuotation(id, p));
 
   @override
@@ -205,22 +229,29 @@ class ProcurementRepositoryImpl implements ProcurementRepository {
       _single(() => _remote.convertSupplierQuotation(id));
 
   @override
-  Future<Result<Cacheable<Paginated<PurchaseRequisition>>>> listPurchaseRequisitions(
-    ListQuery q,) =>
-      _paginated(_prNamespace, q,
-        () => _remote.listPurchaseRequisitions(q),
-        PurchaseRequisitionModel.fromJson,);
+  Future<Result<Cacheable<Paginated<PurchaseRequisition>>>>
+      listPurchaseRequisitions(
+    ListQuery q,
+  ) =>
+          _paginated(
+            _prNamespace,
+            q,
+            () => _remote.listPurchaseRequisitions(q),
+            PurchaseRequisitionModel.fromJson,
+          );
 
   @override
   Future<Result<PurchaseRequisition>> getPurchaseRequisition(String id) =>
       _single(() => _remote.getPurchaseRequisition(id));
 
   @override
-  Future<Result<PurchaseRequisition>> createPurchaseRequisition(Map<String, dynamic> p) =>
+  Future<Result<PurchaseRequisition>> createPurchaseRequisition(
+          Map<String, dynamic> p) =>
       _write(() => _remote.createPurchaseRequisition(p));
 
   @override
-  Future<Result<PurchaseRequisition>> updatePurchaseRequisition(String id, Map<String, dynamic> p) =>
+  Future<Result<PurchaseRequisition>> updatePurchaseRequisition(
+          String id, Map<String, dynamic> p) =>
       _write(() => _remote.updatePurchaseRequisition(id, p));
 
   @override
@@ -229,40 +260,52 @@ class ProcurementRepositoryImpl implements ProcurementRepository {
 
   @override
   Future<Result<Cacheable<Paginated<PurchaseReceipt>>>> listPurchaseReceipts(
-    ListQuery q,) =>
-      _paginated(_receiptNamespace, q,
+    ListQuery q,
+  ) =>
+      _paginated(
+        _receiptNamespace,
+        q,
         () => _remote.listPurchaseReceipts(q),
-        PurchaseReceiptModel.fromJson,);
+        PurchaseReceiptModel.fromJson,
+      );
 
   @override
   Future<Result<PurchaseReceipt>> getPurchaseReceipt(String id) =>
       _single(() => _remote.getPurchaseReceipt(id));
 
   @override
-  Future<Result<PurchaseReceipt>> createPurchaseReceipt(Map<String, dynamic> p) =>
+  Future<Result<PurchaseReceipt>> createPurchaseReceipt(
+          Map<String, dynamic> p) =>
       _write(() => _remote.createPurchaseReceipt(p));
 
   @override
-  Future<Result<PurchaseReceipt>> updatePurchaseReceipt(String id, Map<String, dynamic> p) =>
+  Future<Result<PurchaseReceipt>> updatePurchaseReceipt(
+          String id, Map<String, dynamic> p) =>
       _write(() => _remote.updatePurchaseReceipt(id, p));
 
   @override
   Future<Result<Cacheable<Paginated<SupplierContract>>>> listSupplierContracts(
-    ListQuery q,) =>
-      _paginated(_contractNamespace, q,
+    ListQuery q,
+  ) =>
+      _paginated(
+        _contractNamespace,
+        q,
         () => _remote.listSupplierContracts(q),
-        SupplierContractModel.fromJson,);
+        SupplierContractModel.fromJson,
+      );
 
   @override
   Future<Result<SupplierContract>> getSupplierContract(String id) =>
       _single(() => _remote.getSupplierContract(id));
 
   @override
-  Future<Result<SupplierContract>> createSupplierContract(Map<String, dynamic> p) =>
+  Future<Result<SupplierContract>> createSupplierContract(
+          Map<String, dynamic> p) =>
       _write(() => _remote.createSupplierContract(p));
 
   @override
-  Future<Result<SupplierContract>> updateSupplierContract(String id, Map<String, dynamic> p) =>
+  Future<Result<SupplierContract>> updateSupplierContract(
+          String id, Map<String, dynamic> p) =>
       _write(() => _remote.updateSupplierContract(id, p));
 
   @override

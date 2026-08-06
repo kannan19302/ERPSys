@@ -9,10 +9,12 @@ class WarehouseTransferFormPage extends ConsumerStatefulWidget {
   static const String routeName = 'warehouse-transfer-new';
   static const String routePath = '/supply-chain/warehouse-transfers/new';
   @override
-  ConsumerState<WarehouseTransferFormPage> createState() => _WarehouseTransferFormPageState();
+  ConsumerState<WarehouseTransferFormPage> createState() =>
+      _WarehouseTransferFormPageState();
 }
 
-class _WarehouseTransferFormPageState extends ConsumerState<WarehouseTransferFormPage> {
+class _WarehouseTransferFormPageState
+    extends ConsumerState<WarehouseTransferFormPage> {
   final _formKey = GlobalKey<FormState>();
   final _fromWarehouseIdCtrl = TextEditingController();
   final _fromWarehouseNameCtrl = TextEditingController();
@@ -42,22 +44,39 @@ class _WarehouseTransferFormPageState extends ConsumerState<WarehouseTransferFor
     setState(() => _saving = true);
 
     final payload = <String, dynamic>{
-      'fromWarehouseId': _fromWarehouseIdCtrl.text.trim().isEmpty ? null : _fromWarehouseIdCtrl.text.trim(),
-      'fromWarehouseName': _fromWarehouseNameCtrl.text.trim().isEmpty ? null : _fromWarehouseNameCtrl.text.trim(),
-      'toWarehouseId': _toWarehouseIdCtrl.text.trim().isEmpty ? null : _toWarehouseIdCtrl.text.trim(),
-      'toWarehouseName': _toWarehouseNameCtrl.text.trim().isEmpty ? null : _toWarehouseNameCtrl.text.trim(),
-      'productId': _productIdCtrl.text.trim().isEmpty ? null : _productIdCtrl.text.trim(),
-      'productName': _productNameCtrl.text.trim().isEmpty ? null : _productNameCtrl.text.trim(),
+      'fromWarehouseId': _fromWarehouseIdCtrl.text.trim().isEmpty
+          ? null
+          : _fromWarehouseIdCtrl.text.trim(),
+      'fromWarehouseName': _fromWarehouseNameCtrl.text.trim().isEmpty
+          ? null
+          : _fromWarehouseNameCtrl.text.trim(),
+      'toWarehouseId': _toWarehouseIdCtrl.text.trim().isEmpty
+          ? null
+          : _toWarehouseIdCtrl.text.trim(),
+      'toWarehouseName': _toWarehouseNameCtrl.text.trim().isEmpty
+          ? null
+          : _toWarehouseNameCtrl.text.trim(),
+      'productId': _productIdCtrl.text.trim().isEmpty
+          ? null
+          : _productIdCtrl.text.trim(),
+      'productName': _productNameCtrl.text.trim().isEmpty
+          ? null
+          : _productNameCtrl.text.trim(),
       'quantity': double.tryParse(_quantityCtrl.text) ?? 0,
-      'reference': _referenceCtrl.text.trim().isEmpty ? null : _referenceCtrl.text.trim(),
+      'reference': _referenceCtrl.text.trim().isEmpty
+          ? null
+          : _referenceCtrl.text.trim(),
       'status': 'PENDING',
     };
 
-    final result = await ref.read(warehouseTransferListControllerProvider.notifier).save(payload);
+    final result = await ref
+        .read(warehouseTransferListControllerProvider.notifier)
+        .save(payload);
     if (!context.mounted) return;
     setState(() => _saving = false);
     result.fold(
-      (Failure f) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(f.message))),
+      (Failure f) => ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(f.message))),
       (_) => Navigator.of(context).pop(),
     );
   }
@@ -71,7 +90,10 @@ class _WarehouseTransferFormPageState extends ConsumerState<WarehouseTransferFor
           TextButton(
             onPressed: _saving ? null : _save,
             child: _saving
-                ? const SizedBox(height: Spacing.x5, width: Spacing.x5, child: CircularProgressIndicator(strokeWidth: 2))
+                ? const SizedBox(
+                    height: Spacing.x5,
+                    width: Spacing.x5,
+                    child: CircularProgressIndicator(strokeWidth: 2))
                 : const Text('Save'),
           ),
         ],
@@ -89,7 +111,8 @@ class _WarehouseTransferFormPageState extends ConsumerState<WarehouseTransferFor
             TextFormField(
               controller: _fromWarehouseNameCtrl,
               textCapitalization: TextCapitalization.words,
-              decoration: const InputDecoration(labelText: 'From Warehouse Name'),
+              decoration:
+                  const InputDecoration(labelText: 'From Warehouse Name'),
             ),
             const SizedBox(height: Spacing.x4),
             TextFormField(
@@ -103,27 +126,31 @@ class _WarehouseTransferFormPageState extends ConsumerState<WarehouseTransferFor
               decoration: const InputDecoration(labelText: 'To Warehouse Name'),
             ),
             const SizedBox(height: Spacing.x4),
-            Row(children: [
-              Expanded(
-                child: TextFormField(
-                  controller: _productIdCtrl,
-                  decoration: const InputDecoration(labelText: 'Product ID'),
+            Row(
+              children: [
+                Expanded(
+                  child: TextFormField(
+                    controller: _productIdCtrl,
+                    decoration: const InputDecoration(labelText: 'Product ID'),
+                  ),
                 ),
-              ),
-              const SizedBox(width: Spacing.x4),
-              Expanded(
-                child: TextFormField(
-                  controller: _productNameCtrl,
-                  decoration: const InputDecoration(labelText: 'Product Name'),
+                const SizedBox(width: Spacing.x4),
+                Expanded(
+                  child: TextFormField(
+                    controller: _productNameCtrl,
+                    decoration:
+                        const InputDecoration(labelText: 'Product Name'),
+                  ),
                 ),
-              ),
-            ],),
+              ],
+            ),
             const SizedBox(height: Spacing.x4),
             TextFormField(
               controller: _quantityCtrl,
               keyboardType: TextInputType.number,
               decoration: const InputDecoration(labelText: 'Quantity *'),
-              validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,
+              validator: (v) =>
+                  v == null || v.trim().isEmpty ? 'Required' : null,
             ),
             const SizedBox(height: Spacing.x4),
             TextFormField(

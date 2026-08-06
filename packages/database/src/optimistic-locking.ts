@@ -16,11 +16,16 @@
 export class StaleWriteError extends Error {
   readonly currentVersion: number;
 
-  constructor(entity: string, id: string, expectedVersion: number, currentVersion: number) {
+  constructor(
+    entity: string,
+    id: string,
+    expectedVersion: number,
+    currentVersion: number,
+  ) {
     super(
       `${entity} ${id} was modified by another user (expected version ${expectedVersion}, current ${currentVersion}). Reload and retry.`,
     );
-    this.name = 'StaleWriteError';
+    this.name = "StaleWriteError";
     this.currentVersion = currentVersion;
   }
 }
@@ -28,7 +33,7 @@ export class StaleWriteError extends Error {
 export class RecordNotFoundForUpdateError extends Error {
   constructor(entity: string, id: string) {
     super(`${entity} ${id} not found`);
-    this.name = 'RecordNotFoundForUpdateError';
+    this.name = "RecordNotFoundForUpdateError";
   }
 }
 
@@ -56,20 +61,30 @@ export interface VersionGuardTarget {
  * @throws StaleWriteError when the row exists but the version moved on
  * @throws RecordNotFoundForUpdateError when no such row exists for the tenant
  */
-export async function updateWithVersionGuard<Data extends Record<string, unknown>>(
+export async function updateWithVersionGuard<
+  Data extends Record<string, unknown>,
+>(
   delegate: VersionedDelegate<Record<string, unknown>, Record<string, unknown>>,
   target: VersionGuardTarget,
   data: Data,
 ): Promise<number> {
   if (!Number.isInteger(target.expectedVersion) || target.expectedVersion < 1) {
-    throw new RangeError(`expectedVersion must be a positive integer, got ${target.expectedVersion}`);
+    throw new RangeError(
+      `expectedVersion must be a positive integer, got ${target.expectedVersion}`,
+    );
   }
-  if ('version' in data || 'tenantId' in data || 'id' in data) {
-    throw new RangeError('data must not set id/tenantId/version — the guard owns those fields');
+  if ("version" in data || "tenantId" in data || "id" in data) {
+    throw new RangeError(
+      "data must not set id/tenantId/version — the guard owns those fields",
+    );
   }
 
   const { count } = await delegate.updateMany({
-    where: { id: target.id, tenantId: target.tenantId, version: target.expectedVersion },
+    where: {
+      id: target.id,
+      tenantId: target.tenantId,
+      version: target.expectedVersion,
+    },
     data: { ...data, version: { increment: 1 } },
   });
   if (count > 0) return count;
@@ -81,7 +96,12 @@ export async function updateWithVersionGuard<Data extends Record<string, unknown
     select: { version: true },
   });
   if (current) {
-    throw new StaleWriteError(target.entity, target.id, target.expectedVersion, current.version);
+    throw new StaleWriteError(
+      target.entity,
+      target.id,
+      target.expectedVersion,
+      current.version,
+    );
   }
   throw new RecordNotFoundForUpdateError(target.entity, target.id);
 }

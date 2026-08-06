@@ -16,7 +16,7 @@ import {
   Pagination,
   StatusBadge,
 } from "@unerp/ui";
-import { SubTabBar, type SubTab } from "@unerp/ui-layout";
+import { SubTabBar, type SubTab } from "@unerp/ui/layout";
 import { Cpu, GitCompare, BarChart3, Plus } from "lucide-react";
 import { RouteGuard, useApiClient } from "@unerp/framework";
 

@@ -12,7 +12,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { RouteGuard, useApiClient } from "@unerp/framework";
-import { SubTabBar, type SubTab } from "@unerp/ui-layout";
+import { SubTabBar, type SubTab } from "@unerp/ui/layout";
 
 interface ReportWidget {
   id: string;

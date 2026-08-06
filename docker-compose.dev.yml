@@ -26,8 +26,24 @@
 #     locally (`docker compose -f docker-compose.dev.yml up -d mobile`, then
 #     open http://localhost:8090)
 #
-# Optional (use --profile ai):
-#   - ollama   (port 11434) — Local LLM inference
+# Daily development — start only what you need:
+#
+#   docker compose -f docker-compose.dev.yml up -d
+#       postgres, redis, minio, api, web. This is the everyday loop.
+#
+#   docker compose -f docker-compose.dev.yml --profile console up -d console
+#   docker compose -f docker-compose.dev.yml --profile developer up -d developer
+#   docker compose -f docker-compose.dev.yml --profile idp up -d idp
+#       Add a plane only when you are working on it.
+#
+#   docker compose -f docker-compose.dev.yml --profile full up -d
+#       Everything. Needs ~10 GB of Docker memory: each Next.js dev server holds
+#       a full module graph, and running five at once wedged the Docker engine
+#       twice during bring-up. If the engine returns 500s, this is why.
+#
+# Optional extras:
+#   --profile ai       ollama   (port 11434) — local LLM inference
+#   --profile pooling  pgbouncer (port 6432) — transaction pooling, § 11
 # ============================================================
 
 services:
@@ -46,11 +62,50 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    # The default max_connections of 100 is not enough for the test suite: Prisma
+    # sizes its pool per client, vitest runs several forks, and each app has its
+    # own client. The symptom is "Can't reach database server" on a different
+    # handful of specs every run, which reads as flaky tests and is actually the
+    # server refusing new connections. PgBouncer in transaction mode (§ 11, and
+    # the `pooling` profile below) is the real answer at scale; this raises the
+    # ceiling so a developer machine is not the constraint.
+    command:
+      - postgres
+      - -c
+      - max_connections=300
+      - -c
+      - shared_buffers=256MB
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U unerp -d unerp_dev"]
       interval: 5s
       timeout: 3s
       retries: 10
+
+  # ──────────────────────────────────────────────
+  # PgBouncer — connection pooling in transaction mode
+  # PLATFORM_ARCHITECTURE.md § 11. Optional locally: start it with
+  # `docker compose -f docker-compose.dev.yml --profile pooling up -d`.
+  # Credentials track the postgres service above; they were previously
+  # postgres/postgres, which authenticates against nothing in this stack.
+  # ──────────────────────────────────────────────
+  pgbouncer:
+    image: edoburu/pgbouncer
+    container_name: unerp-pgbouncer
+    restart: unless-stopped
+    profiles: ["pooling"]
+    environment:
+      DB_HOST: postgres
+      DB_NAME: unerp_dev
+      DB_USER: unerp
+      DB_PASSWORD: unerp_password
+      POOL_MODE: transaction
+      AUTH_TYPE: scram-sha-256
+      LISTEN_PORT: "6432"
+    ports:
+      - "6432:6432"
+    depends_on:
+      postgres:
+        condition: service_healthy
 
   # ──────────────────────────────────────────────
   # Redis 7
@@ -109,6 +164,18 @@ services:
       # ── Runtime ──
       - NODE_ENV=development
       - NODE_OPTIONS=--max-old-space-size=8192
+
+      # ── Package registry ──
+      # The repo's .npmrc points @unerp/* at http://localhost:4873, which is
+      # correct on the host and unreachable in here: inside a container
+      # `localhost` is the container. A user-level ~/.npmrc does NOT fix it —
+      # npm's precedence puts project config above user config, so the bind-
+      # mounted /app/.npmrc wins. Env config sits ABOVE project config, which is
+      # why the override belongs here rather than in a file.
+      #
+      # host.docker.internal resolves from the container but not from the host,
+      # so no single URL serves both; the container gets the service name.
+      - npm_config_@unerp:registry=http://unerp-registry:4873
 
       # ── Database ──
       - DATABASE_URL=postgresql://unerp_api:unerp_api_password@postgres:5432/unerp_dev?schema=public
@@ -208,6 +275,8 @@ services:
       - NODE_OPTIONS=--max-old-space-size=4096
       # Increase Next.js dev server timeouts for large monorepo cold starts
       - NEXT_PRIVATE_SKIP_SIZE_LIMIT_CHECK=1
+      # Same reason as api: localhost:4873 is the container, not the host.
+      - npm_config_@unerp:registry=http://unerp-registry:4873
 
       # ── Talks to the api container over the compose network ──
       - API_URL=http://api:3001
@@ -250,6 +319,123 @@ services:
   # ──────────────────────────────────────────────
   # Mobile — Flutter app built for web and served statically (manual UI testing)
   # ──────────────────────────────────────────────
+  # ──────────────────────────────────────────────
+  # Console — the Platform Admin Console (control plane)
+  #
+  # § 3.1: a separate frontend deployable on a separate origin, so a customer's
+  # browser never receives control-plane JavaScript and never holds a
+  # control-plane cookie. It had no service here at all, which meant the control
+  # plane could not be started from the dev stack — the one plane whose blast
+  # radius is every tenant at once.
+  # ──────────────────────────────────────────────
+  console:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: unerp-console
+    restart: unless-stopped
+    profiles: ["console", "full"]
+    working_dir: /app/apps/console
+    stdin_open: true
+    tty: true
+    command: sh -c "until [ -d /app/node_modules/.pnpm ]; do echo 'waiting for api to install deps...'; sleep 10; done; npx next dev -p 3002"
+    environment:
+      - NODE_ENV=development
+      - NODE_OPTIONS=--max-old-space-size=4096
+      - PORT=3002
+      - API_URL=http://api:3001
+      - NEXT_PUBLIC_API_URL=http://localhost:3001
+      - WATCHPACK_POLLING=1000
+      - CHOKIDAR_USEPOLLING=true
+      - CHOKIDAR_INTERVAL=1000
+      - npm_config_@unerp:registry=http://unerp-registry:4873
+    ports:
+      - "3002:3002"
+    volumes:
+      - .:/app
+      - node_modules:/app/node_modules
+    depends_on:
+      api:
+        condition: service_started
+
+  # ──────────────────────────────────────────────
+  # Developer platform — Studio, builders, extension authoring
+  # ──────────────────────────────────────────────
+  developer:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: unerp-developer
+    restart: unless-stopped
+    profiles: ["developer", "full"]
+    working_dir: /app/apps/developer
+    stdin_open: true
+    tty: true
+    command: sh -c "until [ -d /app/node_modules/.pnpm ]; do echo 'waiting for api to install deps...'; sleep 10; done; npx next dev -p 3004"
+    environment:
+      - NODE_ENV=development
+      - NODE_OPTIONS=--max-old-space-size=4096
+      - PORT=3004
+      - API_URL=http://api:3001
+      - NEXT_PUBLIC_API_URL=http://localhost:3001
+      - WATCHPACK_POLLING=1000
+      - CHOKIDAR_USEPOLLING=true
+      - CHOKIDAR_INTERVAL=1000
+      - npm_config_@unerp:registry=http://unerp-registry:4873
+    ports:
+      - "3004:3004"
+    volumes:
+      - .:/app
+      - node_modules:/app/node_modules
+    depends_on:
+      api:
+        condition: service_started
+
+  # ──────────────────────────────────────────────
+  # IdP — identity provider. § 5.2 requires separate realms per plane, so this
+  # is its own service rather than a module of the API.
+  # ──────────────────────────────────────────────
+  idp:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: unerp-idp
+    restart: unless-stopped
+    profiles: ["idp", "full"]
+    working_dir: /app/apps/idp
+    stdin_open: true
+    tty: true
+    command: sh -c "until [ -d /app/node_modules/.pnpm ]; do echo 'waiting for api to install deps...'; sleep 10; done; pnpm dev"
+    environment:
+      - NODE_ENV=development
+      - NODE_OPTIONS=--max-old-space-size=4096
+      - PORT=3005
+      - DATABASE_URL=postgresql://unerp_api:unerp_api_password@postgres:5432/unerp_dev?schema=public
+      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET:-your-super-secret-key-change-in-production}
+      # The IdP validates against the same env schema as the API, so it needs the
+      # same required variables — it failed startup on PII_ENCRYPTION_KEY alone.
+      - PII_ENCRYPTION_KEY=${PII_ENCRYPTION_KEY:-0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef}
+      - REDIS_URL=redis://redis:6379
+      - API_PORT=3005
+      - NEXT_PUBLIC_APP_URL=http://localhost:3000
+      - NEXTAUTH_URL=http://localhost:3000
+      # Polling instead of inotify: the bind-mounted tree is large enough that
+      # native watches exhaust the container's limit and Watchpack dies with
+      # `ENOMEM: not enough memory, scandir`, which reads as a RAM problem and is
+      # actually a watch-descriptor problem.
+      - WATCHPACK_POLLING=1000
+      - CHOKIDAR_USEPOLLING=true
+      - CHOKIDAR_INTERVAL=1000
+      - npm_config_@unerp:registry=http://unerp-registry:4873
+    ports:
+      - "3005:3005"
+    volumes:
+      - .:/app
+      - node_modules:/app/node_modules
+    depends_on:
+      postgres:
+        condition: service_healthy
+
   mobile:
     build:
       context: .
@@ -330,4 +516,3 @@ volumes:
   mobile_build:
   mobile_dart_tool:
   flutter_pub_cache:
-

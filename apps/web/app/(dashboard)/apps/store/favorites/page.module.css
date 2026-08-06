@@ -30,7 +30,7 @@
   -webkit-line-clamp: 2;
   color: var(--color-text-secondary);
   display: -webkit-box;
-  font-size: 12px;
+  font-size: var(--text-xs);
   line-height: 1.4;
   margin: 0;
   overflow: hidden;

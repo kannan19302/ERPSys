@@ -4,7 +4,8 @@ import '../../../../core/usecase/usecase.dart';
 import '../entities/marketplace.dart';
 import '../repositories/marketplace_repository.dart';
 
-class ListMarketplaceAppsUseCase extends UseCase<Cacheable<Paginated<MarketplaceApp>>, ListQuery> {
+class ListMarketplaceAppsUseCase
+    extends UseCase<Cacheable<Paginated<MarketplaceApp>>, ListQuery> {
   const ListMarketplaceAppsUseCase(this._repository);
   final MarketplaceRepository _repository;
   @override
@@ -25,7 +26,8 @@ class SaveMarketplaceAppParams {
   final Map<String, dynamic> payload;
 }
 
-class SaveMarketplaceAppUseCase extends UseCase<MarketplaceApp, SaveMarketplaceAppParams> {
+class SaveMarketplaceAppUseCase
+    extends UseCase<MarketplaceApp, SaveMarketplaceAppParams> {
   const SaveMarketplaceAppUseCase(this._repository);
   final MarketplaceRepository _repository;
   @override
@@ -55,18 +57,22 @@ class UnpublishMarketplaceAppUseCase extends UseCase<MarketplaceApp, String> {
   const UnpublishMarketplaceAppUseCase(this._repository);
   final MarketplaceRepository _repository;
   @override
-  Future<Result<MarketplaceApp>> call(String id) => _repository.unpublishApp(id);
+  Future<Result<MarketplaceApp>> call(String id) =>
+      _repository.unpublishApp(id);
 }
 
-class ListMarketplaceReviewsUseCase extends UseCase<Cacheable<Paginated<MarketplaceReview>>, ListQuery> {
+class ListMarketplaceReviewsUseCase
+    extends UseCase<Cacheable<Paginated<MarketplaceReview>>, ListQuery> {
   const ListMarketplaceReviewsUseCase(this._repository);
   final MarketplaceRepository _repository;
   @override
-  Future<Result<Cacheable<Paginated<MarketplaceReview>>>> call(ListQuery params) =>
+  Future<Result<Cacheable<Paginated<MarketplaceReview>>>> call(
+          ListQuery params) =>
       _repository.listReviews(params);
 }
 
-class CreateMarketplaceReviewUseCase extends UseCase<MarketplaceReview, Map<String, dynamic>> {
+class CreateMarketplaceReviewUseCase
+    extends UseCase<MarketplaceReview, Map<String, dynamic>> {
   const CreateMarketplaceReviewUseCase(this._repository);
   final MarketplaceRepository _repository;
   @override
@@ -81,15 +87,18 @@ class DeleteMarketplaceReviewUseCase extends UseCase<void, String> {
   Future<Result<void>> call(String id) => _repository.deleteReview(id);
 }
 
-class ListMarketplaceVersionsUseCase extends UseCase<Cacheable<Paginated<MarketplaceAppVersion>>, ListQuery> {
+class ListMarketplaceVersionsUseCase
+    extends UseCase<Cacheable<Paginated<MarketplaceAppVersion>>, ListQuery> {
   const ListMarketplaceVersionsUseCase(this._repository);
   final MarketplaceRepository _repository;
   @override
-  Future<Result<Cacheable<Paginated<MarketplaceAppVersion>>>> call(ListQuery params) =>
+  Future<Result<Cacheable<Paginated<MarketplaceAppVersion>>>> call(
+          ListQuery params) =>
       _repository.listVersions(params);
 }
 
-class CreateMarketplaceVersionUseCase extends UseCase<MarketplaceAppVersion, Map<String, dynamic>> {
+class CreateMarketplaceVersionUseCase
+    extends UseCase<MarketplaceAppVersion, Map<String, dynamic>> {
   const CreateMarketplaceVersionUseCase(this._repository);
   final MarketplaceRepository _repository;
   @override
@@ -97,29 +106,36 @@ class CreateMarketplaceVersionUseCase extends UseCase<MarketplaceAppVersion, Map
       _repository.createVersion(params);
 }
 
-class ReleaseMarketplaceVersionUseCase extends UseCase<MarketplaceAppVersion, String> {
+class ReleaseMarketplaceVersionUseCase
+    extends UseCase<MarketplaceAppVersion, String> {
   const ReleaseMarketplaceVersionUseCase(this._repository);
   final MarketplaceRepository _repository;
   @override
-  Future<Result<MarketplaceAppVersion>> call(String id) => _repository.releaseVersion(id);
+  Future<Result<MarketplaceAppVersion>> call(String id) =>
+      _repository.releaseVersion(id);
 }
 
-class ListMarketplaceSubmissionsUseCase extends UseCase<Cacheable<Paginated<MarketplaceSubmission>>, ListQuery> {
+class ListMarketplaceSubmissionsUseCase
+    extends UseCase<Cacheable<Paginated<MarketplaceSubmission>>, ListQuery> {
   const ListMarketplaceSubmissionsUseCase(this._repository);
   final MarketplaceRepository _repository;
   @override
-  Future<Result<Cacheable<Paginated<MarketplaceSubmission>>>> call(ListQuery params) =>
+  Future<Result<Cacheable<Paginated<MarketplaceSubmission>>>> call(
+          ListQuery params) =>
       _repository.listSubmissions(params);
 }
 
-class GetMarketplaceSubmissionUseCase extends UseCase<MarketplaceSubmission, String> {
+class GetMarketplaceSubmissionUseCase
+    extends UseCase<MarketplaceSubmission, String> {
   const GetMarketplaceSubmissionUseCase(this._repository);
   final MarketplaceRepository _repository;
   @override
-  Future<Result<MarketplaceSubmission>> call(String id) => _repository.getSubmission(id);
+  Future<Result<MarketplaceSubmission>> call(String id) =>
+      _repository.getSubmission(id);
 }
 
-class CreateMarketplaceSubmissionUseCase extends UseCase<MarketplaceSubmission, Map<String, dynamic>> {
+class CreateMarketplaceSubmissionUseCase
+    extends UseCase<MarketplaceSubmission, Map<String, dynamic>> {
   const CreateMarketplaceSubmissionUseCase(this._repository);
   final MarketplaceRepository _repository;
   @override
@@ -128,16 +144,19 @@ class CreateMarketplaceSubmissionUseCase extends UseCase<MarketplaceSubmission, 
 }
 
 class ReviewMarketplaceSubmissionParams {
-  const ReviewMarketplaceSubmissionParams({required this.id, required this.decision, this.notes});
+  const ReviewMarketplaceSubmissionParams(
+      {required this.id, required this.decision, this.notes});
   final String id;
   final String decision;
   final String? notes;
 }
 
-class ReviewMarketplaceSubmissionUseCase extends UseCase<MarketplaceSubmission, ReviewMarketplaceSubmissionParams> {
+class ReviewMarketplaceSubmissionUseCase
+    extends UseCase<MarketplaceSubmission, ReviewMarketplaceSubmissionParams> {
   const ReviewMarketplaceSubmissionUseCase(this._repository);
   final MarketplaceRepository _repository;
   @override
-  Future<Result<MarketplaceSubmission>> call(ReviewMarketplaceSubmissionParams params) =>
+  Future<Result<MarketplaceSubmission>> call(
+          ReviewMarketplaceSubmissionParams params) =>
       _repository.reviewSubmission(params.id, params.decision, params.notes);
 }

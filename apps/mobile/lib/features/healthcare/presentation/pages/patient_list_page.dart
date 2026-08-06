@@ -48,8 +48,12 @@ class _PatientListPageState extends ConsumerState<PatientListPage> {
             initialValue: state.query.sort,
             onSelected: controller.applySort,
             itemBuilder: (_) => _sortOptions.entries
-                .map((e) => PopupMenuItem<String>(
-                    value: e.key, child: Text(e.value),),)
+                .map(
+                  (e) => PopupMenuItem<String>(
+                    value: e.key,
+                    child: Text(e.value),
+                  ),
+                )
                 .toList(),
           ),
         ],
@@ -57,7 +61,8 @@ class _PatientListPageState extends ConsumerState<PatientListPage> {
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
+            padding: const EdgeInsets.fromLTRB(
+                Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
             child: TextField(
               controller: _search,
               onChanged: controller.search,
@@ -69,21 +74,27 @@ class _PatientListPageState extends ConsumerState<PatientListPage> {
                     ? null
                     : IconButton(
                         icon: const Icon(Icons.close),
-                        onPressed: () { _search.clear(); controller.search(''); },
+                        onPressed: () {
+                          _search.clear();
+                          controller.search('');
+                        },
                       ),
               ),
             ),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: Spacing.x4),
-            child: Row(children: [
-              Text(
-                state.isLoading
-                    ? 'Loading...'
-                    : '${state.meta.total} patient${state.meta.total == 1 ? '' : 's'}',
-                style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
-              ),
-            ],),
+            child: Row(
+              children: [
+                Text(
+                  state.isLoading
+                      ? 'Loading...'
+                      : '${state.meta.total} patient${state.meta.total == 1 ? '' : 's'}',
+                  style:
+                      TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
+                ),
+              ],
+            ),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -113,23 +124,34 @@ class _PatientListPageState extends ConsumerState<PatientListPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(children: [
-                Expanded(
-                  child: Text(p.name,
-                      style: Theme.of(context).textTheme.titleSmall,),
-                ),
-                UiStatusBadge(
-                  label: p.status,
-                  tone: p.status == 'ACTIVE' ? UiTone.success : UiTone.neutral,
-                ),
-              ],),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      p.name,
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
+                  ),
+                  UiStatusBadge(
+                    label: p.status,
+                    tone:
+                        p.status == 'ACTIVE' ? UiTone.success : UiTone.neutral,
+                  ),
+                ],
+              ),
               if (p.phone != null) ...[
                 const SizedBox(height: Spacing.x1),
-                Text(p.phone!, style: TextStyle(color: context.tokens.textSecondary, fontSize: TypeScale.xs)),
+                Text(p.phone!,
+                    style: TextStyle(
+                        color: context.tokens.textSecondary,
+                        fontSize: TypeScale.xs)),
               ],
               if (p.email != null) ...[
                 const SizedBox(height: Spacing.x1),
-                Text(p.email!, style: TextStyle(color: context.tokens.textSecondary, fontSize: TypeScale.xs)),
+                Text(p.email!,
+                    style: TextStyle(
+                        color: context.tokens.textSecondary,
+                        fontSize: TypeScale.xs)),
               ],
             ],
           ),

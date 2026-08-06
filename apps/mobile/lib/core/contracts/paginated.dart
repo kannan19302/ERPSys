@@ -139,7 +139,8 @@ class ListQuery {
         'page': page,
         'limit': limit.clamp(1, kListLimitMax),
         if (sort != null && sort!.isNotEmpty) 'sort': sort,
-        if (search != null && search!.trim().isNotEmpty) 'search': search!.trim(),
+        if (search != null && search!.trim().isNotEmpty)
+          'search': search!.trim(),
         ...filters,
       };
 
@@ -150,7 +151,8 @@ class ListQuery {
       'l$limit',
       if (sort != null) 's$sort',
       if (search != null && search!.isNotEmpty) 'q$search',
-      ...filters.entries.map((MapEntry<String, String> e) => '${e.key}=${e.value}'),
+      ...filters.entries
+          .map((MapEntry<String, String> e) => '${e.key}=${e.value}'),
     ];
     return parts.join('&');
   }

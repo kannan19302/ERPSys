@@ -49,8 +49,12 @@ class _TaskListPageState extends ConsumerState<TaskListPage> {
             initialValue: state.query.sort,
             onSelected: controller.applySort,
             itemBuilder: (_) => _sortOptions.entries
-                .map((e) => PopupMenuItem<String>(
-                    value: e.key, child: Text(e.value),),)
+                .map(
+                  (e) => PopupMenuItem<String>(
+                    value: e.key,
+                    child: Text(e.value),
+                  ),
+                )
                 .toList(),
           ),
         ],
@@ -58,7 +62,8 @@ class _TaskListPageState extends ConsumerState<TaskListPage> {
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
+            padding: const EdgeInsets.fromLTRB(
+                Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
             child: TextField(
               controller: _search,
               onChanged: controller.search,
@@ -70,21 +75,27 @@ class _TaskListPageState extends ConsumerState<TaskListPage> {
                     ? null
                     : IconButton(
                         icon: const Icon(Icons.close),
-                        onPressed: () { _search.clear(); controller.search(''); },
+                        onPressed: () {
+                          _search.clear();
+                          controller.search('');
+                        },
                       ),
               ),
             ),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: Spacing.x4),
-            child: Row(children: [
-              Text(
-                state.isLoading
-                    ? 'Loading...'
-                    : '${state.meta.total} task${state.meta.total == 1 ? '' : 's'}',
-                style: TextStyle(color: palette.textSecondary, fontSize: TypeScale.xs),
-              ),
-            ],),
+            child: Row(
+              children: [
+                Text(
+                  state.isLoading
+                      ? 'Loading...'
+                      : '${state.meta.total} task${state.meta.total == 1 ? '' : 's'}',
+                  style: TextStyle(
+                      color: palette.textSecondary, fontSize: TypeScale.xs),
+                ),
+              ],
+            ),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -129,45 +140,64 @@ class _TaskTile extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(children: [
-              Expanded(
-                child: Text(task.title,
-                    style: Theme.of(context).textTheme.titleSmall,),
-              ),
-              UiStatusBadge(
-                label: task.status,
-                tone: _statusTone(task.status),
-              ),
-            ],),
-            const SizedBox(height: Spacing.x1),
-            Row(children: [
-              UiStatusBadge(
-                label: task.priority,
-                tone: _priorityTone(task.priority),
-              ),
-              const SizedBox(width: Spacing.x2),
-              if (task.assigneeName != null) ...[
-                Icon(Icons.person_outline, size: TypeScale.sm, color: t.textTertiary),
-                const SizedBox(width: Spacing.x0_5),
-                Text(task.assigneeName!,
-                    style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs),),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    task.title,
+                    style: Theme.of(context).textTheme.titleSmall,
+                  ),
+                ),
+                UiStatusBadge(
+                  label: task.status,
+                  tone: _statusTone(task.status),
+                ),
               ],
-            ],),
+            ),
+            const SizedBox(height: Spacing.x1),
+            Row(
+              children: [
+                UiStatusBadge(
+                  label: task.priority,
+                  tone: _priorityTone(task.priority),
+                ),
+                const SizedBox(width: Spacing.x2),
+                if (task.assigneeName != null) ...[
+                  Icon(Icons.person_outline,
+                      size: TypeScale.sm, color: t.textTertiary),
+                  const SizedBox(width: Spacing.x0_5),
+                  Text(
+                    task.assigneeName!,
+                    style: TextStyle(
+                        color: t.textTertiary, fontSize: TypeScale.xs),
+                  ),
+                ],
+              ],
+            ),
             if (task.dueDate != null || task.estimatedHours != null) ...[
               const SizedBox(height: Spacing.x1),
-              Row(children: [
-                if (task.dueDate != null) ...[
-                  Icon(Icons.event_outlined, size: TypeScale.sm, color: t.textTertiary),
-                  const SizedBox(width: Spacing.x0_5),
-                  Text(Formatters.date(task.dueDate!),
-                      style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs),),
+              Row(
+                children: [
+                  if (task.dueDate != null) ...[
+                    Icon(Icons.event_outlined,
+                        size: TypeScale.sm, color: t.textTertiary),
+                    const SizedBox(width: Spacing.x0_5),
+                    Text(
+                      Formatters.date(task.dueDate!),
+                      style: TextStyle(
+                          color: t.textTertiary, fontSize: TypeScale.xs),
+                    ),
+                  ],
+                  if (task.estimatedHours != null) ...[
+                    const Spacer(),
+                    Text(
+                      '${task.estimatedHours!.toStringAsFixed(1)}h est.',
+                      style: TextStyle(
+                          color: t.textTertiary, fontSize: TypeScale.xs),
+                    ),
+                  ],
                 ],
-                if (task.estimatedHours != null) ...[
-                  const Spacer(),
-                  Text('${task.estimatedHours!.toStringAsFixed(1)}h est.',
-                      style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs),),
-                ],
-              ],),
+              ),
             ],
           ],
         ),

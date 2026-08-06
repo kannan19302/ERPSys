@@ -25,10 +25,10 @@ import { SaasPortalSupportSelfServiceService } from "./saas-portal-support-self-
 import { SaasPortalSupportSelfServiceController } from "./saas-portal-support-self-service.controller";
 import { SaasPortalFeedbackRoadmapService } from "./saas-portal-feedback-roadmap.service";
 import { SaasPortalFeedbackRoadmapController } from "./saas-portal-feedback-roadmap.controller";
-import { SaasPortalSsoSamlDeepService } from "./saas-portal-sso-saml-deep.service";
-import { SaasPortalSsoSamlDeepController } from "./saas-portal-sso-saml-deep.controller";
-import { SaasPortalAuditTrailDeepService } from "./saas-portal-audit-trail-deep.service";
-import { SaasPortalAuditTrailDeepController } from "./saas-portal-audit-trail-deep.controller";
+import { SaasPortalSsoSamlDeepService } from "./sso-saml.service";
+import { SaasPortalSsoSamlDeepController } from "./sso-saml.controller";
+import { SaasPortalAuditTrailDeepService } from "./audit-trail.service";
+import { SaasPortalAuditTrailDeepController } from "./audit-trail.controller";
 import { SaasPortalEnterpriseModule } from "./saas-portal-enterprise.module";
 
 @Module({

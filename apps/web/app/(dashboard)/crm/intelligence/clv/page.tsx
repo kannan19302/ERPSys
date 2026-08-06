@@ -79,13 +79,13 @@ export default function ClvAnalyticsPage() {
   const getTierColor = (tier: string) => {
     switch (tier.toUpperCase()) {
       case "PLATINUM":
-        return "#8b5cf6";
+        return "var(--chart-5)";
       case "GOLD":
-        return "#fbbf24";
+        return "var(--color-warning)";
       case "SILVER":
-        return "#94a3b8";
+        return "var(--color-text-tertiary)";
       default:
-        return "#10b981";
+        return "var(--chart-9)";
     }
   };
 

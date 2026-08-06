@@ -3,73 +3,116 @@ import { ApiTags, ApiBearerAuth } from "@nestjs/swagger";
 import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard";
 import { RbacGuard } from "../../common/guards/rbac.guard";
 import { CrmIntegrationDeepService } from "./crm-integration-deep.service";
+import { Permissions } from "../../common/decorators/permissions.decorator";
 @ApiTags("crm-integration-deep")
 @ApiBearerAuth()
 @Controller("crm/integration-deep")
 @UseGuards(JwtAuthGuard, RbacGuard)
 export class CrmIntegrationDeepController {
   constructor(private readonly svc: CrmIntegrationDeepService) {}
-  @Get("id_0") async g0() {
+  @Permissions("crm.webhook-config.read")
+  @Get("id_0")
+  async g0() {
     return this.svc.getWebhookConfigs();
   }
-  @Get("id_1") async g1() {
+  @Permissions("crm.config.create")
+  @Get("id_1")
+  async g1() {
     return this.svc.createConfig();
   }
-  @Get("id_2") async g2() {
+  @Permissions("crm.config.update")
+  @Get("id_2")
+  async g2() {
     return this.svc.updateConfig();
   }
-  @Get("id_3") async g3() {
+  @Permissions("crm.config.delete")
+  @Get("id_3")
+  async g3() {
     return this.svc.deleteConfig();
   }
-  @Get("id_4") async g4() {
+  @Permissions("crm.webhook-log.read")
+  @Get("id_4")
+  async g4() {
     return this.svc.getWebhookLogs();
   }
-  @Get("id_5") async g5() {
+  @Permissions("crm.webhook-delivery-stat.read")
+  @Get("id_5")
+  async g5() {
     return this.svc.getWebhookDeliveryStats();
   }
-  @Get("id_6") async g6() {
+  @Permissions("crm.webhook.test")
+  @Get("id_6")
+  async g6() {
     return this.svc.testWebhook();
   }
-  @Get("id_7") async g7() {
+  @Permissions("crm.calendar-connection.read")
+  @Get("id_7")
+  async g7() {
     return this.svc.getCalendarConnections();
   }
-  @Get("id_8") async g8() {
+  @Permissions("crm.connection.create")
+  @Get("id_8")
+  async g8() {
     return this.svc.createConnection();
   }
-  @Get("id_9") async g9() {
+  @Permissions("crm.connection.update")
+  @Get("id_9")
+  async g9() {
     return this.svc.updateConnection();
   }
-  @Get("id_10") async g10() {
+  @Permissions("crm.connection.delete")
+  @Get("id_10")
+  async g10() {
     return this.svc.deleteConnection();
   }
-  @Get("id_11") async g11() {
+  @Permissions("crm.calendar.sync")
+  @Get("id_11")
+  async g11() {
     return this.svc.syncCalendar();
   }
-  @Get("id_12") async g12() {
+  @Permissions("crm.slack-connection.read")
+  @Get("id_12")
+  async g12() {
     return this.svc.getSlackConnections();
   }
-  @Get("id_13") async g13() {
+  @Permissions("crm.slack-connection.create")
+  @Get("id_13")
+  async g13() {
     return this.svc.createSlackConnection();
   }
-  @Get("id_14") async g14() {
+  @Permissions("crm.slack-connection.update")
+  @Get("id_14")
+  async g14() {
     return this.svc.updateSlackConnection();
   }
-  @Get("id_15") async g15() {
+  @Permissions("crm.slack-connection.delete")
+  @Get("id_15")
+  async g15() {
     return this.svc.deleteSlackConnection();
   }
-  @Get("id_16") async g16() {
+  @Permissions("crm.slack-notification.send")
+  @Get("id_16")
+  async g16() {
     return this.svc.sendSlackNotification();
   }
-  @Get("id_17") async g17() {
+  @Permissions("crm.integration-dashboard.read")
+  @Get("id_17")
+  async g17() {
     return this.svc.getIntegrationDashboard();
   }
-  @Get("id_18") async g18() {
+  @Permissions("crm.event-delivery-log.read")
+  @Get("id_18")
+  async g18() {
     return this.svc.getEventDeliveryLogs();
   }
-  @Get("id_19") async g19() {
+  @Permissions("crm.event-delivery-stat.read")
+  @Get("id_19")
+  async g19() {
     return this.svc.getEventDeliveryStats();
   }
-  @Get("id_20") async g20() {
+  @Permissions("crm.failed-delivery.retry")
+  @Get("id_20")
+  async g20() {
     return this.svc.retryFailedDelivery();
   }
 }

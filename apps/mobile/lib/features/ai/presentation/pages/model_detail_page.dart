@@ -28,7 +28,9 @@ class AiModelDetailPage extends ConsumerWidget {
       body: modelAsync.when(
         loading: () => const LoadingView(),
         error: (Object error, StackTrace _) => FailureView(
-          failure: error is Failure ? error : const ServerFailure('Could not load model.'),
+          failure: error is Failure
+              ? error
+              : const ServerFailure('Could not load model.'),
           onRetry: () => ref.invalidate(aiModelDetailProvider(modelId)),
         ),
         data: (AiModel model) => _AiModelDetail(model: model),
@@ -92,9 +94,11 @@ class _AiModelDetail extends StatelessWidget {
               if (model.provider != null || model.version != null) ...<Widget>[
                 const SizedBox(height: Spacing.x2),
                 if (model.provider != null)
-                  Text(model.provider!, style: TextStyle(color: t.textSecondary)),
+                  Text(model.provider!,
+                      style: TextStyle(color: t.textSecondary)),
                 if (model.version != null)
-                  Text('v${model.version!}', style: TextStyle(color: t.textSecondary)),
+                  Text('v${model.version!}',
+                      style: TextStyle(color: t.textSecondary)),
               ],
             ],
           ),
@@ -120,16 +124,19 @@ class _AiModelDetail extends StatelessWidget {
               if (model.capabilities.isEmpty)
                 Text('None', style: TextStyle(color: t.textSecondary))
               else
-                ...model.capabilities.map((String c) => Padding(
-                      padding: const EdgeInsets.only(bottom: Spacing.x1),
-                      child: Row(
-                        children: <Widget>[
-                          Icon(Icons.check_circle_outline, size: TypeScale.base, color: t.success),
-                          const SizedBox(width: Spacing.x2),
-                          Text(c),
-                        ],
-                      ),
-                    ),),
+                ...model.capabilities.map(
+                  (String c) => Padding(
+                    padding: const EdgeInsets.only(bottom: Spacing.x1),
+                    child: Row(
+                      children: <Widget>[
+                        Icon(Icons.check_circle_outline,
+                            size: TypeScale.base, color: t.success),
+                        const SizedBox(width: Spacing.x2),
+                        Text(c),
+                      ],
+                    ),
+                  ),
+                ),
             ],
           ),
         ),
@@ -139,8 +146,16 @@ class _AiModelDetail extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               const _SectionTitle(title: 'Timeline'),
-              _FieldRow('Created', model.createdAt != null ? Formatters.dateTime(model.createdAt!) : '—'),
-              _FieldRow('Updated', model.updatedAt != null ? Formatters.dateTime(model.updatedAt!) : '—'),
+              _FieldRow(
+                  'Created',
+                  model.createdAt != null
+                      ? Formatters.dateTime(model.createdAt!)
+                      : '—'),
+              _FieldRow(
+                  'Updated',
+                  model.updatedAt != null
+                      ? Formatters.dateTime(model.updatedAt!)
+                      : '—'),
             ],
           ),
         ),

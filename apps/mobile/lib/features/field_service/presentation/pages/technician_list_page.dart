@@ -36,7 +36,8 @@ class _TechnicianListPageState extends ConsumerState<TechnicianListPage> {
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
+            padding: const EdgeInsets.fromLTRB(
+                Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
             child: TextField(
               controller: _search,
               onChanged: controller.search,
@@ -48,21 +49,27 @@ class _TechnicianListPageState extends ConsumerState<TechnicianListPage> {
                     ? null
                     : IconButton(
                         icon: const Icon(Icons.close),
-                        onPressed: () { _search.clear(); controller.search(''); },
+                        onPressed: () {
+                          _search.clear();
+                          controller.search('');
+                        },
                       ),
               ),
             ),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: Spacing.x4),
-            child: Row(children: [
-              Text(
-                state.isLoading
-                    ? 'Loading...'
-                    : '${state.meta.total} technician${state.meta.total == 1 ? '' : 's'}',
-                style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
-              ),
-            ],),
+            child: Row(
+              children: [
+                Text(
+                  state.isLoading
+                      ? 'Loading...'
+                      : '${state.meta.total} technician${state.meta.total == 1 ? '' : 's'}',
+                  style:
+                      TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
+                ),
+              ],
+            ),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -92,28 +99,40 @@ class _TechnicianListPageState extends ConsumerState<TechnicianListPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(children: [
-                Expanded(
-                  child: Text(tech.name,
-                      style: Theme.of(context).textTheme.titleSmall,),
-                ),
-                UiStatusBadge(
-                  label: tech.status,
-                  tone: _statusTone(tech.status),
-                ),
-              ],),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      tech.name,
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
+                  ),
+                  UiStatusBadge(
+                    label: tech.status,
+                    tone: _statusTone(tech.status),
+                  ),
+                ],
+              ),
               if (tech.specialization != null) ...[
                 const SizedBox(height: Spacing.x1),
-                Text(tech.specialization!,
-                    style: TextStyle(color: context.tokens.textSecondary, fontSize: TypeScale.xs),),
+                Text(
+                  tech.specialization!,
+                  style: TextStyle(
+                      color: context.tokens.textSecondary,
+                      fontSize: TypeScale.xs),
+                ),
               ],
               if (tech.phone != null) ...[
                 const SizedBox(height: Spacing.x1),
-                Row(children: [
-                  Icon(Icons.phone, size: TypeScale.xs, color: context.tokens.textTertiary),
-                  const SizedBox(width: Spacing.x1),
-                  Text(tech.phone!, style: const TextStyle(fontSize: TypeScale.xs)),
-                ],),
+                Row(
+                  children: [
+                    Icon(Icons.phone,
+                        size: TypeScale.xs, color: context.tokens.textTertiary),
+                    const SizedBox(width: Spacing.x1),
+                    Text(tech.phone!,
+                        style: const TextStyle(fontSize: TypeScale.xs)),
+                  ],
+                ),
               ],
             ],
           ),

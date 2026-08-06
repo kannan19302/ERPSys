@@ -29,8 +29,17 @@ class SavedView extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, name, resourceType, description, config, isDefault,
-        isShared, ownerId, ownerName, createdAt, updatedAt,
+        id,
+        name,
+        resourceType,
+        description,
+        config,
+        isDefault,
+        isShared,
+        ownerId,
+        ownerName,
+        createdAt,
+        updatedAt,
       ];
 }
 
@@ -53,6 +62,11 @@ class SavedViewShare extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, savedViewId, sharedWithId, sharedWithName, permission, createdAt,
+        id,
+        savedViewId,
+        sharedWithId,
+        sharedWithName,
+        permission,
+        createdAt,
       ];
 }

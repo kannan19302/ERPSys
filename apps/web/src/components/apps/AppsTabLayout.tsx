@@ -13,14 +13,14 @@ import {
   ModuleTabLayout,
   type ModuleTab,
   type ModuleTabLayoutProps,
-} from "@unerp/ui-layout";
+} from "@unerp/ui/layout";
 
 export {
   type ModuleTab as AppsTab,
   type ModuleTabLayoutProps as AppsTabLayoutProps,
   SubTabBar,
   type SubTab,
-} from "@unerp/ui-layout";
+} from "@unerp/ui/layout";
 
 export const AppsTabLayout: FC<ModuleTabLayoutProps> = (props) => {
   return <ModuleTabLayout variant="card" {...props} />;

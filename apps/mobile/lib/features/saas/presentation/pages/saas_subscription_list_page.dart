@@ -12,10 +12,12 @@ class SaasSubscriptionListPage extends ConsumerStatefulWidget {
   static const String routeName = 'saas-subscriptions';
   static const String routePath = '/saas/subscriptions';
   @override
-  ConsumerState<SaasSubscriptionListPage> createState() => _SaasSubscriptionListPageState();
+  ConsumerState<SaasSubscriptionListPage> createState() =>
+      _SaasSubscriptionListPageState();
 }
 
-class _SaasSubscriptionListPageState extends ConsumerState<SaasSubscriptionListPage> {
+class _SaasSubscriptionListPageState
+    extends ConsumerState<SaasSubscriptionListPage> {
   final TextEditingController _search = TextEditingController();
 
   static final Map<String, UiTone> _statusTones = <String, UiTone>{
@@ -35,7 +37,8 @@ class _SaasSubscriptionListPageState extends ConsumerState<SaasSubscriptionListP
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(saasSubscriptionListControllerProvider);
-    final controller = ref.read(saasSubscriptionListControllerProvider.notifier);
+    final controller =
+        ref.read(saasSubscriptionListControllerProvider.notifier);
     final t = context.tokens;
 
     return Scaffold(
@@ -43,7 +46,8 @@ class _SaasSubscriptionListPageState extends ConsumerState<SaasSubscriptionListP
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
+            padding: const EdgeInsets.fromLTRB(
+                Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
             child: TextField(
               controller: _search,
               onChanged: controller.search,
@@ -55,21 +59,27 @@ class _SaasSubscriptionListPageState extends ConsumerState<SaasSubscriptionListP
                     ? null
                     : IconButton(
                         icon: const Icon(Icons.close),
-                        onPressed: () { _search.clear(); controller.search(''); },
+                        onPressed: () {
+                          _search.clear();
+                          controller.search('');
+                        },
                       ),
               ),
             ),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: Spacing.x4),
-            child: Row(children: [
-              Text(
-                state.isLoading
-                    ? 'Loading...'
-                    : '${state.meta.total} subscription${state.meta.total == 1 ? '' : 's'}',
-                style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
-              ),
-            ],),
+            child: Row(
+              children: [
+                Text(
+                  state.isLoading
+                      ? 'Loading...'
+                      : '${state.meta.total} subscription${state.meta.total == 1 ? '' : 's'}',
+                  style:
+                      TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
+                ),
+              ],
+            ),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -77,7 +87,8 @@ class _SaasSubscriptionListPageState extends ConsumerState<SaasSubscriptionListP
     );
   }
 
-  Widget _body(SaasSubscriptionListState state, SaasSubscriptionListController controller) {
+  Widget _body(SaasSubscriptionListState state,
+      SaasSubscriptionListController controller) {
     if (state.isLoading && state.items.isEmpty) return const LoadingView();
     final failure = state.failure;
     if (failure != null && state.items.isEmpty) {
@@ -100,23 +111,33 @@ class _SaasSubscriptionListPageState extends ConsumerState<SaasSubscriptionListP
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(children: [
-                Expanded(
-                  child: Text(sub.planName,
-                      style: Theme.of(context).textTheme.titleSmall,),
-                ),
-                UiStatusBadge(
-                  label: sub.status,
-                  tone: _statusTones[sub.status] ?? UiTone.neutral,
-                ),
-              ],),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      sub.planName,
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
+                  ),
+                  UiStatusBadge(
+                    label: sub.status,
+                    tone: _statusTones[sub.status] ?? UiTone.neutral,
+                  ),
+                ],
+              ),
               const SizedBox(height: Spacing.x1),
-              Text(sub.tenantId,
-                  style: TextStyle(color: palette.textSecondary, fontSize: TypeScale.xs),),
+              Text(
+                sub.tenantId,
+                style: TextStyle(
+                    color: palette.textSecondary, fontSize: TypeScale.xs),
+              ),
               if (sub.currentPeriodEnd != null) ...[
                 const SizedBox(height: Spacing.x1),
-                Text('Renews ${_formatDate(sub.currentPeriodEnd!)}',
-                    style: TextStyle(fontSize: TypeScale.xs, color: palette.textTertiary),),
+                Text(
+                  'Renews ${_formatDate(sub.currentPeriodEnd!)}',
+                  style: TextStyle(
+                      fontSize: TypeScale.xs, color: palette.textTertiary),
+                ),
               ],
             ],
           ),
@@ -125,5 +146,6 @@ class _SaasSubscriptionListPageState extends ConsumerState<SaasSubscriptionListP
     );
   }
 
-  String _formatDate(DateTime d) => '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+  String _formatDate(DateTime d) =>
+      '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
 }

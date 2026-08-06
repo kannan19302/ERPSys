@@ -50,8 +50,7 @@ class _CustomerListPageState extends ConsumerState<CustomerListPage> {
   @override
   Widget build(BuildContext context) {
     final CrmListState<Customer> state = ref.watch(customersProvider);
-    final CustomersController controller =
-        ref.read(customersProvider.notifier);
+    final CustomersController controller = ref.read(customersProvider.notifier);
     final Palette t = context.tokens;
 
     return Scaffold(
@@ -84,10 +83,14 @@ class _CustomerListPageState extends ConsumerState<CustomerListPage> {
       ),
       body: Column(
         children: <Widget>[
-          if (state.cachedAt != null) StaleDataBanner(cachedAt: state.cachedAt!),
+          if (state.cachedAt != null)
+            StaleDataBanner(cachedAt: state.cachedAt!),
           Padding(
             padding: const EdgeInsets.fromLTRB(
-              Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2,
+              Spacing.x4,
+              Spacing.x3,
+              Spacing.x4,
+              Spacing.x2,
             ),
             child: TextField(
               controller: _search,
@@ -129,7 +132,8 @@ class _CustomerListPageState extends ConsumerState<CustomerListPage> {
                   underline: const SizedBox.shrink(),
                   items: _statusFilters.entries
                       .map(
-                        (MapEntry<String, String> e) => DropdownMenuItem<String>(
+                        (MapEntry<String, String> e) =>
+                            DropdownMenuItem<String>(
                           value: e.key,
                           child: Text(e.value),
                         ),
@@ -140,7 +144,8 @@ class _CustomerListPageState extends ConsumerState<CustomerListPage> {
                     if (value == null) {
                       controller.applyFilters(const <String, String>{});
                     } else {
-                      controller.applyFilters(<String, String>{'status': value});
+                      controller
+                          .applyFilters(<String, String>{'status': value});
                     }
                   },
                 ),
@@ -270,5 +275,3 @@ class _CustomerTile extends StatelessWidget {
     );
   }
 }
-
-

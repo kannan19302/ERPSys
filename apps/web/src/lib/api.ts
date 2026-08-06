@@ -1,4 +1,20 @@
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "/api/v1";
+// Relative by default, and the default is the right answer.
+//
+// A relative base keeps every call on the web origin, where next.config.mjs
+// routes /api/v1/auth/* to the IdP and everything else to the API. Point this at
+// a bare origin like http://localhost:3001 and both of those guarantees are
+// lost: the /api/v1 prefix disappears, so the browser requests
+// http://localhost:3001/auth/me and gets a 404, and auth calls go to the
+// business API which does not own them.
+//
+// That is exactly what happened — registration failed silently in the browser
+// while an API-level test passed, because the test exercised the proxy path and
+// the browser did not. An absolute value is still honoured for genuinely
+// cross-origin deployments, but the path is appended rather than dropped.
+const configuredApiUrl = process.env.NEXT_PUBLIC_API_URL?.trim();
+const API_BASE = configuredApiUrl
+  ? `${configuredApiUrl.replace(/\/+$/, "")}${/\/api\/v\d+$/.test(configuredApiUrl.replace(/\/+$/, "")) ? "" : "/api/v1"}`
+  : "/api/v1";
 
 export function getCsrfToken(): string | null {
   if (typeof document === "undefined") return null;

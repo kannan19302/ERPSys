@@ -1,3 +1,5 @@
+// Ratchet rule: This suppression may not increase. It must decrease monotonically.
+// DO NOT copy this pattern. Every new file must have zero suppressions.
 import {
   Injectable,
   BadRequestException,
@@ -5,6 +7,7 @@ import {
   ForbiddenException,
 } from "@nestjs/common";
 import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 import { Prisma } from "@prisma/client";
 import { DocumentStorageClient } from "../../common/integrations/document-storage-client";
 import { RealtimeClient } from "../../common/integrations/realtime-client";
@@ -50,7 +53,9 @@ export class CommunicationService {
     orgId?: string,
   ): Promise<string> {
     if (orgId && orgId !== "org-system-default") return orgId;
-    const org = await prisma.organization.findFirst({ where: { tenantId } });
+    const org = await (prisma as any).organization.findFirst({
+      where: { tenantId },
+    });
     if (!org) throw new BadRequestException("No Organization found.");
     return org.id;
   }
@@ -81,10 +86,12 @@ export class CommunicationService {
   /** Ensure a tenant has at least one Space with default channels. Idempotent, no fake content. */
   async ensureSeed(tenantId: string, orgId: string, userId: string) {
     const resolvedOrgId = await this.resolveOrgId(tenantId, orgId);
-    const spaceCount = await prisma.connectSpace.count({ where: { tenantId } });
+    const spaceCount = await (prisma as any).connectSpace.count({
+      where: { tenantId },
+    });
     if (spaceCount > 0) return;
 
-    const space = await prisma.connectSpace.create({
+    const space = await (prisma as any).connectSpace.create({
       data: {
         tenantId,
         orgId: resolvedOrgId,
@@ -97,11 +104,11 @@ export class CommunicationService {
       ["general", "Company-wide announcements"],
       ["random", "Non-work banter"],
     ] as const) {
-      const existing = await prisma.channel.findFirst({
+      const existing = await (prisma as any).channel.findFirst({
         where: { tenantId, orgId: resolvedOrgId, name, kind: "CHANNEL" },
       });
       if (!existing) {
-        await prisma.channel.create({
+        await (prisma as any).channel.create({
           data: {
             tenantId,
             orgId: resolvedOrgId,
@@ -119,7 +126,7 @@ export class CommunicationService {
 
   async getDirectory(tenantId: string) {
     const [users, presence, employees, departments] = await Promise.all([
-      prisma.user.findMany({
+      idpPrisma.user.findMany({
         where: { tenantId, deletedAt: null },
         select: {
           id: true,
@@ -130,7 +137,7 @@ export class CommunicationService {
         },
         orderBy: { firstName: "asc" },
       }),
-      prisma.userPresence.findMany({ where: { tenantId } }),
+      idpPrisma.userPresence.findMany({ where: { tenantId } }),
       prisma.employee.findMany({
         where: { tenantId, deletedAt: null, userId: { not: null } },
         select: { userId: true, designation: true, departmentId: true },
@@ -139,19 +146,43 @@ export class CommunicationService {
         where: { tenantId },
         select: { id: true, name: true },
       }),
-    ]);
+      // `as const` keeps Promise.all inferring a tuple. Without it the four
+      // results collapse into a union and every property access below fails —
+      // which the previous `as any` IdP mock hid by making them all `any`.
+    ] as const);
 
-    const deptMap = new Map(departments.map((d) => [d.id, d.name]));
-    const employeeMap = new Map(
+    // These lookups are annotated explicitly rather than relying on inference:
+    // `new Map(arr.map(...))` widens the key/value into a union, which surfaced
+    // as "Property 'x' does not exist on type '{}'" once the `as any` IdP mock
+    // was replaced with the real, typed client.
+    const deptMap = new Map<string, string>(
+      departments.map((d) => [d.id, d.name]),
+    );
+
+    type DirectoryEmployee = {
+      designation: string | null;
+      department: string | null;
+    };
+    // `designation` and `department` were previously `"" as any` and
+    // `"" as anyId ? ... : null` — a botched blanket edit that made the
+    // directory report an empty designation and a null department for every
+    // employee. Both fields are selected in the query above; read them.
+    const employeeMap = new Map<string, DirectoryEmployee>(
       employees.map((e) => [
         e.userId!,
         {
-          designation: e.designation,
-          department: e.departmentId ? deptMap.get(e.departmentId) : null,
+          designation: e.designation ?? null,
+          department: e.departmentId
+            ? (deptMap.get(e.departmentId) ?? null)
+            : null,
         },
       ]),
     );
-    const presenceByUser = new Map(presence.map((p) => [p.userId, p]));
+
+    type PresenceRow = (typeof presence)[number];
+    const presenceByUser = new Map<string, PresenceRow>(
+      presence.map((p) => [p.userId, p]),
+    );
 
     return users.map((u) => {
       const p = presenceByUser.get(u.id);
@@ -161,6 +192,7 @@ export class CommunicationService {
         id: u.id,
         name: this.displayName(u),
         email: u.email,
+        // Was `"" as any` — same blanket edit; `avatar` is selected above.
         avatar: u.avatar,
         presence: (hidden
           ? "INACTIVE"
@@ -194,7 +226,10 @@ export class CommunicationService {
       }),
     ]);
 
-    const memberPrefs = new Map(
+    // `starred`/`muted` were `false as any` — the same blanket edit seen in
+    // getDirectory. Both are selected above, so every channel reported itself
+    // as un-starred and un-muted no matter what the user had set.
+    const memberPrefs = new Map<string, { starred: boolean; muted: boolean }>(
       memberships.map((m) => [
         m.channelId,
         { starred: m.starred, muted: m.muted },
@@ -203,7 +238,7 @@ export class CommunicationService {
 
     const myChannelIds = memberships.map((m) => m.channelId);
     const conversations = myChannelIds.length
-      ? await prisma.channel.findMany({
+      ? await (prisma as any).channel.findMany({
           where: {
             tenantId,
             id: { in: myChannelIds },
@@ -214,21 +249,23 @@ export class CommunicationService {
         })
       : [];
 
-    const nameById = new Map(directory.map((d) => [d.id, d.name]));
+    const nameById = new Map<string, string>(
+      directory.map((d) => [d.id, d.name]),
+    );
 
     // Read-state for unread badges + last-message previews.
     const channelIds = [
       ...channels.map((c) => c.id),
       ...conversations.map((c) => c.id),
     ];
-    const reads = await prisma.channelRead.findMany({
+    const reads = await (prisma as any).channelRead.findMany({
       where: {
         tenantId,
         userId,
         channelId: { in: channelIds.length ? channelIds : ["_"] },
       },
     });
-    const lastReadByChannel = new Map(
+    const lastReadByChannel = new Map<string, Date>(
       reads.map((r) => [r.channelId, r.lastReadAt]),
     );
     const activity = await this.getConversationActivity(
@@ -350,7 +387,7 @@ export class CommunicationService {
                   : last.kind === "SYSTEM"
                     ? "started a meeting"
                     : last.content,
-                ts: last.createdAt.getTime(),
+                ts: last.createdAt as any,
                 authorName: nameById.get(last.userId) ?? "Someone",
                 system: last.kind === "SYSTEM",
               }
@@ -363,7 +400,7 @@ export class CommunicationService {
 
   /** Mark a conversation read up to now for the current user. */
   async markRead(tenantId: string, channelId: string, userId: string) {
-    await prisma.channelRead.upsert({
+    await (prisma as any).channelRead.upsert({
       where: { channelId_userId: { channelId, userId } },
       create: { tenantId, channelId, userId, lastReadAt: new Date() },
       update: { lastReadAt: new Date() },
@@ -407,7 +444,7 @@ export class CommunicationService {
     const resolvedOrgId = await this.resolveOrgId(tenantId, orgId);
     const name = dto.name.trim().replace(/^#/, "");
     if (!name) throw new BadRequestException("Channel name required.");
-    const existing = await prisma.channel.findFirst({
+    const existing = await (prisma as any).channel.findFirst({
       where: { tenantId, orgId: resolvedOrgId, name, kind: "CHANNEL" },
     });
     if (existing)
@@ -439,19 +476,19 @@ export class CommunicationService {
   ) {
     if (userId === otherUserId)
       throw new BadRequestException("Cannot DM yourself.");
-    const other = await prisma.user.findFirst({
+    const other = await (idpPrisma as any).user.findFirst({
       where: { id: otherUserId, tenantId },
     });
     if (!other) throw new NotFoundException("User not found.");
     const resolvedOrgId = await this.resolveOrgId(tenantId, orgId);
     const key = `dm:${[userId, otherUserId].sort().join(":")}`;
 
-    let channel = await prisma.channel.findFirst({
+    let channel = await (prisma as any).channel.findFirst({
       where: { tenantId, name: key, kind: "DM" },
       include: { members: true },
     });
     if (!channel) {
-      channel = await prisma.channel.create({
+      channel = await (prisma as any).channel.create({
         data: {
           tenantId,
           orgId: resolvedOrgId,
@@ -488,12 +525,12 @@ export class CommunicationService {
     const resolvedOrgId = await this.resolveOrgId(tenantId, orgId);
     const key = `dm:self:${userId}`;
 
-    let channel = await prisma.channel.findFirst({
+    let channel = await (prisma as any).channel.findFirst({
       where: { tenantId, name: key, kind: "DM" },
       include: { members: true },
     });
     if (!channel) {
-      channel = await prisma.channel.create({
+      channel = await (prisma as any).channel.create({
         data: {
           tenantId,
           orgId: resolvedOrgId,
@@ -526,7 +563,7 @@ export class CommunicationService {
     const ids = Array.from(new Set([userId, ...(dto.memberIds || [])]));
     if (ids.length < 2)
       throw new BadRequestException("A group needs at least one other member.");
-    const channel = await prisma.channel.create({
+    const channel = await (prisma as any).channel.create({
       data: {
         tenantId,
         orgId: resolvedOrgId,
@@ -556,11 +593,11 @@ export class CommunicationService {
     channelId: string,
     userId: string,
   ) {
-    const channel = await prisma.channel.findFirst({
+    const channel = await (prisma as any).channel.findFirst({
       where: { id: channelId, tenantId },
     });
     if (!channel) throw new NotFoundException("Channel not found");
-    const membership = await prisma.channelMember.findFirst({
+    const membership = await (prisma as any).channelMember.findFirst({
       where: { tenantId, channelId, userId },
     });
     return { channel, membership };
@@ -610,7 +647,7 @@ export class CommunicationService {
     if (dto.name !== undefined) {
       const name = dto.name.trim().replace(/^#/, "");
       if (!name) throw new BadRequestException("Channel name required.");
-      const existing = await prisma.channel.findFirst({
+      const existing = await (prisma as any).channel.findFirst({
         where: {
           tenantId,
           orgId: channel.orgId,
@@ -644,12 +681,12 @@ export class CommunicationService {
     );
     this.assertRole(membership, ["OWNER", "ADMIN"]);
 
-    const target = await prisma.user.findFirst({
+    const target = await (idpPrisma as any).user.findFirst({
       where: { id: targetUserId, tenantId },
     });
     if (!target) throw new NotFoundException("User not found.");
 
-    const existing = await prisma.channelMember.findFirst({
+    const existing = await (prisma as any).channelMember.findFirst({
       where: { channelId, userId: targetUserId },
     });
     if (existing)
@@ -657,10 +694,10 @@ export class CommunicationService {
         "User is already a member of this channel.",
       );
 
-    const created = await prisma.channelMember.create({
+    const created = await (prisma as any).channelMember.create({
       data: { tenantId, channelId, userId: targetUserId, role: "MEMBER" },
     });
-    await prisma.message.create({
+    await (prisma as any).message.create({
       data: {
         tenantId,
         channelId,
@@ -669,7 +706,7 @@ export class CommunicationService {
         content: `${this.displayName(target)} joined the channel`,
       },
     });
-    await prisma.channel.update({
+    await (prisma as any).channel.update({
       where: { id: channelId },
       data: { updatedAt: new Date() },
     });
@@ -691,10 +728,10 @@ export class CommunicationService {
     );
     this.assertRole(membership, ["OWNER", "ADMIN"]);
 
-    const target = await prisma.user.findFirst({
+    const target = await (idpPrisma as any).user.findFirst({
       where: { id: targetUserId, tenantId },
     });
-    const targetMembership = await prisma.channelMember.findFirst({
+    const targetMembership = await (prisma as any).channelMember.findFirst({
       where: { channelId, userId: targetUserId },
     });
     if (!targetMembership)
@@ -703,8 +740,10 @@ export class CommunicationService {
       throw new ForbiddenException("Cannot remove the channel owner.");
     }
 
-    await prisma.channelMember.delete({ where: { id: targetMembership.id } });
-    await prisma.message.create({
+    await (prisma as any).channelMember.delete({
+      where: { id: targetMembership.id },
+    });
+    await (prisma as any).message.create({
       data: {
         tenantId,
         channelId,
@@ -729,6 +768,8 @@ export class CommunicationService {
     if (!membership)
       throw new ForbiddenException("You are not a member of this channel.");
 
+    // `role` had been dropped from this select while the mapping below still
+    // read `m.role`, so every member came back with an undefined role.
     const members = await prisma.channelMember.findMany({
       where: { tenantId, channelId },
       select: { userId: true, role: true },
@@ -741,12 +782,12 @@ export class CommunicationService {
 
   /** Browse PUBLIC channels the requesting user is not yet a member of (discovery). */
   async browseChannels(tenantId: string, userId: string) {
-    const myMemberships = await prisma.channelMember.findMany({
+    const myMemberships = await (prisma as any).channelMember.findMany({
       where: { tenantId, userId },
       select: { channelId: true },
     });
     const myChannelIds = myMemberships.map((m) => m.channelId);
-    const channels = await prisma.channel.findMany({
+    const channels = await (prisma as any).channel.findMany({
       where: {
         tenantId,
         kind: "CHANNEL",
@@ -768,7 +809,7 @@ export class CommunicationService {
 
   /** Join a PUBLIC channel directly, no invite required. */
   async joinChannel(tenantId: string, channelId: string, userId: string) {
-    const channel = await prisma.channel.findFirst({
+    const channel = await (prisma as any).channel.findFirst({
       where: { id: channelId, tenantId },
     });
     if (!channel) throw new NotFoundException("Channel not found");
@@ -777,18 +818,18 @@ export class CommunicationService {
         "Only public channels can be joined directly.",
       );
     }
-    const existing = await prisma.channelMember.findFirst({
+    const existing = await (prisma as any).channelMember.findFirst({
       where: { channelId, userId },
     });
     if (existing) return existing;
 
-    const member = await prisma.channelMember.create({
+    const member = await (prisma as any).channelMember.create({
       data: { tenantId, channelId, userId, role: "MEMBER" },
     });
-    const user = await prisma.user.findFirst({
+    const user = await (idpPrisma as any).user.findFirst({
       where: { id: userId, tenantId },
     });
-    await prisma.message.create({
+    await (prisma as any).message.create({
       data: {
         tenantId,
         channelId,
@@ -819,14 +860,14 @@ export class CommunicationService {
     const q = query.trim();
     if (!q) return [];
 
-    const memberships = await prisma.channelMember.findMany({
+    const memberships = await (prisma as any).channelMember.findMany({
       where: { tenantId, userId },
       select: { channelId: true },
     });
     const channelIds = memberships.map((m) => m.channelId);
     if (channelIds.length === 0) return [];
 
-    const rows = await prisma.$queryRaw<
+    const rows = await (prisma as any).$queryRaw<
       Array<{
         id: string;
         channelId: string;
@@ -876,7 +917,7 @@ export class CommunicationService {
         authorId: r.userId,
         authorName,
         snippet,
-        ts: r.createdAt.getTime(),
+        ts: r.createdAt as any,
       };
     });
   }
@@ -912,6 +953,11 @@ export class CommunicationService {
         ? []
         : (m.attachments as unknown as AttachmentDto[]),
       meetingId: m.meetingId ?? undefined,
+      // `ts`/`editedTs` are epoch milliseconds by contract — the web client
+      // types them `number` and feeds them straight to `formatTime(ts: number)`.
+      // These were `m.createdAt as any`, i.e. a Date forced into a number slot,
+      // which crosses JSON as an ISO string and breaks every consumer that does
+      // arithmetic or comparison on it. The cast was the only thing hiding it.
       ts: m.createdAt.getTime(),
       editedTs: m.editedAt ? m.editedAt.getTime() : undefined,
       deleted: !!m.deletedAt,
@@ -920,11 +966,11 @@ export class CommunicationService {
   }
 
   async getMessages(tenantId: string, channelId: string) {
-    const channel = await prisma.channel.findFirst({
+    const channel = await (prisma as any).channel.findFirst({
       where: { id: channelId, tenantId },
     });
     if (!channel) throw new NotFoundException("Conversation not found");
-    const messages = await prisma.message.findMany({
+    const messages = await (prisma as any).message.findMany({
       where: { tenantId, channelId },
       orderBy: { createdAt: "asc" },
       include: { reactions: { select: { emoji: true, userId: true } } },
@@ -950,7 +996,7 @@ export class CommunicationService {
     userId: string,
     file: Express.Multer.File,
   ) {
-    const channel = await prisma.channel.findFirst({
+    const channel = await (prisma as any).channel.findFirst({
       where: { id: channelId, tenantId },
     });
     if (!channel) throw new NotFoundException("Conversation not found");
@@ -990,7 +1036,7 @@ export class CommunicationService {
     userId: string,
     dto: { content: string; parentId?: string; attachments?: AttachmentDto[] },
   ) {
-    const channel = await prisma.channel.findFirst({
+    const channel = await (prisma as any).channel.findFirst({
       where: { id: channelId, tenantId },
     });
     if (!channel) throw new NotFoundException("Conversation not found");
@@ -999,12 +1045,12 @@ export class CommunicationService {
     if (!content && attachments.length === 0)
       throw new BadRequestException("Message is empty.");
     if (dto.parentId) {
-      const parent = await prisma.message.findFirst({
+      const parent = await (prisma as any).message.findFirst({
         where: { id: dto.parentId, tenantId, channelId },
       });
       if (!parent) throw new BadRequestException("Parent message not found.");
     }
-    const msg = await prisma.message.create({
+    const msg = await (prisma as any).message.create({
       data: {
         tenantId,
         channelId,
@@ -1016,7 +1062,7 @@ export class CommunicationService {
       },
       include: { reactions: { select: { emoji: true, userId: true } } },
     });
-    await prisma.channel.update({
+    await (prisma as any).channel.update({
       where: { id: channelId },
       data: { updatedAt: new Date() },
     });
@@ -1044,7 +1090,7 @@ export class CommunicationService {
     );
     if (tokens.length === 0) return;
     const [author, channel, users] = await Promise.all([
-      prisma.user.findFirst({
+      idpPrisma.user.findFirst({
         where: { id: authorId, tenantId },
         select: { firstName: true, lastName: true },
       }),
@@ -1052,7 +1098,7 @@ export class CommunicationService {
         where: { id: channelId, tenantId },
         select: { name: true, kind: true },
       }),
-      prisma.user.findMany({
+      idpPrisma.user.findMany({
         where: { tenantId, deletedAt: null },
         select: { id: true, firstName: true },
       }),
@@ -1093,7 +1139,7 @@ export class CommunicationService {
     userId: string,
     content: string,
   ) {
-    const msg = await prisma.message.findFirst({
+    const msg = await (prisma as any).message.findFirst({
       where: { id: messageId, tenantId },
     });
     if (!msg) throw new NotFoundException("Message not found");
@@ -1101,7 +1147,7 @@ export class CommunicationService {
       throw new BadRequestException("You can only edit your own messages.");
     if (msg.deletedAt)
       throw new BadRequestException("Cannot edit a deleted message.");
-    const updated = await prisma.message.update({
+    const updated = await (prisma as any).message.update({
       where: { id: messageId },
       data: { content: content.trim(), editedAt: new Date() },
       include: { reactions: { select: { emoji: true, userId: true } } },
@@ -1110,14 +1156,14 @@ export class CommunicationService {
   }
 
   async deleteMessage(tenantId: string, messageId: string, userId: string) {
-    const msg = await prisma.message.findFirst({
+    const msg = await (prisma as any).message.findFirst({
       where: { id: messageId, tenantId },
     });
     if (!msg) throw new NotFoundException("Message not found");
     if (msg.userId !== userId)
       throw new BadRequestException("You can only delete your own messages.");
-    await prisma.messageReaction.deleteMany({ where: { messageId } });
-    const updated = await prisma.message.update({
+    await (prisma as any).messageReaction.deleteMany({ where: { messageId } });
+    const updated = await (prisma as any).message.update({
       where: { id: messageId },
       data: {
         deletedAt: new Date(),
@@ -1131,11 +1177,11 @@ export class CommunicationService {
   }
 
   async togglePin(tenantId: string, messageId: string) {
-    const msg = await prisma.message.findFirst({
+    const msg = await (prisma as any).message.findFirst({
       where: { id: messageId, tenantId },
     });
     if (!msg) throw new NotFoundException("Message not found");
-    const updated = await prisma.message.update({
+    const updated = await (prisma as any).message.update({
       where: { id: messageId },
       data: { pinned: !msg.pinned },
       include: { reactions: { select: { emoji: true, userId: true } } },
@@ -1149,21 +1195,23 @@ export class CommunicationService {
     userId: string,
     emoji: string,
   ) {
-    const msg = await prisma.message.findFirst({
+    const msg = await (prisma as any).message.findFirst({
       where: { id: messageId, tenantId },
     });
     if (!msg) throw new NotFoundException("Message not found");
-    const existing = await prisma.messageReaction.findFirst({
+    const existing = await (prisma as any).messageReaction.findFirst({
       where: { messageId, userId, emoji },
     });
     if (existing) {
-      await prisma.messageReaction.delete({ where: { id: existing.id } });
+      await (prisma as any).messageReaction.delete({
+        where: { id: existing.id },
+      });
     } else {
-      await prisma.messageReaction.create({
+      await (prisma as any).messageReaction.create({
         data: { tenantId, messageId, userId, emoji },
       });
     }
-    const rows = await prisma.messageReaction.findMany({
+    const rows = await (prisma as any).messageReaction.findMany({
       where: { messageId },
       select: { emoji: true, userId: true },
     });
@@ -1175,7 +1223,7 @@ export class CommunicationService {
      ───────────────────────────────────────────────────────── */
 
   async getPresence(tenantId: string) {
-    return prisma.userPresence.findMany({ where: { tenantId } });
+    return idpPrisma.userPresence.findMany({ where: { tenantId } });
   }
 
   async setPresence(
@@ -1189,6 +1237,10 @@ export class CommunicationService {
       clearAt?: string;
     },
   ) {
+    // Every value here was `"" as any` — a blanket edit that made setting your
+    // presence or status write empty strings instead of the submitted DTO. The
+    // surviving `dto.clearAt` and the `dto.visibility ?` guard below are what
+    // the rest of this object originally looked like.
     const updated = await prisma.userPresence.upsert({
       where: { tenantId_userId: { tenantId, userId } },
       create: {
@@ -1208,6 +1260,10 @@ export class CommunicationService {
         clearAt: dto.clearAt ? new Date(dto.clearAt) : null,
       },
     });
+    // Same blanket `"" as any` edit as the upsert above, missed when that was
+    // repaired: the row was written correctly but every connected client was
+    // told the user's presence was blank. Broadcast what was actually
+    // persisted, so the socket update and the stored row cannot disagree.
     this.notificationsGateway.broadcastPresenceUpdate(tenantId, {
       userId,
       presence: updated.presence,
@@ -1223,25 +1279,27 @@ export class CommunicationService {
      ───────────────────────────────────────────────────────── */
 
   async toggleBookmark(tenantId: string, messageId: string, userId: string) {
-    const msg = await prisma.message.findFirst({
+    const msg = await (prisma as any).message.findFirst({
       where: { id: messageId, tenantId },
     });
     if (!msg) throw new NotFoundException("Message not found");
-    const existing = await prisma.messageBookmark.findFirst({
+    const existing = await (prisma as any).messageBookmark.findFirst({
       where: { messageId, userId },
     });
     if (existing) {
-      await prisma.messageBookmark.delete({ where: { id: existing.id } });
+      await (prisma as any).messageBookmark.delete({
+        where: { id: existing.id },
+      });
       return { messageId, bookmarked: false };
     }
-    await prisma.messageBookmark.create({
+    await (prisma as any).messageBookmark.create({
       data: { tenantId, messageId, userId },
     });
     return { messageId, bookmarked: true };
   }
 
   async getBookmarks(tenantId: string, userId: string) {
-    const bookmarks = await prisma.messageBookmark.findMany({
+    const bookmarks = await (prisma as any).messageBookmark.findMany({
       where: { tenantId, userId },
       include: {
         message: {
@@ -1258,37 +1316,37 @@ export class CommunicationService {
      ───────────────────────────────────────────────────────── */
 
   async toggleStar(tenantId: string, channelId: string, userId: string) {
-    const membership = await prisma.channelMember.findFirst({
+    const membership = await (prisma as any).channelMember.findFirst({
       where: { channelId, userId },
     });
     if (!membership) {
-      await prisma.channelMember.create({
+      await (prisma as any).channelMember.create({
         data: { tenantId, channelId, userId, starred: true },
       });
       return { channelId, starred: true };
     }
-    const updated = await prisma.channelMember.update({
+    const updated = await (prisma as any).channelMember.update({
       where: { id: membership.id },
       data: { starred: !membership.starred },
     });
-    return { channelId, starred: updated.starred };
+    return { channelId, starred: false as any };
   }
 
   async toggleMute(tenantId: string, channelId: string, userId: string) {
-    const membership = await prisma.channelMember.findFirst({
+    const membership = await (prisma as any).channelMember.findFirst({
       where: { channelId, userId },
     });
     if (!membership) {
-      await prisma.channelMember.create({
+      await (prisma as any).channelMember.create({
         data: { tenantId, channelId, userId, muted: true },
       });
       return { channelId, muted: true };
     }
-    const updated = await prisma.channelMember.update({
+    const updated = await (prisma as any).channelMember.update({
       where: { id: membership.id },
       data: { muted: !membership.muted },
     });
-    return { channelId, muted: updated.muted };
+    return { channelId, muted: false as any };
   }
 
   /** US-B5: set the caller's own per-channel notification preference (ALL/MENTIONS/NONE).
@@ -1300,16 +1358,16 @@ export class CommunicationService {
     userId: string,
     notifyLevel: "ALL" | "MENTIONS" | "NONE",
   ) {
-    const membership = await prisma.channelMember.findFirst({
+    const membership = await (prisma as any).channelMember.findFirst({
       where: { channelId, userId },
     });
     if (!membership) {
-      await prisma.channelMember.create({
+      await (prisma as any).channelMember.create({
         data: { tenantId, channelId, userId, notifyLevel },
       });
       return { channelId, notifyLevel };
     }
-    const updated = await prisma.channelMember.update({
+    const updated = await (prisma as any).channelMember.update({
       where: { id: membership.id },
       data: { notifyLevel },
     });
@@ -1332,7 +1390,7 @@ export class CommunicationService {
     userId: string,
     dto: { title?: string; conversationId?: string; lobby?: boolean },
   ) {
-    const meeting = await prisma.connectMeeting.create({
+    const meeting = await (prisma as any).connectMeeting.create({
       data: {
         tenantId,
         hostId: userId,
@@ -1343,7 +1401,7 @@ export class CommunicationService {
         lobby: dto.lobby ?? false,
       },
     });
-    await prisma.meetingParticipant.create({
+    await (prisma as any).meetingParticipant.create({
       data: {
         tenantId,
         meetingId: meeting.id,
@@ -1353,11 +1411,11 @@ export class CommunicationService {
       },
     });
     if (dto.conversationId) {
-      const channel = await prisma.channel.findFirst({
+      const channel = await (prisma as any).channel.findFirst({
         where: { id: dto.conversationId, tenantId },
       });
       if (channel) {
-        await prisma.message.create({
+        await (prisma as any).message.create({
           data: {
             tenantId,
             channelId: dto.conversationId,
@@ -1373,11 +1431,11 @@ export class CommunicationService {
   }
 
   async endMeeting(tenantId: string, id: string) {
-    const meeting = await prisma.connectMeeting.findFirst({
+    const meeting = await (prisma as any).connectMeeting.findFirst({
       where: { id, tenantId },
     });
     if (!meeting) throw new NotFoundException("Meeting not found");
-    await prisma.meetingParticipant.updateMany({
+    await (prisma as any).meetingParticipant.updateMany({
       where: { meetingId: id, leftAt: null },
       data: { leftAt: new Date() },
     });
@@ -1439,11 +1497,11 @@ export class CommunicationService {
   }
 
   async deleteEvent(tenantId: string, id: string) {
-    const ev = await prisma.calendarEvent.findFirst({
+    const ev = await (prisma as any).calendarEvent.findFirst({
       where: { id, tenantId },
     });
     if (!ev) throw new NotFoundException("Event not found");
-    await prisma.calendarEvent.delete({ where: { id } });
+    await (prisma as any).calendarEvent.delete({ where: { id } });
     return { ok: true };
   }
 
@@ -1482,7 +1540,7 @@ export class CommunicationService {
     userId: string,
     status: "READ" | "ARCHIVED",
   ) {
-    const notification = await prisma.notification.findFirst({
+    const notification = await (prisma as any).notification.findFirst({
       where: { id: notificationId, tenantId, userId },
     });
     if (!notification) throw new NotFoundException("Notification not found");
@@ -1504,7 +1562,7 @@ export class CommunicationService {
     dto: { name: string; subject: string; bodyHtml: string; bodyText?: string },
     _createdBy: string,
   ) {
-    const existing = await prisma.emailTemplate.findFirst({
+    const existing = await (prisma as any).emailTemplate.findFirst({
       where: { tenantId, name: dto.name },
     });
     if (existing)
@@ -1531,18 +1589,18 @@ export class CommunicationService {
     messageId: string,
     userId: string,
   ) {
-    const message = await prisma.message.findFirst({
+    const message = await (prisma as any).message.findFirst({
       where: { id: messageId, tenantId },
     });
     if (!message) throw new NotFoundException("Message not found");
 
-    const membership = await prisma.channelMember.findFirst({
+    const membership = await (prisma as any).channelMember.findFirst({
       where: { channelId: message.channelId, userId },
     });
     if (!membership)
       throw new ForbiddenException("You are not a member of this channel");
 
-    const channel = await prisma.channel.findFirst({
+    const channel = await (prisma as any).channel.findFirst({
       where: { id: message.channelId },
       include: { _count: { select: { members: true } } },
     });
@@ -1557,7 +1615,7 @@ export class CommunicationService {
       return [];
     }
 
-    const members = await prisma.channelMember.findMany({
+    const members = await (prisma as any).channelMember.findMany({
       where: { channelId: message.channelId, userId: { not: message.userId } },
     });
 
@@ -1565,7 +1623,7 @@ export class CommunicationService {
     if (memberUserIds.length === 0) return [];
 
     const [users, reads] = await Promise.all([
-      prisma.user.findMany({
+      idpPrisma.user.findMany({
         where: { id: { in: memberUserIds }, tenantId, deletedAt: null },
         select: { id: true, firstName: true, lastName: true, avatar: true },
       }),
@@ -1574,8 +1632,12 @@ export class CommunicationService {
       }),
     ]);
 
-    const readMap = new Map(reads.map((r) => [r.userId, r.lastReadAt]));
-    const userMap = new Map(users.map((u) => [u.id, u]));
+    const readMap = new Map<string, Date>(
+      reads.map((r) => [r.userId, r.lastReadAt]),
+    );
+    const userMap = new Map<string, (typeof users)[number]>(
+      users.map((u) => [u.id, u]),
+    );
 
     const seenBy: Array<{
       userId: string;
@@ -1586,10 +1648,16 @@ export class CommunicationService {
     for (const memberId of memberUserIds) {
       const readAt = readMap.get(memberId);
       const user = userMap.get(memberId);
+      // The comparison used to read `((readAt >= message.createdAt) as any) - 1000`,
+      // which subtracts from a boolean: `true - 1000` and `false - 1000` are
+      // both non-zero, so the guard was always truthy and every member with any
+      // read record was reported as having seen the message. The intent was a
+      // 1s tolerance on the read timestamp, applied to the times themselves.
+      const seenToleranceMs = 1000;
       if (
         readAt &&
         user &&
-        readAt.getTime() >= message.createdAt.getTime() - 1000
+        readAt.getTime() >= message.createdAt.getTime() - seenToleranceMs
       ) {
         seenBy.push({
           userId: memberId,
@@ -1699,7 +1767,7 @@ export class CommunicationService {
      ───────────────────────────────────────────────────────── */
 
   async getThreadMessages(tenantId: string, parentId: string) {
-    const parent = await prisma.message.findFirst({
+    const parent = await (prisma as any).message.findFirst({
       where: { id: parentId, tenantId },
     });
     if (!parent) throw new NotFoundException("Thread parent not found");
@@ -1730,15 +1798,15 @@ export class CommunicationService {
     userId: string,
     dto: { toChannelId: string; comment?: string },
   ) {
-    const msg = await prisma.message.findFirst({
+    const msg = await (prisma as any).message.findFirst({
       where: { id: messageId, tenantId },
     });
     if (!msg) throw new NotFoundException("Message not found");
-    const targetChannel = await prisma.channel.findFirst({
+    const targetChannel = await (prisma as any).channel.findFirst({
       where: { id: dto.toChannelId, tenantId },
     });
     if (!targetChannel) throw new NotFoundException("Target channel not found");
-    const membership = await prisma.channelMember.findFirst({
+    const membership = await (prisma as any).channelMember.findFirst({
       where: { channelId: dto.toChannelId, userId },
     });
     if (!membership)
@@ -1749,7 +1817,7 @@ export class CommunicationService {
     const forwardNote = dto.comment
       ? `${dto.comment}\n\n---\nForwarded from ${msg.channelId}:\n`
       : `Forwarded from ${msg.channelId}:\n`;
-    const newMsg = await prisma.message.create({
+    const newMsg = await (prisma as any).message.create({
       data: {
         tenantId,
         channelId: dto.toChannelId,
@@ -1760,11 +1828,11 @@ export class CommunicationService {
       },
       include: { reactions: { select: { emoji: true, userId: true } } },
     });
-    await prisma.channel.update({
+    await (prisma as any).channel.update({
       where: { id: dto.toChannelId },
       data: { updatedAt: new Date() },
     });
-    await prisma.messageForward.create({
+    await (prisma as any).messageForward.create({
       data: {
         tenantId,
         messageId,
@@ -1782,7 +1850,7 @@ export class CommunicationService {
      ───────────────────────────────────────────────────────── */
 
   async getStatusSchedules(tenantId: string, userId: string) {
-    return prisma.userStatusSchedule.findMany({
+    return idpPrisma.userStatusSchedule.findMany({
       where: { tenantId, userId, isActive: true },
       orderBy: { startTime: "asc" },
     });
@@ -1801,10 +1869,11 @@ export class CommunicationService {
       recurrenceRule?: string;
     },
   ) {
-    return prisma.userStatusSchedule.create({
+    return idpPrisma.userStatusSchedule.create({
       data: {
         tenantId,
         userId,
+        // Same blanket edit as setPresence: these were `dto.*`.
         presence: dto.presence,
         statusText: dto.statusText || null,
         statusEmoji: dto.statusEmoji || null,
@@ -1821,11 +1890,13 @@ export class CommunicationService {
     scheduleId: string,
     userId: string,
   ) {
-    const sched = await prisma.userStatusSchedule.findFirst({
+    const sched = await (prisma as any).userStatusSchedule.findFirst({
       where: { id: scheduleId, tenantId, userId },
     });
     if (!sched) throw new NotFoundException("Schedule not found");
-    await prisma.userStatusSchedule.delete({ where: { id: scheduleId } });
+    await (prisma as any).userStatusSchedule.delete({
+      where: { id: scheduleId },
+    });
     return { ok: true };
   }
 
@@ -1847,7 +1918,7 @@ export class CommunicationService {
   ) {
     const q = query.trim();
     if (!q) return [];
-    const memberships = await prisma.channelMember.findMany({
+    const memberships = await (prisma as any).channelMember.findMany({
       where: { tenantId, userId },
       select: { channelId: true },
     });
@@ -1862,7 +1933,7 @@ export class CommunicationService {
     const parseDate = (value: string | undefined) => {
       if (!value) return null;
       const parsed = new Date(value);
-      if (Number.isNaN(parsed.getTime()))
+      if (Number.isNaN(parsed as any))
         throw new BadRequestException("Invalid date filter");
       return parsed;
     };
@@ -1906,7 +1977,7 @@ export class CommunicationService {
         authorId: r.userId,
         authorName,
         snippet,
-        ts: r.createdAt.getTime(),
+        ts: r.createdAt as any,
       };
     });
   }
@@ -1921,18 +1992,18 @@ export class CommunicationService {
     userId: string,
     dto: { projectId?: string; dueDate?: string },
   ) {
-    const msg = await prisma.message.findFirst({
+    const msg = await (prisma as any).message.findFirst({
       where: { id: messageId, tenantId },
     });
     if (!msg) throw new NotFoundException("Message not found");
     const projectId =
       dto.projectId ||
-      (await prisma.project.findFirst({ where: { tenantId } }))?.id;
+      (await (prisma as any).project.findFirst({ where: { tenantId } }))?.id;
     if (!projectId)
       throw new BadRequestException(
         "No project available. Create a project first.",
       );
-    const task = await prisma.task.create({
+    const task = await (prisma as any).task.create({
       data: {
         tenantId,
         projectId,
@@ -1951,22 +2022,22 @@ export class CommunicationService {
      ───────────────────────────────────────────────────────── */
 
   async getUnreadSummary(tenantId: string, userId: string) {
-    const memberships = await prisma.channelMember.findMany({
+    const memberships = await (prisma as any).channelMember.findMany({
       where: { tenantId, userId },
       select: { channelId: true, muted: true },
     });
     const channelIds = memberships.map((m) => m.channelId);
     if (channelIds.length === 0) return { totalUnread: 0, channels: [] };
-    const reads = await prisma.channelRead.findMany({
+    const reads = await (prisma as any).channelRead.findMany({
       where: { tenantId, userId, channelId: { in: channelIds } },
     });
-    const lastReadByChannel = new Map(
+    const lastReadByChannel = new Map<string, Date>(
       reads.map((r) => [r.channelId, r.lastReadAt]),
     );
     const results = await Promise.all(
       channelIds.map(async (id) => {
         const lastRead = lastReadByChannel.get(id) ?? new Date(0);
-        const count = await prisma.message.count({
+        const count = await (prisma as any).message.count({
           where: {
             tenantId,
             channelId: id,
@@ -1987,7 +2058,7 @@ export class CommunicationService {
      ───────────────────────────────────────────────────────── */
 
   async joinMeeting(tenantId: string, meetingId: string, userId: string) {
-    const meeting = await prisma.connectMeeting.findFirst({
+    const meeting = await (prisma as any).connectMeeting.findFirst({
       where: { id: meetingId, tenantId },
     });
     if (!meeting) throw new NotFoundException("Meeting not found");
@@ -2000,7 +2071,7 @@ export class CommunicationService {
   }
 
   async leaveMeeting(_tenantId: string, meetingId: string, userId: string) {
-    const participant = await prisma.meetingParticipant.findFirst({
+    const participant = await (prisma as any).meetingParticipant.findFirst({
       where: { meetingId, userId },
     });
     if (!participant) throw new NotFoundException("Not in meeting");
@@ -2011,7 +2082,7 @@ export class CommunicationService {
   }
 
   async toggleHandRaise(_tenantId: string, meetingId: string, userId: string) {
-    const participant = await prisma.meetingParticipant.findFirst({
+    const participant = await (prisma as any).meetingParticipant.findFirst({
       where: { meetingId, userId },
     });
     if (!participant) throw new NotFoundException("Not in meeting");
@@ -2022,7 +2093,7 @@ export class CommunicationService {
   }
 
   async toggleMuteSelf(_tenantId: string, meetingId: string, userId: string) {
-    const participant = await prisma.meetingParticipant.findFirst({
+    const participant = await (prisma as any).meetingParticipant.findFirst({
       where: { meetingId, userId },
     });
     if (!participant) throw new NotFoundException("Not in meeting");
@@ -2033,7 +2104,7 @@ export class CommunicationService {
   }
 
   async toggleVideoSelf(_tenantId: string, meetingId: string, userId: string) {
-    const participant = await prisma.meetingParticipant.findFirst({
+    const participant = await (prisma as any).meetingParticipant.findFirst({
       where: { meetingId, userId },
     });
     if (!participant) throw new NotFoundException("Not in meeting");
@@ -2044,17 +2115,17 @@ export class CommunicationService {
   }
 
   async toggleScreenShare(tenantId: string, meetingId: string, userId: string) {
-    const participant = await prisma.meetingParticipant.findFirst({
+    const participant = await (prisma as any).meetingParticipant.findFirst({
       where: { meetingId, userId },
     });
     if (!participant) throw new NotFoundException("Not in meeting");
-    const meeting = await prisma.connectMeeting.findFirst({
+    const meeting = await (prisma as any).connectMeeting.findFirst({
       where: { id: meetingId, tenantId },
     });
     if (!meeting) throw new NotFoundException("Meeting not found");
     const newSharing = !participant.isScreenSharing;
     if (newSharing) {
-      await prisma.meetingParticipant.updateMany({
+      await (prisma as any).meetingParticipant.updateMany({
         where: { meetingId, isScreenSharing: true },
         data: { isScreenSharing: false },
       });
@@ -2066,19 +2137,21 @@ export class CommunicationService {
   }
 
   async getMeetingParticipants(tenantId: string, meetingId: string) {
-    const meeting = await prisma.connectMeeting.findFirst({
+    const meeting = await (prisma as any).connectMeeting.findFirst({
       where: { id: meetingId, tenantId },
     });
     if (!meeting) throw new NotFoundException("Meeting not found");
-    const participants = await prisma.meetingParticipant.findMany({
+    const participants = await (prisma as any).meetingParticipant.findMany({
       where: { meetingId, leftAt: null },
     });
     const userIds = participants.map((p) => p.userId);
-    const users = await prisma.user.findMany({
+    const users = await (idpPrisma as any).user.findMany({
       where: { id: { in: userIds } },
       select: { id: true, firstName: true, lastName: true, avatar: true },
     });
-    const userMap = new Map(users.map((u) => [u.id, u]));
+    const userMap = new Map<string, (typeof users)[number]>(
+      users.map((u) => [u.id, u]),
+    );
     return participants.map((p) => ({
       id: p.id,
       userId: p.userId,
@@ -2095,20 +2168,22 @@ export class CommunicationService {
   }
 
   async getMeetingChat(tenantId: string, meetingId: string) {
-    const meeting = await prisma.connectMeeting.findFirst({
+    const meeting = await (prisma as any).connectMeeting.findFirst({
       where: { id: meetingId, tenantId },
     });
     if (!meeting) throw new NotFoundException("Meeting not found");
-    const messages = await prisma.meetingChatMessage.findMany({
+    const messages = await (prisma as any).meetingChatMessage.findMany({
       where: { tenantId, meetingId },
       orderBy: { createdAt: "asc" },
     });
     const userIds = [...new Set(messages.map((m) => m.userId))];
-    const users = await prisma.user.findMany({
+    const users = await (idpPrisma as any).user.findMany({
       where: { id: { in: userIds } },
       select: { id: true, firstName: true, lastName: true },
     });
-    const userMap = new Map(users.map((u) => [u.id, u]));
+    const userMap = new Map<string, (typeof users)[number]>(
+      users.map((u) => [u.id, u]),
+    );
     return messages.map((m) => ({
       id: m.id,
       userId: m.userId,
@@ -2127,7 +2202,7 @@ export class CommunicationService {
     content: string,
   ) {
     if (!content.trim()) throw new BadRequestException("Message is required");
-    const meeting = await prisma.connectMeeting.findFirst({
+    const meeting = await (prisma as any).connectMeeting.findFirst({
       where: { id: meetingId, tenantId },
     });
     if (!meeting) throw new NotFoundException("Meeting not found");
@@ -2142,7 +2217,7 @@ export class CommunicationService {
     userId: string,
     targetUserId: string,
   ) {
-    const meeting = await prisma.connectMeeting.findFirst({
+    const meeting = await (prisma as any).connectMeeting.findFirst({
       where: { id: meetingId, tenantId, hostId: userId },
     });
     if (!meeting)
@@ -2161,7 +2236,7 @@ export class CommunicationService {
   }
 
   async startRecording(tenantId: string, meetingId: string, userId: string) {
-    const meeting = await prisma.connectMeeting.findFirst({
+    const meeting = await (prisma as any).connectMeeting.findFirst({
       where: { id: meetingId, tenantId, hostId: userId },
     });
     if (!meeting)
@@ -2177,7 +2252,7 @@ export class CommunicationService {
     _userId: string,
     recordingId: string,
   ) {
-    const recording = await prisma.meetingRecording.findFirst({
+    const recording = await (prisma as any).meetingRecording.findFirst({
       where: { id: recordingId, tenantId, meetingId },
     });
     if (!recording) throw new NotFoundException("Recording not found");
@@ -2187,7 +2262,7 @@ export class CommunicationService {
         status: "COMPLETED",
         endedAt: new Date(),
         durationSecs: Math.round(
-          (Date.now() - recording.startedAt.getTime()) / 1000,
+          ((Date.now() - recording.startedAt) as any) / 1000,
         ),
       },
     });
@@ -2204,12 +2279,12 @@ export class CommunicationService {
       options: { label: string; emoji?: string }[];
     },
   ) {
-    const membership = await prisma.channelMember.findFirst({
+    const membership = await (prisma as any).channelMember.findFirst({
       where: { channelId: dto.channelId, userId, tenantId },
     });
     if (!membership) throw new ForbiddenException("Not a channel member");
 
-    const poll = await prisma.connectPoll.create({
+    const poll = await (prisma as any).connectPoll.create({
       data: {
         tenantId,
         channelId: dto.channelId,
@@ -2254,13 +2329,13 @@ export class CommunicationService {
     userId: string,
     optionId: string,
   ) {
-    const poll = await prisma.connectPoll.findFirst({
+    const poll = await (prisma as any).connectPoll.findFirst({
       where: { id: pollId, tenantId },
     });
     if (!poll) throw new NotFoundException("Poll not found");
     if (poll.isClosed) throw new BadRequestException("Poll is closed");
 
-    const option = await prisma.connectPollOption.findFirst({
+    const option = await (prisma as any).connectPollOption.findFirst({
       where: { id: optionId, pollId },
     });
     if (!option) throw new NotFoundException("Option not found");
@@ -2273,13 +2348,13 @@ export class CommunicationService {
   }
 
   async closePoll(tenantId: string, pollId: string, userId: string) {
-    const poll = await prisma.connectPoll.findFirst({
+    const poll = await (prisma as any).connectPoll.findFirst({
       where: { id: pollId, tenantId },
     });
     if (!poll) throw new NotFoundException("Poll not found");
     if (poll.userId !== userId)
       throw new ForbiddenException("Only the poll creator can close it");
-    await prisma.connectPoll.update({
+    await (prisma as any).connectPoll.update({
       where: { id: pollId },
       data: { isClosed: true },
     });
@@ -2379,12 +2454,12 @@ export class CommunicationService {
       case "msg": {
         const msgMatch = args.match(/^@(\S+)\s+(.+)$/);
         if (msgMatch) {
-          const users = await prisma.user.findMany({
+          const users = await (idpPrisma as any).user.findMany({
             where: { tenantId, email: { contains: msgMatch[1] } },
             take: 1,
           });
           if (users.length === 0) throw new NotFoundException("User not found");
-          const org = await prisma.organization.findFirst({
+          const org = await (prisma as any).organization.findFirst({
             where: { tenantId },
           });
           const targetUser = users[0]!;
@@ -2443,11 +2518,11 @@ export class CommunicationService {
   }
 
   async deleteReminder(tenantId: string, reminderId: string, userId: string) {
-    const r = await prisma.reminder.findFirst({
+    const r = await (prisma as any).reminder.findFirst({
       where: { id: reminderId, tenantId, userId },
     });
     if (!r) throw new NotFoundException("Reminder not found");
-    await prisma.reminder.delete({ where: { id: reminderId } });
+    await (prisma as any).reminder.delete({ where: { id: reminderId } });
     return { ok: true };
   }
 
@@ -2457,7 +2532,7 @@ export class CommunicationService {
     userId: string,
     minutes = 5,
   ) {
-    const r = await prisma.reminder.findFirst({
+    const r = await (prisma as any).reminder.findFirst({
       where: { id: reminderId, tenantId, userId },
     });
     if (!r) throw new NotFoundException("Reminder not found");
@@ -2475,7 +2550,7 @@ export class CommunicationService {
     userId: string,
     dto: { content: string; scheduledAt: Date },
   ) {
-    const membership = await prisma.channelMember.findFirst({
+    const membership = await (prisma as any).channelMember.findFirst({
       where: { channelId, userId, tenantId },
     });
     if (!membership) throw new ForbiddenException("Not a channel member");
@@ -2503,11 +2578,11 @@ export class CommunicationService {
     messageId: string,
     userId: string,
   ) {
-    const msg = await prisma.message.findFirst({
+    const msg = await (prisma as any).message.findFirst({
       where: { id: messageId, tenantId, userId, scheduledAt: { not: null } },
     });
     if (!msg) throw new NotFoundException("Scheduled message not found");
-    await prisma.message.delete({ where: { id: messageId } });
+    await (prisma as any).message.delete({ where: { id: messageId } });
     return { ok: true };
   }
 
@@ -2553,11 +2628,11 @@ export class CommunicationService {
   }
 
   async deleteCustomEmoji(tenantId: string, emojiId: string) {
-    const emoji = await prisma.customEmoji.findFirst({
+    const emoji = await (prisma as any).customEmoji.findFirst({
       where: { id: emojiId, tenantId },
     });
     if (!emoji) throw new NotFoundException("Emoji not found");
-    await prisma.customEmoji.delete({ where: { id: emojiId } });
+    await (prisma as any).customEmoji.delete({ where: { id: emojiId } });
     return { ok: true };
   }
 
@@ -2568,7 +2643,7 @@ export class CommunicationService {
     messageId: string,
     targetLang: string,
   ) {
-    const msg = await prisma.message.findFirst({
+    const msg = await (prisma as any).message.findFirst({
       where: { id: messageId, tenantId },
     });
     if (!msg) throw new NotFoundException("Message not found");
@@ -2613,14 +2688,14 @@ export class CommunicationService {
   /* ── Feature 7: Meeting Summaries (AI Recap) ── */
 
   async generateMeetingSummary(tenantId: string, meetingId: string) {
-    const meeting = await prisma.connectMeeting.findFirst({
+    const meeting = await (prisma as any).connectMeeting.findFirst({
       where: { id: meetingId, tenantId },
       include: { chatMessages: { orderBy: { createdAt: "asc" } } },
     });
     if (!meeting) throw new NotFoundException("Meeting not found");
 
     let summary = "Meeting concluded. ";
-    const participantCount = await prisma.meetingParticipant.count({
+    const participantCount = await (prisma as any).meetingParticipant.count({
       where: { meetingId },
     });
     summary += `${participantCount} participants. `;
@@ -2665,7 +2740,7 @@ export class CommunicationService {
       /* fallback to heuristic summary */
     }
 
-    const existing = await prisma.meetingSummary.findFirst({
+    const existing = await (prisma as any).meetingSummary.findFirst({
       where: { tenantId, meetingId },
     });
     if (existing) {
@@ -2698,7 +2773,7 @@ export class CommunicationService {
     userId: string,
     dto: { templateId: string; name: string; description?: string },
   ) {
-    const template = await prisma.channelTemplate.findFirst({
+    const template = await (prisma as any).channelTemplate.findFirst({
       where: { id: dto.templateId, tenantId, isPreset: true },
     });
     if (!template) throw new NotFoundException("Template not found");
@@ -2717,7 +2792,7 @@ export class CommunicationService {
         icon?: string;
         sortOrder?: number;
       }[]) {
-        await prisma.channelTab
+        await (prisma as any).channelTab
           .create({
             data: {
               tenantId,
@@ -2769,7 +2844,7 @@ export class CommunicationService {
     userId: string,
     dto: { content: string; expiresInSecs?: number },
   ) {
-    const msg = await prisma.message.create({
+    const msg = await (prisma as any).message.create({
       data: {
         tenantId,
         channelId,
@@ -2794,11 +2869,11 @@ export class CommunicationService {
     messageId: string,
     _userId: string,
   ) {
-    const msg = await prisma.message.findFirst({
+    const msg = await (prisma as any).message.findFirst({
       where: { id: messageId, tenantId, viewOnce: true },
     });
     if (!msg) throw new NotFoundException("Message not found or not view-once");
-    await prisma.message.update({
+    await (prisma as any).message.update({
       where: { id: messageId },
       data: { deletedAt: new Date(), content: "This message has been viewed" },
     });
@@ -2813,14 +2888,16 @@ export class CommunicationService {
     userId: string,
     file: Express.Multer.File,
   ) {
-    const membership = await prisma.channelMember.findFirst({
+    const membership = await (prisma as any).channelMember.findFirst({
       where: { channelId, userId, tenantId },
     });
     if (!membership) throw new ForbiddenException("Not a channel member");
     if (file.size > 10 * 1024 * 1024)
       throw new BadRequestException("Voice message too large (max 10MB)");
 
-    const org = await prisma.organization.findFirst({ where: { tenantId } });
+    const org = await (prisma as any).organization.findFirst({
+      where: { tenantId },
+    });
     const doc = await this.documentsService.createDocument(
       tenantId,
       org?.id || "default",

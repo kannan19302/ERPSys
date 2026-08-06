@@ -3,7 +3,7 @@
 import React, { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { PageHeader, Spinner } from "@unerp/ui";
-import { SubTabBar, type SubTab } from "@unerp/ui-layout";
+import { SubTabBar, type SubTab } from "@unerp/ui/layout";
 import { Users, ShieldCheck, Package } from "lucide-react";
 import UsersTab from "./UsersTab";
 import GroupsTab from "./GroupsTab";

@@ -1,0 +1,157 @@
+model RoutingRule {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  name        String
+  description String?  @db.Text
+  priority    Int      @default(0)
+  conditions  Json     @default("[]") // Array of {field, operator, value}
+  action      Json     @default("{}") // {type: "ASSIGN_TO_AGENT"|"ASSIGN_TO_TEAM"|"SET_TAG"|"SET_PRIORITY", value: "..."}
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@map("routing_rules")
+}
+
+model WorkCenterCapacity {
+  id             String   @id @default(cuid())
+  tenantId       String   @map("tenant_id")
+  workstationId  String   @map("workstation_id")
+  date           DateTime
+  availableHours Decimal  @map("available_hours") @db.Decimal(8, 2)
+  utilizedHours  Decimal  @default(0) @map("utilized_hours") @db.Decimal(8, 2)
+  overtimeHours  Decimal  @default(0) @map("overtime_hours") @db.Decimal(8, 2)
+  notes          String?
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  workstation Workstation @relation(fields: [workstationId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([workstationId])
+  @@map("work_center_capacities")
+}
+
+model MfgSpcChart {
+  id              String   @id @default(cuid())
+  tenantId        String   @map("tenant_id")
+  name            String
+  chartType       String   @map("chart_type")
+  productId       String?  @map("product_id")
+  processId       String?  @map("process_id")
+  characteristic  String?
+  measurementUnit String?  @map("measurement_unit")
+  nominalValue    Float?   @map("nominal_value")
+  ucl             Float?
+  lcl             Float?
+  usl             Float?
+  lsl             Float?
+  sampleSize      Int?     @map("sample_size")
+  samplingFreq    String?  @map("sampling_freq")
+  isActive        Boolean  @default(true) @map("is_active")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+  dataPoints      MfgSpcDataPoint[]
+  @@index([tenantId])
+  @@map("mfg_spc_charts")
+}
+
+model MfgSpcDataPoint {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  chartId     String   @map("chart_id")
+  sampleNo    Int      @map("sample_no")
+  value       Float
+  mean        Float?
+  range       Float?
+  stdDev      Float?
+  outOfControl Boolean @default(false) @map("out_of_control")
+  violationType String? @map("violation_type")
+  workOrderId String?  @map("work_order_id")
+  operatorId  String?  @map("operator_id")
+  measuredAt  DateTime @default(now()) @map("measured_at")
+  chart       MfgSpcChart @relation(fields: [chartId], references: [id])
+  @@index([tenantId, chartId])
+  @@map("mfg_spc_data_points")
+}
+
+model MfgCostEntry {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  costSheetId String   @map("cost_sheet_id")
+  costType    String   @map("cost_type")
+  description String?
+  quantity    Float?
+  unitCost    Decimal? @db.Decimal(19,4)   @map("unit_cost")
+  amount      Decimal @db.Decimal(19,4)
+  currency    String   @default("USD")
+  resourceId  String?  @map("resource_id")
+  resourceType String? @map("resource_type")
+  postedAt    DateTime @default(now()) @map("posted_at")
+  sheet       JobCostSheet @relation(fields: [costSheetId], references: [id])
+  @@index([tenantId, costSheetId])
+  @@map("mfg_cost_entries")
+}
+
+model MfgMaintenanceWorkOrder {
+  id              String   @id @default(cuid())
+  tenantId        String   @map("tenant_id")
+  scheduleId      String?  @map("schedule_id")
+  machineId       String   @map("machine_id")
+  workOrderNo     String   @map("work_order_no")
+  maintenanceType String   @map("maintenance_type")
+  priority        String   @default("NORMAL")
+  description     String?  @db.Text
+  checklist       Json?
+  assignedTo      String?  @map("assigned_to")
+  scheduledDate   DateTime? @map("scheduled_date")
+  startedAt       DateTime? @map("started_at")
+  completedAt     DateTime? @map("completed_at")
+  status          String   @default("OPEN")
+  partsUsed       Json?    @map("parts_used")
+  laborHours      Float?   @map("labor_hours")
+  cost            Decimal? @db.Decimal(19,4)
+  findings        String?  @db.Text
+  schedule        MaintenanceSchedule? @relation(fields: [scheduleId], references: [id])
+  @@index([tenantId])
+  @@index([tenantId, machineId])
+  @@map("mfg_maintenance_work_orders")
+}
+
+model MfgDocumentControl {
+  id              String   @id @default(cuid())
+  tenantId        String   @map("tenant_id")
+  docNumber       String   @map("doc_number")
+  title           String
+  docType         String   @map("doc_type")
+  revision        String   @default("A")
+  status          String   @default("DRAFT")
+  content         String?  @db.Text
+  fileUrl         String?  @map("file_url")
+  owner           String?
+  effectiveDate   DateTime? @map("effective_date")
+  obsoleteDate    DateTime? @map("obsolete_date")
+  reviewDate      DateTime? @map("review_date")
+  approvedBy      String?  @map("approved_by")
+  approvedAt      DateTime? @map("approved_at")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+  docVersions     MfgDocumentVersion[]
+  @@index([tenantId])
+  @@map("mfg_document_controls")
+}
+
+model MfgDocumentVersion {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  docId       String   @map("doc_id")
+  revision    String
+  changes     String?  @db.Text
+  fileUrl     String?  @map("file_url")
+  createdBy   String?  @map("created_by")
+  createdAt   DateTime @default(now()) @map("created_at")
+  document    MfgDocumentControl @relation(fields: [docId], references: [id])
+  @@index([tenantId, docId])
+  @@map("mfg_document_versions")
+}

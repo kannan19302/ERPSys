@@ -1,5 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 
 /**
  * CRM RevOps & Advanced Commission service.
@@ -51,7 +52,7 @@ export class CrmRevOpsService {
     cac: number;
     ltv: number;
   }> {
-    const closedWon = await prisma.opportunity.findMany({
+    const closedWon = await (prisma as any).opportunity.findMany({
       where: { tenantId, stage: "CLOSED_WON", deletedAt: null },
     });
     const totalRevenue = closedWon.reduce(
@@ -81,7 +82,7 @@ export class CrmRevOpsService {
       status: string;
     }>
   > {
-    const opps = await prisma.opportunity.findMany({
+    const opps = await (prisma as any).opportunity.findMany({
       where: { tenantId, stage: "CLOSED_WON", deletedAt: null },
       take: 20,
     });
@@ -89,7 +90,7 @@ export class CrmRevOpsService {
     const userIds = opps
       .map((o) => o.assignedToId)
       .filter((id): id is string => !!id);
-    const users = await prisma.user.findMany({
+    const users = await (idpPrisma as any).user.findMany({
       where: { id: { in: userIds } },
       select: { id: true, firstName: true, lastName: true },
     });

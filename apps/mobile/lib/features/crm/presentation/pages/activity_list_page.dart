@@ -50,7 +50,8 @@ class _ActivityListPageState extends ConsumerState<ActivityListPage> {
   @override
   Widget build(BuildContext context) {
     final CrmListState<Activity> state = ref.watch(activitiesProvider);
-    final ActivitiesController controller = ref.read(activitiesProvider.notifier);
+    final ActivitiesController controller =
+        ref.read(activitiesProvider.notifier);
     final Palette t = context.tokens;
 
     return Scaffold(
@@ -85,7 +86,10 @@ class _ActivityListPageState extends ConsumerState<ActivityListPage> {
         children: <Widget>[
           Padding(
             padding: const EdgeInsets.fromLTRB(
-              Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2,
+              Spacing.x4,
+              Spacing.x3,
+              Spacing.x4,
+              Spacing.x2,
             ),
             child: Row(
               children: <Widget>[
@@ -97,7 +101,8 @@ class _ActivityListPageState extends ConsumerState<ActivityListPage> {
                     isExpanded: true,
                     items: _typeFilters.entries
                         .map(
-                          (MapEntry<String, String> e) => DropdownMenuItem<String>(
+                          (MapEntry<String, String> e) =>
+                              DropdownMenuItem<String>(
                             value: e.key,
                             child: Text(e.value),
                           ),
@@ -108,7 +113,8 @@ class _ActivityListPageState extends ConsumerState<ActivityListPage> {
                       if (value == null) {
                         controller.applyFilters(const <String, String>{});
                       } else {
-                        controller.applyFilters(<String, String>{'type': value});
+                        controller
+                            .applyFilters(<String, String>{'type': value});
                       }
                     },
                   ),
@@ -122,7 +128,8 @@ class _ActivityListPageState extends ConsumerState<ActivityListPage> {
                     isExpanded: true,
                     items: _statusFilters.entries
                         .map(
-                          (MapEntry<String, String> e) => DropdownMenuItem<String>(
+                          (MapEntry<String, String> e) =>
+                              DropdownMenuItem<String>(
                             value: e.key,
                             child: Text(e.value),
                           ),
@@ -180,7 +187,8 @@ class _ActivityListPageState extends ConsumerState<ActivityListPage> {
       onLoadMore: controller.loadMore,
       emptyTitle: 'No activities found',
       emptyMessage: 'Activities will appear here.',
-      itemBuilder: (BuildContext context, Activity activity, _) => _ActivityTile(
+      itemBuilder: (BuildContext context, Activity activity, _) =>
+          _ActivityTile(
         activity: activity,
         onTap: () => context.pushNamed(
           'activity-detail',
@@ -192,7 +200,6 @@ class _ActivityListPageState extends ConsumerState<ActivityListPage> {
 }
 
 class _ActivityTile extends StatelessWidget {
-
   const _ActivityTile({required this.activity, this.onTap});
 
   static const Map<String, Color> _typeColors = {
@@ -217,7 +224,8 @@ class _ActivityTile extends StatelessWidget {
     final Palette t = context.tokens;
 
     final Color typeColor = _typeColors[activity.type] ?? t.textSecondary;
-    final IconData typeIcon = _typeIcons[activity.type] ?? Icons.circle_outlined;
+    final IconData typeIcon =
+        _typeIcons[activity.type] ?? Icons.circle_outlined;
 
     return UiCard(
       onTap: onTap,
@@ -279,13 +287,17 @@ class _ActivityTile extends StatelessWidget {
                 vertical: Spacing.x1,
               ),
               decoration: BoxDecoration(
-                color: activity.status == 'COMPLETED' ? t.successLight : t.bgSunken,
+                color: activity.status == 'COMPLETED'
+                    ? t.successLight
+                    : t.bgSunken,
                 borderRadius: Radii.pill,
               ),
               child: Text(
                 activity.status!,
                 style: TextStyle(
-                  color: activity.status == 'COMPLETED' ? t.success : t.textSecondary,
+                  color: activity.status == 'COMPLETED'
+                      ? t.success
+                      : t.textSecondary,
                   fontSize: TypeScale.xs,
                   fontWeight: TypeScale.medium,
                 ),

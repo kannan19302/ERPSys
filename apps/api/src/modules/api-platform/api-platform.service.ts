@@ -4,6 +4,7 @@ import {
   BadRequestException,
 } from "@nestjs/common";
 import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 import { Prisma } from "@prisma/client";
 import { randomBytes, createHash } from "crypto";
 
@@ -22,7 +23,7 @@ export class ApiPlatformService {
     // ApiKey has no `apiUsageMetrics` relation declared in the schema (only
     // ApiUsageMetric's own scalar `apiKeyId`), so usage counts are computed
     // separately and merged in.
-    const keys = await prisma.apiKey.findMany({
+    const keys = await idpPrisma.apiKey.findMany({
       where: { tenantId },
       orderBy: { createdAt: "desc" },
     });
@@ -54,7 +55,7 @@ export class ApiPlatformService {
     const expiresAt = dto.expiresInDays
       ? new Date(Date.now() + dto.expiresInDays * 86400000)
       : null;
-    const key = await prisma.apiKey.create({
+    const key = await idpPrisma.apiKey.create({
       data: {
         tenantId,
         name: dto.name,
@@ -84,16 +85,22 @@ export class ApiPlatformService {
   }
 
   async revokeApiKey(tenantId: string, id: string) {
-    const key = await prisma.apiKey.findFirst({ where: { id, tenantId } });
+    const key = await idpPrisma.apiKey.findFirst({ where: { id, tenantId } });
     if (!key) throw new NotFoundException("API Key not found");
-    return prisma.apiKey.update({ where: { id }, data: { status: "REVOKED" } });
+    return idpPrisma.apiKey.update({
+      where: { id },
+      data: { status: "REVOKED" },
+    });
   }
 
   async rotateApiKey(tenantId: string, id: string) {
-    const key = await prisma.apiKey.findFirst({ where: { id, tenantId } });
+    const key = await idpPrisma.apiKey.findFirst({ where: { id, tenantId } });
     if (!key) throw new NotFoundException("API Key not found");
     const { raw, hashedKey, prefix } = generateApiKey();
-    await prisma.apiKey.update({ where: { id }, data: { hashedKey, prefix } });
+    await idpPrisma.apiKey.update({
+      where: { id },
+      data: { hashedKey, prefix },
+    });
     return {
       key: raw,
       prefix,
@@ -106,7 +113,7 @@ export class ApiPlatformService {
     id: string,
     dto: { scopes: string[]; ipWhitelist?: string[]; rateLimit?: number },
   ) {
-    const key = await prisma.apiKey.findFirst({ where: { id, tenantId } });
+    const key = await idpPrisma.apiKey.findFirst({ where: { id, tenantId } });
     if (!key) throw new NotFoundException("API Key not found");
     const updateData: any = { apiScopes: dto.scopes.join(",") };
     if (dto.ipWhitelist !== undefined)
@@ -124,7 +131,7 @@ export class ApiPlatformService {
         },
       });
     }
-    return prisma.apiKey.update({ where: { id }, data: updateData });
+    return idpPrisma.apiKey.update({ where: { id }, data: updateData });
   }
 
   // ─── WEBHOOKS ───────────────────────────────────────

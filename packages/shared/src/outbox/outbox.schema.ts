@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 export const WriteEventParamsSchema = z.object({
   tenantId: z.string().min(1),
@@ -19,7 +19,9 @@ export const ReplayDeadLetterParamsSchema = z.object({
   tenantId: z.string().min(1),
 });
 
-export type ReplayDeadLetterParams = z.infer<typeof ReplayDeadLetterParamsSchema>;
+export type ReplayDeadLetterParams = z.infer<
+  typeof ReplayDeadLetterParamsSchema
+>;
 
 export const OutboxMetricsSchema = z.object({
   pendingCount: z.number().int().nonnegative(),

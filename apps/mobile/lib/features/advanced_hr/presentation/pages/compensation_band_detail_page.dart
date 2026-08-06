@@ -28,7 +28,9 @@ class CompensationBandDetailPage extends ConsumerWidget {
       body: bandAsync.when(
         loading: () => const LoadingView(),
         error: (Object error, StackTrace _) => FailureView(
-          failure: error is Failure ? error : const ServerFailure('Could not load compensation band.'),
+          failure: error is Failure
+              ? error
+              : const ServerFailure('Could not load compensation band.'),
           onRetry: () => ref.invalidate(compensationBandDetailProvider(bandId)),
         ),
         data: (CompensationBand band) => _CompensationBandDetail(band: band),
@@ -101,8 +103,14 @@ class _CompensationBandDetail extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               const _SectionTitle(title: 'Salary Range'),
-              _FieldRow('Minimum', Formatters.currency(band.minSalary, currencyCode: band.currency)),
-              _FieldRow('Maximum', Formatters.currency(band.maxSalary, currencyCode: band.currency)),
+              _FieldRow(
+                  'Minimum',
+                  Formatters.currency(band.minSalary,
+                      currencyCode: band.currency)),
+              _FieldRow(
+                  'Maximum',
+                  Formatters.currency(band.maxSalary,
+                      currencyCode: band.currency)),
               _FieldRow('Currency', band.currency),
             ],
           ),
@@ -115,7 +123,11 @@ class _CompensationBandDetail extends StatelessWidget {
               const _SectionTitle(title: 'Details'),
               _FieldRow('Grade', band.grade ?? '—'),
               _FieldRow('Status', statusLabel),
-              _FieldRow('Created', band.createdAt != null ? Formatters.dateTime(band.createdAt!) : '—'),
+              _FieldRow(
+                  'Created',
+                  band.createdAt != null
+                      ? Formatters.dateTime(band.createdAt!)
+                      : '—'),
             ],
           ),
         ),

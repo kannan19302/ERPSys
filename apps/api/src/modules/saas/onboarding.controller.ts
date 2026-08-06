@@ -5,6 +5,7 @@ import { RbacGuard } from "../../common/guards/rbac.guard";
 import { Permissions } from "../../common/decorators/permissions.decorator";
 import { ApiTags, ApiOperation, ApiBearerAuth } from "@nestjs/swagger";
 import { SaasService } from "./saas.service";
+import { DemoDataService } from "./demo-data.service";
 
 interface AuthReq extends Request {
   user: { tenantId: string; userId: string; email: string; roles: string[] };
@@ -133,7 +134,10 @@ const resources = [
 @Controller("saas/onboarding")
 @UseGuards(JwtAuthGuard, RbacGuard)
 export class OnboardingController {
-  constructor(private readonly saasService: SaasService) {}
+  constructor(
+    private readonly saasService: SaasService,
+    private readonly demoDataService: DemoDataService,
+  ) {}
 
   @ApiOperation({ summary: "Get current onboarding status" })
   @Permissions("saas.portal.read")
@@ -241,14 +245,16 @@ export class OnboardingController {
   @Permissions("saas.portal.create")
   @Post("demo-data")
   async seedDemoData(@Req() req: AuthReq) {
-    await this.saasService.db.tenant.update({
-      where: { id: req.user.tenantId },
-      data: { demoDataLoaded: true, demoLoadedAt: new Date() },
-    });
+    // This used to set `demoDataLoaded: true` and return "seeded successfully"
+    // without creating a single record, so the UI showed a populated workspace
+    // that was in fact empty. DemoDataService does the real seeding — and sets
+    // the flag itself, inside the same transaction as the inserts, so the flag
+    // cannot end up true when the seed failed.
+    const result = await this.demoDataService.seedDemoData(req.user.tenantId);
     return {
       demoDataLoaded: true,
       seededAt: new Date(),
-      message: "Demo data seeded successfully",
+      message: result.message,
     };
   }
 

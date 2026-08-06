@@ -11,7 +11,8 @@ class DriveFolderListPage extends ConsumerStatefulWidget {
   static const String routeName = 'drive-folders';
   static const String routePath = '/drive/folders';
   @override
-  ConsumerState<DriveFolderListPage> createState() => _DriveFolderListPageState();
+  ConsumerState<DriveFolderListPage> createState() =>
+      _DriveFolderListPageState();
 }
 
 class _DriveFolderListPageState extends ConsumerState<DriveFolderListPage> {
@@ -25,7 +26,8 @@ class _DriveFolderListPageState extends ConsumerState<DriveFolderListPage> {
     );
   }
 
-  Widget _body(DriveFolderListState state, DriveFolderListController controller) {
+  Widget _body(
+      DriveFolderListState state, DriveFolderListController controller) {
     if (state.isLoading && state.items.isEmpty) return const LoadingView();
     final failure = state.failure;
     if (failure != null && state.items.isEmpty) {
@@ -44,21 +46,31 @@ class _DriveFolderListPageState extends ConsumerState<DriveFolderListPage> {
         margin: EdgeInsets.zero,
         child: Padding(
           padding: const EdgeInsets.all(Spacing.x3),
-          child: Row(children: [
-            Icon(Icons.folder, size: TypeScale.base, color: f.color != null ? Color(int.parse(f.color!.replaceFirst('#', '0xFF'))) : context.tokens.textSecondary),
-            const SizedBox(width: Spacing.x2),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(f.name, style: Theme.of(context).textTheme.titleSmall),
-                  const SizedBox(height: Spacing.x1),
-                  Text('${f.fileCount} files',
-                      style: TextStyle(color: context.tokens.textSecondary, fontSize: TypeScale.xs),),
-                ],
+          child: Row(
+            children: [
+              Icon(Icons.folder,
+                  size: TypeScale.base,
+                  color: f.color != null
+                      ? Color(int.parse(f.color!.replaceFirst('#', '0xFF')))
+                      : context.tokens.textSecondary),
+              const SizedBox(width: Spacing.x2),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(f.name, style: Theme.of(context).textTheme.titleSmall),
+                    const SizedBox(height: Spacing.x1),
+                    Text(
+                      '${f.fileCount} files',
+                      style: TextStyle(
+                          color: context.tokens.textSecondary,
+                          fontSize: TypeScale.xs),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],),
+            ],
+          ),
         ),
       ),
     );

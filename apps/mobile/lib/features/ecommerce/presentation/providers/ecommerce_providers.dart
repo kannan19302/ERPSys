@@ -29,7 +29,8 @@ final Provider<EcommerceRepository> ecommerceRepositoryProvider =
 class EcommerceProductListState extends Equatable {
   const EcommerceProductListState({
     this.items = const <EcommerceProduct>[],
-    this.meta = const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
+    this.meta =
+        const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
     this.query = const ListQuery(sort: '-createdAt'),
     this.isLoading = true,
     this.isLoadingMore = false,
@@ -46,29 +47,46 @@ class EcommerceProductListState extends Equatable {
   final Failure? loadMoreFailure;
 
   EcommerceProductListState copyWith({
-    List<EcommerceProduct>? items, PaginationMeta? meta, ListQuery? query,
-    bool? isLoading, bool? isLoadingMore, Failure? failure,
-    Failure? loadMoreFailure, bool clearFailures = false,
+    List<EcommerceProduct>? items,
+    PaginationMeta? meta,
+    ListQuery? query,
+    bool? isLoading,
+    bool? isLoadingMore,
+    Failure? failure,
+    Failure? loadMoreFailure,
+    bool clearFailures = false,
   }) =>
       EcommerceProductListState(
-        items: items ?? this.items, meta: meta ?? this.meta,
-        query: query ?? this.query, isLoading: isLoading ?? this.isLoading,
+        items: items ?? this.items,
+        meta: meta ?? this.meta,
+        query: query ?? this.query,
+        isLoading: isLoading ?? this.isLoading,
         isLoadingMore: isLoadingMore ?? this.isLoadingMore,
         failure: clearFailures ? null : (failure ?? this.failure),
-        loadMoreFailure: clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
+        loadMoreFailure:
+            clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
       );
 
   @override
-  List<Object?> get props => <Object?>[items, meta, query.cacheKey, isLoading, isLoadingMore, failure, loadMoreFailure];
+  List<Object?> get props => <Object?>[
+        items,
+        meta,
+        query.cacheKey,
+        isLoading,
+        isLoadingMore,
+        failure,
+        loadMoreFailure
+      ];
 }
 
-final NotifierProvider<EcommerceProductListController, EcommerceProductListState>
-    ecommerceProductListControllerProvider =
+final NotifierProvider<EcommerceProductListController,
+        EcommerceProductListState> ecommerceProductListControllerProvider =
     NotifierProvider<EcommerceProductListController, EcommerceProductListState>(
   EcommerceProductListController.new,
 );
 
-class EcommerceProductListController extends Notifier<EcommerceProductListState> {
+class EcommerceProductListController
+    extends Notifier<EcommerceProductListState> {
   Timer? _searchDebounce;
 
   @override
@@ -89,8 +107,11 @@ class EcommerceProductListController extends Notifier<EcommerceProductListState>
     state = result.fold(
       (f) => state.copyWith(isLoading: false, failure: f, items: const []),
       (page) => state.copyWith(
-        items: page.value.data, meta: page.value.meta, query: query,
-        isLoading: false, clearFailures: true,
+        items: page.value.data,
+        meta: page.value.meta,
+        query: query,
+        isLoading: false,
+        clearFailures: true,
       ),
     );
   }
@@ -103,8 +124,11 @@ class EcommerceProductListController extends Notifier<EcommerceProductListState>
     state = result.fold(
       (f) => state.copyWith(isLoadingMore: false, loadMoreFailure: f),
       (page) => state.copyWith(
-        items: [...state.items, ...page.value.data], meta: page.value.meta,
-        query: next, isLoadingMore: false, clearFailures: true,
+        items: [...state.items, ...page.value.data],
+        meta: page.value.meta,
+        query: next,
+        isLoadingMore: false,
+        clearFailures: true,
       ),
     );
   }
@@ -112,7 +136,8 @@ class EcommerceProductListController extends Notifier<EcommerceProductListState>
   void search(String term) {
     _searchDebounce?.cancel();
     _searchDebounce = Timer(const Duration(milliseconds: 350), () {
-      state = state.copyWith(query: state.query.copyWith(search: term, page: 1));
+      state =
+          state.copyWith(query: state.query.copyWith(search: term, page: 1));
       refresh();
     });
   }
@@ -124,14 +149,17 @@ class EcommerceProductListController extends Notifier<EcommerceProductListState>
 
   Future<Result<void>> delete(String id) async {
     final result = await DeleteEcommerceProductUseCase(
-      ref.read(ecommerceRepositoryProvider),)(id);
+      ref.read(ecommerceRepositoryProvider),
+    )(id);
     if (result.isOk) await refresh();
     return result;
   }
 
-  Future<Result<EcommerceProduct>> save(Map<String, dynamic> payload, {String? id}) async {
+  Future<Result<EcommerceProduct>> save(Map<String, dynamic> payload,
+      {String? id}) async {
     final result = await SaveEcommerceProductUseCase(
-      ref.read(ecommerceRepositoryProvider),)(
+      ref.read(ecommerceRepositoryProvider),
+    )(
       SaveEcommerceProductParams(id: id, payload: payload),
     );
     if (result.isOk) await refresh();
@@ -139,17 +167,20 @@ class EcommerceProductListController extends Notifier<EcommerceProductListState>
   }
 }
 
-final FutureProviderFamily<EcommerceProduct, String> ecommerceProductDetailProvider =
+final FutureProviderFamily<EcommerceProduct, String>
+    ecommerceProductDetailProvider =
     FutureProvider.family<EcommerceProduct, String>((Ref ref, String id) async {
   final result = await GetEcommerceProductUseCase(
-    ref.watch(ecommerceRepositoryProvider),)(id);
+    ref.watch(ecommerceRepositoryProvider),
+  )(id);
   return result.fold((f) => throw f, (v) => v);
 });
 
 class EcommerceOrderListState extends Equatable {
   const EcommerceOrderListState({
     this.items = const <EcommerceOrder>[],
-    this.meta = const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
+    this.meta =
+        const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
     this.query = const ListQuery(sort: '-createdAt'),
     this.isLoading = true,
     this.isLoadingMore = false,
@@ -166,20 +197,36 @@ class EcommerceOrderListState extends Equatable {
   final Failure? loadMoreFailure;
 
   EcommerceOrderListState copyWith({
-    List<EcommerceOrder>? items, PaginationMeta? meta, ListQuery? query,
-    bool? isLoading, bool? isLoadingMore, Failure? failure,
-    Failure? loadMoreFailure, bool clearFailures = false,
+    List<EcommerceOrder>? items,
+    PaginationMeta? meta,
+    ListQuery? query,
+    bool? isLoading,
+    bool? isLoadingMore,
+    Failure? failure,
+    Failure? loadMoreFailure,
+    bool clearFailures = false,
   }) =>
       EcommerceOrderListState(
-        items: items ?? this.items, meta: meta ?? this.meta,
-        query: query ?? this.query, isLoading: isLoading ?? this.isLoading,
+        items: items ?? this.items,
+        meta: meta ?? this.meta,
+        query: query ?? this.query,
+        isLoading: isLoading ?? this.isLoading,
         isLoadingMore: isLoadingMore ?? this.isLoadingMore,
         failure: clearFailures ? null : (failure ?? this.failure),
-        loadMoreFailure: clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
+        loadMoreFailure:
+            clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
       );
 
   @override
-  List<Object?> get props => <Object?>[items, meta, query.cacheKey, isLoading, isLoadingMore, failure, loadMoreFailure];
+  List<Object?> get props => <Object?>[
+        items,
+        meta,
+        query.cacheKey,
+        isLoading,
+        isLoadingMore,
+        failure,
+        loadMoreFailure
+      ];
 }
 
 final NotifierProvider<EcommerceOrderListController, EcommerceOrderListState>
@@ -209,8 +256,11 @@ class EcommerceOrderListController extends Notifier<EcommerceOrderListState> {
     state = result.fold(
       (f) => state.copyWith(isLoading: false, failure: f, items: const []),
       (page) => state.copyWith(
-        items: page.value.data, meta: page.value.meta, query: query,
-        isLoading: false, clearFailures: true,
+        items: page.value.data,
+        meta: page.value.meta,
+        query: query,
+        isLoading: false,
+        clearFailures: true,
       ),
     );
   }
@@ -223,8 +273,11 @@ class EcommerceOrderListController extends Notifier<EcommerceOrderListState> {
     state = result.fold(
       (f) => state.copyWith(isLoadingMore: false, loadMoreFailure: f),
       (page) => state.copyWith(
-        items: [...state.items, ...page.value.data], meta: page.value.meta,
-        query: next, isLoadingMore: false, clearFailures: true,
+        items: [...state.items, ...page.value.data],
+        meta: page.value.meta,
+        query: next,
+        isLoadingMore: false,
+        clearFailures: true,
       ),
     );
   }
@@ -232,23 +285,27 @@ class EcommerceOrderListController extends Notifier<EcommerceOrderListState> {
   void search(String term) {
     _searchDebounce?.cancel();
     _searchDebounce = Timer(const Duration(milliseconds: 350), () {
-      state = state.copyWith(query: state.query.copyWith(search: term, page: 1));
+      state =
+          state.copyWith(query: state.query.copyWith(search: term, page: 1));
       refresh();
     });
   }
 }
 
-final FutureProviderFamily<EcommerceOrder, String> ecommerceOrderDetailProvider =
+final FutureProviderFamily<EcommerceOrder, String>
+    ecommerceOrderDetailProvider =
     FutureProvider.family<EcommerceOrder, String>((Ref ref, String id) async {
   final result = await GetEcommerceOrderUseCase(
-    ref.watch(ecommerceRepositoryProvider),)(id);
+    ref.watch(ecommerceRepositoryProvider),
+  )(id);
   return result.fold((f) => throw f, (v) => v);
 });
 
 class EcommerceCategoryListState extends Equatable {
   const EcommerceCategoryListState({
     this.items = const <EcommerceCategory>[],
-    this.meta = const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
+    this.meta =
+        const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
     this.query = const ListQuery(sort: '-createdAt'),
     this.isLoading = true,
     this.isLoadingMore = false,
@@ -265,29 +322,47 @@ class EcommerceCategoryListState extends Equatable {
   final Failure? loadMoreFailure;
 
   EcommerceCategoryListState copyWith({
-    List<EcommerceCategory>? items, PaginationMeta? meta, ListQuery? query,
-    bool? isLoading, bool? isLoadingMore, Failure? failure,
-    Failure? loadMoreFailure, bool clearFailures = false,
+    List<EcommerceCategory>? items,
+    PaginationMeta? meta,
+    ListQuery? query,
+    bool? isLoading,
+    bool? isLoadingMore,
+    Failure? failure,
+    Failure? loadMoreFailure,
+    bool clearFailures = false,
   }) =>
       EcommerceCategoryListState(
-        items: items ?? this.items, meta: meta ?? this.meta,
-        query: query ?? this.query, isLoading: isLoading ?? this.isLoading,
+        items: items ?? this.items,
+        meta: meta ?? this.meta,
+        query: query ?? this.query,
+        isLoading: isLoading ?? this.isLoading,
         isLoadingMore: isLoadingMore ?? this.isLoadingMore,
         failure: clearFailures ? null : (failure ?? this.failure),
-        loadMoreFailure: clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
+        loadMoreFailure:
+            clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
       );
 
   @override
-  List<Object?> get props => <Object?>[items, meta, query.cacheKey, isLoading, isLoadingMore, failure, loadMoreFailure];
+  List<Object?> get props => <Object?>[
+        items,
+        meta,
+        query.cacheKey,
+        isLoading,
+        isLoadingMore,
+        failure,
+        loadMoreFailure
+      ];
 }
 
-final NotifierProvider<EcommerceCategoryListController, EcommerceCategoryListState>
-    ecommerceCategoryListControllerProvider =
-    NotifierProvider<EcommerceCategoryListController, EcommerceCategoryListState>(
+final NotifierProvider<EcommerceCategoryListController,
+        EcommerceCategoryListState> ecommerceCategoryListControllerProvider =
+    NotifierProvider<EcommerceCategoryListController,
+        EcommerceCategoryListState>(
   EcommerceCategoryListController.new,
 );
 
-class EcommerceCategoryListController extends Notifier<EcommerceCategoryListState> {
+class EcommerceCategoryListController
+    extends Notifier<EcommerceCategoryListState> {
   Timer? _searchDebounce;
 
   @override
@@ -308,8 +383,11 @@ class EcommerceCategoryListController extends Notifier<EcommerceCategoryListStat
     state = result.fold(
       (f) => state.copyWith(isLoading: false, failure: f, items: const []),
       (page) => state.copyWith(
-        items: page.value.data, meta: page.value.meta, query: query,
-        isLoading: false, clearFailures: true,
+        items: page.value.data,
+        meta: page.value.meta,
+        query: query,
+        isLoading: false,
+        clearFailures: true,
       ),
     );
   }
@@ -322,8 +400,11 @@ class EcommerceCategoryListController extends Notifier<EcommerceCategoryListStat
     state = result.fold(
       (f) => state.copyWith(isLoadingMore: false, loadMoreFailure: f),
       (page) => state.copyWith(
-        items: [...state.items, ...page.value.data], meta: page.value.meta,
-        query: next, isLoadingMore: false, clearFailures: true,
+        items: [...state.items, ...page.value.data],
+        meta: page.value.meta,
+        query: next,
+        isLoadingMore: false,
+        clearFailures: true,
       ),
     );
   }
@@ -331,21 +412,25 @@ class EcommerceCategoryListController extends Notifier<EcommerceCategoryListStat
   void search(String term) {
     _searchDebounce?.cancel();
     _searchDebounce = Timer(const Duration(milliseconds: 350), () {
-      state = state.copyWith(query: state.query.copyWith(search: term, page: 1));
+      state =
+          state.copyWith(query: state.query.copyWith(search: term, page: 1));
       refresh();
     });
   }
 
   Future<Result<void>> delete(String id) async {
     final result = await DeleteEcommerceCategoryUseCase(
-      ref.read(ecommerceRepositoryProvider),)(id);
+      ref.read(ecommerceRepositoryProvider),
+    )(id);
     if (result.isOk) await refresh();
     return result;
   }
 
-  Future<Result<EcommerceCategory>> saveCategory(Map<String, dynamic> payload, {String? id}) async {
+  Future<Result<EcommerceCategory>> saveCategory(Map<String, dynamic> payload,
+      {String? id}) async {
     final result = await SaveEcommerceCategoryUseCase(
-      ref.read(ecommerceRepositoryProvider),)(
+      ref.read(ecommerceRepositoryProvider),
+    )(
       SaveEcommerceCategoryParams(id: id, payload: payload),
     );
     if (result.isOk) await refresh();

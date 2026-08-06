@@ -4,6 +4,7 @@ import {
   BadRequestException,
 } from "@nestjs/common";
 import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 
 /**
  * Stable catalog keys for the paid tiers self-healed by `ensurePlanCatalog()`

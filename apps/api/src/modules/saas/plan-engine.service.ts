@@ -4,6 +4,7 @@ import {
   ConflictException,
 } from "@nestjs/common";
 import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 
 @Injectable()
 export class PlanEngineService {
@@ -154,7 +155,7 @@ export class PlanEngineService {
 
   async getRecommended(tenantId: string) {
     const usage = await prisma.usageRecord.findMany({ where: { tenantId } });
-    const userCount = await prisma.user.count({ where: { tenantId } });
+    const userCount = await idpPrisma.user.count({ where: { tenantId } });
     const usageMap = new Map(usage.map((r) => [r.metric, r.currentValue]));
     const currentUsers = usageMap.get("USERS_COUNT") ?? userCount;
     const currentStorage = usageMap.get("STORAGE_MB") ?? 0;

@@ -37,7 +37,8 @@ class DriveRepositoryImpl implements DriveRepository {
       final List<Map<String, dynamic>> jsonItems = page.data
           .map((dynamic e) => (e as dynamic).toJson() as Map<String, dynamic>)
           .toList(growable: false);
-      await _cache.write(_tenantId, namespace, query.cacheKey, <String, Object?>{
+      await _cache
+          .write(_tenantId, namespace, query.cacheKey, <String, Object?>{
         'data': jsonItems,
         'meta': page.meta.toJson(),
       });
@@ -45,9 +46,11 @@ class DriveRepositoryImpl implements DriveRepository {
         Cacheable<Paginated<T>>(value: page),
       );
     } on NetworkException catch (error) {
-      final cached = _cache.read<Map<String, dynamic>>(_tenantId, namespace, query.cacheKey);
+      final cached = _cache.read<Map<String, dynamic>>(
+          _tenantId, namespace, query.cacheKey);
       if (cached == null) {
-        return Result<Cacheable<Paginated<T>>>.err(mapExceptionToFailure(error));
+        return Result<Cacheable<Paginated<T>>>.err(
+            mapExceptionToFailure(error));
       }
       return Result<Cacheable<Paginated<T>>>.ok(
         Cacheable<Paginated<T>>(
@@ -90,8 +93,12 @@ class DriveRepositoryImpl implements DriveRepository {
 
   @override
   Future<Result<Cacheable<Paginated<DriveFile>>>> listFiles(ListQuery q) =>
-      _paginated(_fileNamespace, q, () => _remote.listFiles(q),
-        DriveFileModel.fromJson,);
+      _paginated(
+        _fileNamespace,
+        q,
+        () => _remote.listFiles(q),
+        DriveFileModel.fromJson,
+      );
 
   @override
   Future<Result<DriveFile>> getFile(String id) =>
@@ -119,8 +126,12 @@ class DriveRepositoryImpl implements DriveRepository {
 
   @override
   Future<Result<Cacheable<Paginated<DriveFolder>>>> listFolders(ListQuery q) =>
-      _paginated(_folderNamespace, q, () => _remote.listFolders(q),
-        DriveFolderModel.fromJson,);
+      _paginated(
+        _folderNamespace,
+        q,
+        () => _remote.listFolders(q),
+        DriveFolderModel.fromJson,
+      );
 
   @override
   Future<Result<DriveFolder>> getFolder(String id) =>
@@ -140,21 +151,28 @@ class DriveRepositoryImpl implements DriveRepository {
 
   @override
   Future<Result<Cacheable<Paginated<DriveTrashItem>>>> listTrash(ListQuery q) =>
-      _paginated(_trashNamespace, q, () => _remote.listTrash(q),
-        DriveTrashItemModel.fromJson,);
+      _paginated(
+        _trashNamespace,
+        q,
+        () => _remote.listTrash(q),
+        DriveTrashItemModel.fromJson,
+      );
 
   @override
   Future<Result<void>> restoreTrashItem(String id) =>
       _single(() => _remote.restoreTrashItem(id));
 
   @override
-  Future<Result<void>> emptyTrash() =>
-      _delete(() => _remote.emptyTrash());
+  Future<Result<void>> emptyTrash() => _delete(() => _remote.emptyTrash());
 
   @override
   Future<Result<Cacheable<Paginated<DriveTag>>>> listTags(ListQuery q) =>
-      _paginated(_tagNamespace, q, () => _remote.listTags(q),
-        DriveTagModel.fromJson,);
+      _paginated(
+        _tagNamespace,
+        q,
+        () => _remote.listTags(q),
+        DriveTagModel.fromJson,
+      );
 
   @override
   Future<Result<DriveTag>> createTag(Map<String, dynamic> p) =>

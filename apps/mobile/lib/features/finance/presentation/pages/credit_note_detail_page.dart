@@ -27,7 +27,9 @@ class CreditNoteDetailPage extends ConsumerWidget {
       body: cnAsync.when(
         loading: () => const LoadingView(),
         error: (Object error, StackTrace _) => FailureView(
-          failure: error is Failure ? error : const ServerFailure('Could not load credit note.'),
+          failure: error is Failure
+              ? error
+              : const ServerFailure('Could not load credit note.'),
           onRetry: () => ref.invalidate(creditNoteDetailProvider(creditNoteId)),
         ),
         data: (CreditNote cn) => _CreditNoteDetail(creditNote: cn),
@@ -71,10 +73,13 @@ class _CreditNoteDetail extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: Spacing.x2),
-              Text(creditNote.customerName ?? '—', style: TextStyle(color: t.textSecondary)),
+              Text(creditNote.customerName ?? '—',
+                  style: TextStyle(color: t.textSecondary)),
               if (creditNote.reason != null) ...[
                 const SizedBox(height: Spacing.x1),
-                Text(creditNote.reason!, style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs)),
+                Text(creditNote.reason!,
+                    style: TextStyle(
+                        color: t.textTertiary, fontSize: TypeScale.xs)),
               ],
             ],
           ),
@@ -92,7 +97,10 @@ class _CreditNoteDetail extends StatelessWidget {
                 ),
               ),
               const Divider(),
-              _FieldRow('Total', Formatters.currency(creditNote.totalAmount, currencyCode: creditNote.currency)),
+              _FieldRow(
+                  'Total',
+                  Formatters.currency(creditNote.totalAmount,
+                      currencyCode: creditNote.currency)),
             ],
           ),
         ),
@@ -131,18 +139,21 @@ class _LineItemRow extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                Text(item.productName ?? 'Item', style: Theme.of(context).textTheme.labelLarge),
+                Text(item.productName ?? 'Item',
+                    style: Theme.of(context).textTheme.labelLarge),
                 if (item.description != null && item.description!.isNotEmpty)
                   Text(
                     item.description!,
-                    style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs),
+                    style: TextStyle(
+                        color: t.textTertiary, fontSize: TypeScale.xs),
                   ),
               ],
             ),
           ),
           Text('${item.quantity}'),
           const SizedBox(width: Spacing.x2),
-          Text(Formatters.currency(item.amount, currencyCode: currency ?? 'USD')),
+          Text(Formatters.currency(item.amount,
+              currencyCode: currency ?? 'USD')),
         ],
       ),
     );
@@ -181,7 +192,8 @@ class _FieldRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: Spacing.x1_5),
       child: Row(
         children: <Widget>[
-          Expanded(child: Text(label, style: TextStyle(color: t.textSecondary))),
+          Expanded(
+              child: Text(label, style: TextStyle(color: t.textSecondary))),
           Text(value, style: Theme.of(context).textTheme.labelLarge),
         ],
       ),

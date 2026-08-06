@@ -5,7 +5,11 @@
 // Consumers (apps/web/src/navigation/moduleNav.tsx) look here first and fall
 // back to legacy hardcoded branches for any module not yet migrated.
 
-import type { AppModuleDescriptor, ModuleNavContext, NavItem } from './types.js';
+import type {
+  AppModuleDescriptor,
+  ModuleNavContext,
+  NavItem,
+} from "./types.js";
 
 const descriptors = new Map<string, AppModuleDescriptor>();
 
@@ -15,7 +19,9 @@ export function registerModule(descriptor: AppModuleDescriptor): void {
 }
 
 /** Look up the descriptor governing a given route segment (e.g. 'saas' for `/saas/...`). */
-export function getModuleDescriptor(routeSegment: string): AppModuleDescriptor | undefined {
+export function getModuleDescriptor(
+  routeSegment: string,
+): AppModuleDescriptor | undefined {
   return descriptors.get(routeSegment);
 }
 
@@ -35,8 +41,11 @@ export function __resetModuleRegistryForTests(): void {
  * the descriptor's `visibility` predicate rejects the context — callers
  * should fall back to legacy nav resolution in either case.
  */
-export function resolveNav(pathname: string, ctx: ModuleNavContext): NavItem[] | null {
-  const segment = pathname.split('/').filter(Boolean)[0];
+export function resolveNav(
+  pathname: string,
+  ctx: ModuleNavContext,
+): NavItem[] | null {
+  const segment = pathname.split("/").filter(Boolean)[0];
   if (!segment) return null;
 
   const descriptor = getModuleDescriptor(segment);
@@ -44,5 +53,7 @@ export function resolveNav(pathname: string, ctx: ModuleNavContext): NavItem[] |
 
   if (descriptor.visibility && !descriptor.visibility(ctx)) return null;
 
-  return typeof descriptor.nav === 'function' ? descriptor.nav(ctx) : descriptor.nav;
+  return typeof descriptor.nav === "function"
+    ? descriptor.nav(ctx)
+    : descriptor.nav;
 }

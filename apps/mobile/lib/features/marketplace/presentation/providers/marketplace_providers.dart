@@ -12,8 +12,8 @@ import '../../domain/entities/marketplace.dart';
 import '../../domain/repositories/marketplace_repository.dart';
 import '../../domain/usecases/marketplace_usecases.dart';
 
-final Provider<MarketplaceRemoteDataSource> marketplaceRemoteDataSourceProvider =
-    Provider<MarketplaceRemoteDataSource>(
+final Provider<MarketplaceRemoteDataSource>
+    marketplaceRemoteDataSourceProvider = Provider<MarketplaceRemoteDataSource>(
   (Ref ref) => MarketplaceRemoteDataSourceImpl(ref.watch(apiClientProvider)),
 );
 
@@ -29,7 +29,8 @@ final Provider<MarketplaceRepository> marketplaceRepositoryProvider =
 class MarketplaceAppListState extends Equatable {
   const MarketplaceAppListState({
     this.items = const <MarketplaceApp>[],
-    this.meta = const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
+    this.meta =
+        const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
     this.query = const ListQuery(sort: '-createdAt'),
     this.isLoading = true,
     this.isLoadingMore = false,
@@ -46,20 +47,36 @@ class MarketplaceAppListState extends Equatable {
   final Failure? loadMoreFailure;
 
   MarketplaceAppListState copyWith({
-    List<MarketplaceApp>? items, PaginationMeta? meta, ListQuery? query,
-    bool? isLoading, bool? isLoadingMore, Failure? failure,
-    Failure? loadMoreFailure, bool clearFailures = false,
+    List<MarketplaceApp>? items,
+    PaginationMeta? meta,
+    ListQuery? query,
+    bool? isLoading,
+    bool? isLoadingMore,
+    Failure? failure,
+    Failure? loadMoreFailure,
+    bool clearFailures = false,
   }) =>
       MarketplaceAppListState(
-        items: items ?? this.items, meta: meta ?? this.meta,
-        query: query ?? this.query, isLoading: isLoading ?? this.isLoading,
+        items: items ?? this.items,
+        meta: meta ?? this.meta,
+        query: query ?? this.query,
+        isLoading: isLoading ?? this.isLoading,
         isLoadingMore: isLoadingMore ?? this.isLoadingMore,
         failure: clearFailures ? null : (failure ?? this.failure),
-        loadMoreFailure: clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
+        loadMoreFailure:
+            clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
       );
 
   @override
-  List<Object?> get props => <Object?>[items, meta, query.cacheKey, isLoading, isLoadingMore, failure, loadMoreFailure];
+  List<Object?> get props => <Object?>[
+        items,
+        meta,
+        query.cacheKey,
+        isLoading,
+        isLoadingMore,
+        failure,
+        loadMoreFailure
+      ];
 }
 
 final NotifierProvider<MarketplaceAppListController, MarketplaceAppListState>
@@ -89,8 +106,11 @@ class MarketplaceAppListController extends Notifier<MarketplaceAppListState> {
     state = result.fold(
       (f) => state.copyWith(isLoading: false, failure: f, items: const []),
       (page) => state.copyWith(
-        items: page.value.data, meta: page.value.meta, query: query,
-        isLoading: false, clearFailures: true,
+        items: page.value.data,
+        meta: page.value.meta,
+        query: query,
+        isLoading: false,
+        clearFailures: true,
       ),
     );
   }
@@ -103,8 +123,11 @@ class MarketplaceAppListController extends Notifier<MarketplaceAppListState> {
     state = result.fold(
       (f) => state.copyWith(isLoadingMore: false, loadMoreFailure: f),
       (page) => state.copyWith(
-        items: [...state.items, ...page.value.data], meta: page.value.meta,
-        query: next, isLoadingMore: false, clearFailures: true,
+        items: [...state.items, ...page.value.data],
+        meta: page.value.meta,
+        query: next,
+        isLoadingMore: false,
+        clearFailures: true,
       ),
     );
   }
@@ -112,7 +135,8 @@ class MarketplaceAppListController extends Notifier<MarketplaceAppListState> {
   void search(String term) {
     _searchDebounce?.cancel();
     _searchDebounce = Timer(const Duration(milliseconds: 350), () {
-      state = state.copyWith(query: state.query.copyWith(search: term, page: 1));
+      state =
+          state.copyWith(query: state.query.copyWith(search: term, page: 1));
       refresh();
     });
   }
@@ -124,23 +148,27 @@ class MarketplaceAppListController extends Notifier<MarketplaceAppListState> {
 
   Future<Result<void>> delete(String id) async {
     final result = await DeleteMarketplaceAppUseCase(
-      ref.read(marketplaceRepositoryProvider),)(id);
+      ref.read(marketplaceRepositoryProvider),
+    )(id);
     if (result.isOk) await refresh();
     return result;
   }
 }
 
-final FutureProviderFamily<MarketplaceApp, String> marketplaceAppDetailProvider =
+final FutureProviderFamily<MarketplaceApp, String>
+    marketplaceAppDetailProvider =
     FutureProvider.family<MarketplaceApp, String>((Ref ref, String id) async {
   final result = await GetMarketplaceAppUseCase(
-    ref.watch(marketplaceRepositoryProvider),)(id);
+    ref.watch(marketplaceRepositoryProvider),
+  )(id);
   return result.fold((f) => throw f, (v) => v);
 });
 
 class MarketplaceReviewListState extends Equatable {
   const MarketplaceReviewListState({
     this.items = const <MarketplaceReview>[],
-    this.meta = const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
+    this.meta =
+        const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
     this.query = const ListQuery(sort: '-createdAt'),
     this.isLoading = true,
     this.isLoadingMore = false,
@@ -157,29 +185,47 @@ class MarketplaceReviewListState extends Equatable {
   final Failure? loadMoreFailure;
 
   MarketplaceReviewListState copyWith({
-    List<MarketplaceReview>? items, PaginationMeta? meta, ListQuery? query,
-    bool? isLoading, bool? isLoadingMore, Failure? failure,
-    Failure? loadMoreFailure, bool clearFailures = false,
+    List<MarketplaceReview>? items,
+    PaginationMeta? meta,
+    ListQuery? query,
+    bool? isLoading,
+    bool? isLoadingMore,
+    Failure? failure,
+    Failure? loadMoreFailure,
+    bool clearFailures = false,
   }) =>
       MarketplaceReviewListState(
-        items: items ?? this.items, meta: meta ?? this.meta,
-        query: query ?? this.query, isLoading: isLoading ?? this.isLoading,
+        items: items ?? this.items,
+        meta: meta ?? this.meta,
+        query: query ?? this.query,
+        isLoading: isLoading ?? this.isLoading,
         isLoadingMore: isLoadingMore ?? this.isLoadingMore,
         failure: clearFailures ? null : (failure ?? this.failure),
-        loadMoreFailure: clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
+        loadMoreFailure:
+            clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
       );
 
   @override
-  List<Object?> get props => <Object?>[items, meta, query.cacheKey, isLoading, isLoadingMore, failure, loadMoreFailure];
+  List<Object?> get props => <Object?>[
+        items,
+        meta,
+        query.cacheKey,
+        isLoading,
+        isLoadingMore,
+        failure,
+        loadMoreFailure
+      ];
 }
 
-final NotifierProvider<MarketplaceReviewListController, MarketplaceReviewListState>
-    marketplaceReviewListControllerProvider =
-    NotifierProvider<MarketplaceReviewListController, MarketplaceReviewListState>(
+final NotifierProvider<MarketplaceReviewListController,
+        MarketplaceReviewListState> marketplaceReviewListControllerProvider =
+    NotifierProvider<MarketplaceReviewListController,
+        MarketplaceReviewListState>(
   MarketplaceReviewListController.new,
 );
 
-class MarketplaceReviewListController extends Notifier<MarketplaceReviewListState> {
+class MarketplaceReviewListController
+    extends Notifier<MarketplaceReviewListState> {
   Timer? _searchDebounce;
 
   @override
@@ -200,8 +246,11 @@ class MarketplaceReviewListController extends Notifier<MarketplaceReviewListStat
     state = result.fold(
       (f) => state.copyWith(isLoading: false, failure: f, items: const []),
       (page) => state.copyWith(
-        items: page.value.data, meta: page.value.meta, query: query,
-        isLoading: false, clearFailures: true,
+        items: page.value.data,
+        meta: page.value.meta,
+        query: query,
+        isLoading: false,
+        clearFailures: true,
       ),
     );
   }
@@ -214,8 +263,11 @@ class MarketplaceReviewListController extends Notifier<MarketplaceReviewListStat
     state = result.fold(
       (f) => state.copyWith(isLoadingMore: false, loadMoreFailure: f),
       (page) => state.copyWith(
-        items: [...state.items, ...page.value.data], meta: page.value.meta,
-        query: next, isLoadingMore: false, clearFailures: true,
+        items: [...state.items, ...page.value.data],
+        meta: page.value.meta,
+        query: next,
+        isLoadingMore: false,
+        clearFailures: true,
       ),
     );
   }
@@ -223,7 +275,8 @@ class MarketplaceReviewListController extends Notifier<MarketplaceReviewListStat
   void search(String term) {
     _searchDebounce?.cancel();
     _searchDebounce = Timer(const Duration(milliseconds: 350), () {
-      state = state.copyWith(query: state.query.copyWith(search: term, page: 1));
+      state =
+          state.copyWith(query: state.query.copyWith(search: term, page: 1));
       refresh();
     });
   }
@@ -232,7 +285,8 @@ class MarketplaceReviewListController extends Notifier<MarketplaceReviewListStat
 class MarketplaceSubmissionListState extends Equatable {
   const MarketplaceSubmissionListState({
     this.items = const <MarketplaceSubmission>[],
-    this.meta = const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
+    this.meta =
+        const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
     this.query = const ListQuery(sort: '-createdAt'),
     this.isLoading = true,
     this.isLoadingMore = false,
@@ -249,29 +303,47 @@ class MarketplaceSubmissionListState extends Equatable {
   final Failure? loadMoreFailure;
 
   MarketplaceSubmissionListState copyWith({
-    List<MarketplaceSubmission>? items, PaginationMeta? meta, ListQuery? query,
-    bool? isLoading, bool? isLoadingMore, Failure? failure,
-    Failure? loadMoreFailure, bool clearFailures = false,
+    List<MarketplaceSubmission>? items,
+    PaginationMeta? meta,
+    ListQuery? query,
+    bool? isLoading,
+    bool? isLoadingMore,
+    Failure? failure,
+    Failure? loadMoreFailure,
+    bool clearFailures = false,
   }) =>
       MarketplaceSubmissionListState(
-        items: items ?? this.items, meta: meta ?? this.meta,
-        query: query ?? this.query, isLoading: isLoading ?? this.isLoading,
+        items: items ?? this.items,
+        meta: meta ?? this.meta,
+        query: query ?? this.query,
+        isLoading: isLoading ?? this.isLoading,
         isLoadingMore: isLoadingMore ?? this.isLoadingMore,
         failure: clearFailures ? null : (failure ?? this.failure),
-        loadMoreFailure: clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
+        loadMoreFailure:
+            clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
       );
 
   @override
-  List<Object?> get props => <Object?>[items, meta, query.cacheKey, isLoading, isLoadingMore, failure, loadMoreFailure];
+  List<Object?> get props => <Object?>[
+        items,
+        meta,
+        query.cacheKey,
+        isLoading,
+        isLoadingMore,
+        failure,
+        loadMoreFailure
+      ];
 }
 
-final NotifierProvider<MarketplaceSubmissionListController, MarketplaceSubmissionListState>
-    marketplaceSubmissionListControllerProvider =
-    NotifierProvider<MarketplaceSubmissionListController, MarketplaceSubmissionListState>(
+final NotifierProvider<MarketplaceSubmissionListController,
+        MarketplaceSubmissionListState>
+    marketplaceSubmissionListControllerProvider = NotifierProvider<
+        MarketplaceSubmissionListController, MarketplaceSubmissionListState>(
   MarketplaceSubmissionListController.new,
 );
 
-class MarketplaceSubmissionListController extends Notifier<MarketplaceSubmissionListState> {
+class MarketplaceSubmissionListController
+    extends Notifier<MarketplaceSubmissionListState> {
   Timer? _searchDebounce;
 
   @override
@@ -283,7 +355,8 @@ class MarketplaceSubmissionListController extends Notifier<MarketplaceSubmission
   }
 
   ListMarketplaceSubmissionsUseCase get _listUseCase =>
-      ListMarketplaceSubmissionsUseCase(ref.read(marketplaceRepositoryProvider));
+      ListMarketplaceSubmissionsUseCase(
+          ref.read(marketplaceRepositoryProvider));
 
   Future<void> refresh() async {
     final query = state.query.copyWith(page: 1);
@@ -292,8 +365,11 @@ class MarketplaceSubmissionListController extends Notifier<MarketplaceSubmission
     state = result.fold(
       (f) => state.copyWith(isLoading: false, failure: f, items: const []),
       (page) => state.copyWith(
-        items: page.value.data, meta: page.value.meta, query: query,
-        isLoading: false, clearFailures: true,
+        items: page.value.data,
+        meta: page.value.meta,
+        query: query,
+        isLoading: false,
+        clearFailures: true,
       ),
     );
   }
@@ -306,8 +382,11 @@ class MarketplaceSubmissionListController extends Notifier<MarketplaceSubmission
     state = result.fold(
       (f) => state.copyWith(isLoadingMore: false, loadMoreFailure: f),
       (page) => state.copyWith(
-        items: [...state.items, ...page.value.data], meta: page.value.meta,
-        query: next, isLoadingMore: false, clearFailures: true,
+        items: [...state.items, ...page.value.data],
+        meta: page.value.meta,
+        query: next,
+        isLoadingMore: false,
+        clearFailures: true,
       ),
     );
   }
@@ -315,7 +394,8 @@ class MarketplaceSubmissionListController extends Notifier<MarketplaceSubmission
   void search(String term) {
     _searchDebounce?.cancel();
     _searchDebounce = Timer(const Duration(milliseconds: 350), () {
-      state = state.copyWith(query: state.query.copyWith(search: term, page: 1));
+      state =
+          state.copyWith(query: state.query.copyWith(search: term, page: 1));
       refresh();
     });
   }

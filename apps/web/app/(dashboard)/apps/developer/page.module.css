@@ -10,7 +10,7 @@
   z-index: 1000;
 }
 .fieldGroup {
-  margin-bottom: 12px;
+  margin-bottom: var(--space-3);
 }
 .manifestEditor {
   font-family: monospace;
@@ -38,34 +38,34 @@
   background: var(--color-bg-elevated);
   border-radius: var(--radius-lg);
   border: 1px solid var(--color-border);
-  padding: 16px;
+  padding: var(--space-4);
 }
 .appHeader {
   align-items: center;
   display: flex;
   justify-content: space-between;
-  margin-bottom: 8px;
+  margin-bottom: var(--space-2);
 }
 .appName {
   font-weight: var(--weight-bold);
 }
 .appMeta {
   color: var(--color-text-tertiary);
-  font-size: 12px;
+  font-size: var(--text-xs);
 }
 .bundleList {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--space-1-5);
 }
 .bundleRow {
   align-items: center;
   background: var(--color-bg);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   display: flex;
   font-size: 13px;
-  gap: 10px;
-  padding: 6px 10px;
+  gap: var(--space-2-5);
+  padding: var(--space-1-5) var(--space-2-5);
 }
 .reviewNotes {
   color: var(--color-danger);
@@ -78,13 +78,13 @@
   border: 1px solid var(--color-border);
   display: flex;
   justify-content: space-between;
-  padding: 16px;
+  padding: var(--space-4);
 }
 .reviewChangelog {
-  font-size: 12px;
-  margin-top: 4px;
+  font-size: var(--text-xs);
+  margin-top: var(--space-1);
 }
 .reviewActions {
   display: flex;
-  gap: 8px;
+  gap: var(--space-2);
 }

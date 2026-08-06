@@ -77,7 +77,8 @@ class _QuotationListPageState extends ConsumerState<QuotationListPage> {
       ),
       body: Column(
         children: <Widget>[
-          if (state.cachedAt != null) StaleDataBanner(cachedAt: state.cachedAt!),
+          if (state.cachedAt != null)
+            StaleDataBanner(cachedAt: state.cachedAt!),
           Padding(
             padding: const EdgeInsets.fromLTRB(
               Spacing.x4,
@@ -127,7 +128,8 @@ class _QuotationListPageState extends ConsumerState<QuotationListPage> {
     );
   }
 
-  Widget _body(SalesListState<Quotation> state, QuotationsController controller) {
+  Widget _body(
+      SalesListState<Quotation> state, QuotationsController controller) {
     if (state.isLoading && state.items.isEmpty) {
       return const LoadingView();
     }

@@ -5,20 +5,20 @@
   z-index: 1000;
   padding: var(--space-3) var(--space-4);
   border-radius: var(--radius-md);
-  color: #fff;
+  color: var(--color-text-inverse);
   display: flex;
   align-items: center;
   gap: var(--space-2);
   font-size: var(--text-sm);
   font-weight: var(--weight-medium);
-  box-shadow: 0 4px 12px rgba(0,0,0,.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .s2 {
   position: fixed;
   inset: 0;
   z-index: 999;
-  background: rgba(0,0,0,.5);
+  background: rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -58,8 +58,8 @@
   padding: var(--space-2) var(--space-4);
   border-radius: var(--radius-md);
   border: none;
-  background: #dc2626;
-  color: #fff;
+  background: var(--color-danger-hover);
+  color: var(--color-text-inverse);
   cursor: pointer;
   font-size: var(--text-sm);
   font-weight: var(--weight-medium);
@@ -78,8 +78,8 @@
   padding: var(--space-2) var(--space-4);
   border-radius: var(--radius-md);
   border: none;
-  background: #dc2626;
-  color: #fff;
+  background: var(--color-danger-hover);
+  color: var(--color-text-inverse);
   cursor: pointer;
   font-size: var(--text-sm);
   font-weight: var(--weight-medium);
@@ -134,7 +134,7 @@
 
 .s16 {
   display: inline-block;
-  padding: 2px 10px;
+  padding: var(--space-half) var(--space-2-5);
   border-radius: var(--radius-full);
   font-size: var(--text-xs);
   font-weight: var(--weight-medium);
@@ -148,12 +148,12 @@
 .s18 {
   display: flex;
   align-items: center;
-  gap: 4px;
-  padding: 4px 10px;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-2-5);
   border-radius: var(--radius-md);
   border: none;
   background: #05966918;
-  color: #059669;
+  color: var(--color-success-hover);
   cursor: pointer;
   font-size: var(--text-xs);
   font-weight: var(--weight-medium);
@@ -162,12 +162,12 @@
 .s19 {
   display: flex;
   align-items: center;
-  gap: 4px;
-  padding: 4px 10px;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-2-5);
   border-radius: var(--radius-md);
   border: none;
   background: #dc262618;
-  color: #dc2626;
+  color: var(--color-danger-hover);
   cursor: pointer;
   font-size: var(--text-xs);
   font-weight: var(--weight-medium);
@@ -192,4 +192,3 @@
   display: flex;
   align-items: center;
 }
-

@@ -39,14 +39,24 @@ class TechnicianDetailPage extends ConsumerWidget {
                       _DetailRow(label: 'Name', value: tech.name),
                       _DetailRow(label: 'Email', value: tech.email ?? '-'),
                       _DetailRow(label: 'Phone', value: tech.phone ?? '-'),
-                      _DetailRow(label: 'Specialization', value: tech.specialization ?? '-'),
-                      _DetailRow(label: 'Skill Level', value: tech.skillLevel ?? '-'),
-                      _DetailRow(label: 'Service Area', value: tech.serviceArea ?? '-'),
-                      _DetailRow(label: 'Vehicle', value: tech.vehicleInfo ?? '-'),
+                      _DetailRow(
+                          label: 'Specialization',
+                          value: tech.specialization ?? '-'),
+                      _DetailRow(
+                          label: 'Skill Level', value: tech.skillLevel ?? '-'),
+                      _DetailRow(
+                          label: 'Service Area',
+                          value: tech.serviceArea ?? '-'),
+                      _DetailRow(
+                          label: 'Vehicle', value: tech.vehicleInfo ?? '-'),
                       if (tech.rating != null)
-                        _DetailRow(label: 'Rating', value: tech.rating!.toStringAsFixed(1)),
+                        _DetailRow(
+                            label: 'Rating',
+                            value: tech.rating!.toStringAsFixed(1)),
                       if (tech.createdAt != null)
-                        _DetailRow(label: 'Created', value: Formatters.dateTime(tech.createdAt!)),
+                        _DetailRow(
+                            label: 'Created',
+                            value: Formatters.dateTime(tech.createdAt!)),
                     ],
                   ),
                 ),
@@ -79,7 +89,8 @@ class _StatusBadge extends StatelessWidget {
       ),
       child: Text(
         status,
-        style: TextStyle(color: color, fontWeight: FontWeight.w600, fontSize: 13),
+        style:
+            TextStyle(color: color, fontWeight: FontWeight.w600, fontSize: 13),
       ),
     );
   }
@@ -92,16 +103,18 @@ class _DetailRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.symmetric(vertical: 6),
-    child: Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        SizedBox(
-          width: 120,
-          child: Text(label, style: const TextStyle(color: Colors.grey, fontWeight: FontWeight.w500)),
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(
+              width: 120,
+              child: Text(label,
+                  style: const TextStyle(
+                      color: Colors.grey, fontWeight: FontWeight.w500)),
+            ),
+            Expanded(child: Text(value)),
+          ],
         ),
-        Expanded(child: Text(value)),
-      ],
-    ),
-  );
+      );
 }

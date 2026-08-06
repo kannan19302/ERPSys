@@ -100,7 +100,7 @@ export default function PipelineAnomaliesPage() {
           </div>
           <div className="ui-card-body">
             {anomalies.anomalies?.length === 0 && (
-              <p style={{ color: "#666" }}>
+              <p style={{ color: "var(--color-text-secondary)" }}>
                 No anomalies detected — pipeline is healthy.
               </p>
             )}
@@ -110,9 +110,9 @@ export default function PipelineAnomaliesPage() {
                 style={{
                   padding: "0.75rem",
                   marginBottom: "0.5rem",
-                  background: "#f9fafb",
+                  background: "var(--color-bg-sunken)",
                   borderRadius: 6,
-                  borderLeft: `4px solid ${a.severity === "high" ? "#ef4444" : a.severity === "medium" ? "#f59e0b" : "#3b82f6"}`,
+                  borderLeft: `4px solid ${a.severity === "high" ? "var(--chart-4)" : a.severity === "medium" ? "var(--chart-3)" : "var(--color-primary)"}`,
                 }}
               >
                 <div
@@ -155,7 +155,7 @@ export default function PipelineAnomaliesPage() {
             <p
               style={{
                 fontSize: "0.85rem",
-                color: "#666",
+                color: "var(--color-text-secondary)",
                 marginBottom: "0.75rem",
               }}
             >
@@ -177,7 +177,7 @@ export default function PipelineAnomaliesPage() {
                   <p
                     style={{
                       fontSize: "0.8rem",
-                      color: "#666",
+                      color: "var(--color-text-secondary)",
                       margin: "0.15rem 0 0",
                     }}
                   >
@@ -204,7 +204,7 @@ export default function PipelineAnomaliesPage() {
             <p
               style={{
                 fontSize: "0.85rem",
-                color: "#666",
+                color: "var(--color-text-secondary)",
                 marginBottom: "0.75rem",
               }}
             >
@@ -236,7 +236,7 @@ export default function PipelineAnomaliesPage() {
                     display: "flex",
                     gap: "1rem",
                     fontSize: "0.85rem",
-                    color: "#666",
+                    color: "var(--color-text-secondary)",
                     marginTop: "0.25rem",
                   }}
                 >

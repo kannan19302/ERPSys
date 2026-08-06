@@ -15,7 +15,7 @@ import {
   FileText,
   ClipboardList,
 } from "lucide-react";
-import type { ModuleTab } from "@unerp/ui-layout";
+import type { ModuleTab } from "@unerp/ui/layout";
 
 export {
   ModuleTabLayout as CommunicationTabLayout,
@@ -23,7 +23,7 @@ export {
   type ModuleTabLayoutProps as CommunicationTabLayoutProps,
   SubTabBar,
   type SubTab,
-} from "@unerp/ui-layout";
+} from "@unerp/ui/layout";
 
 export const COMMUNICATION_TABS: ModuleTab[] = [
   {

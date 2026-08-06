@@ -1,4 +1,5 @@
 import { Test, TestingModule } from "@nestjs/testing";
+import { withTenantSession } from "../../../../test/tenant-session";
 import { DriveDeepService } from "../drive-deep.service";
 
 describe("DriveDeepService", () => {
@@ -8,7 +9,7 @@ describe("DriveDeepService", () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [DriveDeepService],
     }).compile();
-    service = module.get<DriveDeepService>(DriveDeepService);
+    service = withTenantSession(module.get<DriveDeepService>(DriveDeepService));
   });
 
   it("should be defined", () => {
@@ -43,7 +44,10 @@ describe("DriveDeepService", () => {
         { ownerId: "user2", size: 1000 },
         { ownerId: "user1", size: 2000 },
       ];
-      const result = await (service as any).computeTopUsers([]);
+      // computeTopUsers takes a tenantId, not a file list — it queries
+      // driveFile itself. Passing `[]` made Prisma reject the where clause with
+      // "Argument tenantId: Expected StringFilter or String, provided ()".
+      const result = await (service as any).computeTopUsers("t1");
       expect(result).toBeDefined();
       expect(Array.isArray(result)).toBe(true);
     });

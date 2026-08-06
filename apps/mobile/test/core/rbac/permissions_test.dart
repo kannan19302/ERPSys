@@ -10,7 +10,8 @@ void main() {
     });
 
     test('exact match is granted', () {
-      final PermissionSet set = PermissionSet(<String>['inventory.product.read']);
+      final PermissionSet set =
+          PermissionSet(<String>['inventory.product.read']);
       expect(set.has('inventory.product.read'), isTrue);
       expect(set.has('inventory.product.update'), isFalse);
     });
@@ -52,7 +53,8 @@ void main() {
         isTrue,
       );
       expect(
-        set.hasAny(<String>['inventory.product.read', 'inventory.warehouse.read']),
+        set.hasAny(
+            <String>['inventory.product.read', 'inventory.warehouse.read']),
         isFalse,
       );
     });
@@ -63,11 +65,13 @@ void main() {
         'inventory.product.create',
       ]);
       expect(
-        set.hasAll(<String>['inventory.product.read', 'inventory.product.create']),
+        set.hasAll(
+            <String>['inventory.product.read', 'inventory.product.create']),
         isTrue,
       );
       expect(
-        set.hasAll(<String>['inventory.product.read', 'inventory.product.delete']),
+        set.hasAll(
+            <String>['inventory.product.read', 'inventory.product.delete']),
         isFalse,
       );
     });

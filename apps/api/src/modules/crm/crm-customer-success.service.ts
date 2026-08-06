@@ -1,5 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { prisma, runWithTenantSession } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 import { z } from "zod";
 
 export const HealthScoreConfigSchema = z.object({

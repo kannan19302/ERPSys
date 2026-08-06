@@ -42,11 +42,12 @@ class _LeaveTypeFormPageState extends ConsumerState<LeaveTypeFormPage> {
   }
 
   void _load() {
-    final List<LeaveType>? types =
-        ref.read(leaveTypesProvider).valueOrNull;
-    final LeaveType? lt = types?.where(
-      (LeaveType t) => t.id == widget.leaveTypeId,
-    ).firstOrNull;
+    final List<LeaveType>? types = ref.read(leaveTypesProvider).valueOrNull;
+    final LeaveType? lt = types
+        ?.where(
+          (LeaveType t) => t.id == widget.leaveTypeId,
+        )
+        .firstOrNull;
     if (lt != null) {
       _nameCtrl.text = lt.name;
       _daysCtrl.text = lt.daysAllowed.toInt().toString();
@@ -84,8 +85,7 @@ class _LeaveTypeFormPageState extends ConsumerState<LeaveTypeFormPage> {
     };
 
     final HrRepository repo = ref.read(hrRepositoryProvider);
-    final Result<LeaveType> result =
-        await SaveLeaveTypeUseCase(repo)(
+    final Result<LeaveType> result = await SaveLeaveTypeUseCase(repo)(
       SaveLeaveTypeParams(id: widget.leaveTypeId, payload: payload),
     );
 
@@ -161,7 +161,8 @@ class _LeaveTypeFormPageState extends ConsumerState<LeaveTypeFormPage> {
                       height: Spacing.x6,
                       decoration: BoxDecoration(
                         color: _selectedColor,
-                        borderRadius: const BorderRadius.all(Radius.circular(Radii.sm)),
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(Radii.sm)),
                       ),
                     ),
                     const SizedBox(width: Spacing.x2),
@@ -221,7 +222,8 @@ class _LeaveTypeFormPageState extends ConsumerState<LeaveTypeFormPage> {
                   height: Spacing.x8,
                   decoration: BoxDecoration(
                     color: color,
-                    borderRadius: const BorderRadius.all(Radius.circular(Radii.sm)),
+                    borderRadius:
+                        const BorderRadius.all(Radius.circular(Radii.sm)),
                     border: color == _selectedColor
                         ? Border.all(color: Colors.white, width: 3)
                         : null,

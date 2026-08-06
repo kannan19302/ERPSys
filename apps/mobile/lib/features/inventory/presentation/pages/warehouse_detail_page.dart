@@ -54,14 +54,14 @@ class WarehouseDetailPage extends ConsumerWidget {
               : const ServerFailure('Could not load warehouse.'),
           onRetry: () => ref.invalidate(warehouseDetailProvider(warehouseId)),
         ),
-        data: (Warehouse warehouse) =>
-            _WarehouseDetail(warehouse: warehouse),
+        data: (Warehouse warehouse) => _WarehouseDetail(warehouse: warehouse),
       ),
     );
   }
 
   void _navigateToEdit(BuildContext context) {
-    Navigator.of(context).pushNamed('reorder-rule-edit', arguments: <String, String>{'id': warehouseId});
+    Navigator.of(context).pushNamed('reorder-rule-edit',
+        arguments: <String, String>{'id': warehouseId});
   }
 
   Future<void> _confirmDelete(BuildContext context, WidgetRef ref) async {
@@ -128,7 +128,8 @@ class _WarehouseDetail extends StatelessWidget {
                   ),
                 ],
               ),
-              if (warehouse.city != null || warehouse.country != null) ...<Widget>[
+              if (warehouse.city != null ||
+                  warehouse.country != null) ...<Widget>[
                 const SizedBox(height: Spacing.x1),
                 Text(
                   [warehouse.city, warehouse.country]
@@ -137,10 +138,13 @@ class _WarehouseDetail extends StatelessWidget {
                   style: TextStyle(color: t.textSecondary),
                 ),
               ],
-              if (warehouse.address != null && warehouse.address!.isNotEmpty) ...<Widget>[
+              if (warehouse.address != null &&
+                  warehouse.address!.isNotEmpty) ...<Widget>[
                 const SizedBox(height: Spacing.x1),
-                Text(warehouse.address!,
-                    style: TextStyle(color: t.textSecondary),),
+                Text(
+                  warehouse.address!,
+                  style: TextStyle(color: t.textSecondary),
+                ),
               ],
             ],
           ),
@@ -159,7 +163,11 @@ class _WarehouseDetail extends StatelessWidget {
                   minHeight: 10,
                   backgroundColor: t.bgSunken,
                   valueColor: AlwaysStoppedAnimation<Color>(
-                    util > 90 ? t.danger : util > 70 ? t.warning : t.success,
+                    util > 90
+                        ? t.danger
+                        : util > 70
+                            ? t.warning
+                            : t.success,
                   ),
                 ),
               ),
@@ -171,7 +179,8 @@ class _WarehouseDetail extends StatelessWidget {
                   _CapacityLabel('Total', warehouse.capacity, t.primary),
                   _CapacityLabel(
                     'Free',
-                    (warehouse.capacity - warehouse.usedCapacity).clamp(0, double.infinity),
+                    (warehouse.capacity - warehouse.usedCapacity)
+                        .clamp(0, double.infinity),
                     t.success,
                   ),
                 ],

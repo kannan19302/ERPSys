@@ -89,10 +89,12 @@ class _OnboardingBanner extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                Text('Finish setting up', style: Theme.of(context).textTheme.labelLarge),
+                Text('Finish setting up',
+                    style: Theme.of(context).textTheme.labelLarge),
                 Text(
                   '${checklist.completedCount} of 6 steps complete',
-                  style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
+                  style:
+                      TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
                 ),
               ],
             ),
@@ -168,7 +170,8 @@ class _StatsGridSkeleton extends StatelessWidget {
             child: SizedBox(
               height: Spacing.x5,
               width: Spacing.x5,
-              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.grey.shade300),
+              child: CircularProgressIndicator(
+                  strokeWidth: 2, color: Colors.grey.shade300),
             ),
           ),
         ),
@@ -208,7 +211,8 @@ class _StatTile extends StatelessWidget {
           Icon(icon, color: iconColor, size: TypeScale.xl),
           const Spacer(),
           Text(value, style: Theme.of(context).textTheme.headlineSmall),
-          Text(label, style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs)),
+          Text(label,
+              style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs)),
         ],
       ),
     );
@@ -242,7 +246,8 @@ class _QuickActions extends StatelessWidget {
 }
 
 class _ActionTile extends StatelessWidget {
-  const _ActionTile({required this.icon, required this.title, required this.onTap});
+  const _ActionTile(
+      {required this.icon, required this.title, required this.onTap});
 
   final IconData icon;
   final String title;
@@ -256,7 +261,9 @@ class _ActionTile extends StatelessWidget {
         children: <Widget>[
           Icon(icon, color: context.tokens.primary),
           const SizedBox(width: Spacing.x3),
-          Expanded(child: Text(title, style: Theme.of(context).textTheme.labelLarge)),
+          Expanded(
+              child:
+                  Text(title, style: Theme.of(context).textTheme.labelLarge)),
           Icon(Icons.chevron_right, color: context.tokens.textTertiary),
         ],
       ),

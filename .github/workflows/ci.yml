@@ -48,6 +48,9 @@ jobs:
       - name: Policy gate
         run: node scripts/ci/check-policy.mjs
 
+      - name: Decimal arithmetic ratchet
+        run: node scripts/ci/check-decimal-arithmetic.mjs
+
       - name: docs/ai integrity
         run: |
           count=$(ls -1 docs/ai | wc -l)
@@ -79,7 +82,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        check: [lint, typecheck, architecture, format]
+        check: [lint, typecheck, architecture, contracts, format, resolution]
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -102,9 +105,29 @@ jobs:
         if: matrix.check == 'architecture'
         run: pnpm architecture:check
 
+      # M2 — PLATFORM_ARCHITECTURE.md § 4.5. Replays every consumer's published
+      # expectation against its provider's current exported surface. Redundant
+      # with the compiler today, and the only thing standing in for it once
+      # Phase 3 puts a published package boundary between them.
+      - name: Consumer contracts (M2)
+        if: matrix.check == 'contracts'
+        run: pnpm check:cdc
+
       - name: Format
         if: matrix.check == 'format'
         run: pnpm format:check
+
+      # Every check above resolves modules the way a bundler does — the compiler
+      # because the root tsconfig sets moduleResolution "bundler", the test
+      # runner because vitest resolves through Vite. Node does not, and Node is
+      # what runs in production. On 2026-08-06 the API exited during module load
+      # on an extensionless re-export while all of these were green.
+      # PLATFORM_ARCHITECTURE.md § 14.1.
+      - name: Node resolution
+        if: matrix.check == 'resolution'
+        run: |
+          pnpm build
+          pnpm check:resolution
 
   # ─────────────────────────────────────────────────────────────────────────
   # Tier 3 — supply chain. Blocking, not advisory.
@@ -196,6 +219,12 @@ jobs:
 
       - name: Schema lint
         run: pnpm schema:lint
+
+      # BLOCKING. Like check-rls-verify.mjs before it (ARCHITECTURE_REVIEW § F5),
+      # this control existed but was wired into nothing. Its first real run found
+      # 21 undeclared PII models, including HealthcarePatient and EducationStudent.
+      - name: PII registry
+        run: node scripts/check-pii-registry.mjs
 
       # BLOCKING. This script existed but was never wired into CI — ARCHITECTURE_REVIEW § F5.
       # A table carrying tenant_id without an RLS policy now fails the build.

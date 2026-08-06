@@ -1,4 +1,5 @@
 import { Test, TestingModule } from "@nestjs/testing";
+import { withTenantSession } from "../../../../test/tenant-session";
 import { WorkflowAdvancedService } from "../workflow-advanced.service";
 
 describe("WorkflowAdvancedService", () => {
@@ -8,7 +9,9 @@ describe("WorkflowAdvancedService", () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [WorkflowAdvancedService],
     }).compile();
-    service = module.get<WorkflowAdvancedService>(WorkflowAdvancedService);
+    service = withTenantSession(
+      module.get<WorkflowAdvancedService>(WorkflowAdvancedService),
+    );
   });
 
   it("should be defined", () => {
@@ -17,7 +20,7 @@ describe("WorkflowAdvancedService", () => {
 
   describe("Templates", () => {
     it("should return empty templates for new tenant", async () => {
-      const templates = await service.getTemplates("tenant-new");
+      const templates = await service.getTemplates("tenant-new-workflow");
       expect(Array.isArray(templates)).toBe(true);
     });
 
@@ -47,7 +50,7 @@ describe("WorkflowAdvancedService", () => {
 
   describe("Categories", () => {
     it("should return empty categories", async () => {
-      const cats = await service.getCategories("tenant-new");
+      const cats = await service.getCategories("tenant-new-workflow");
       expect(Array.isArray(cats)).toBe(true);
     });
 
@@ -159,7 +162,7 @@ describe("WorkflowAdvancedService", () => {
 
   describe("Tags", () => {
     it("should return empty tags", async () => {
-      const tags = await service.getTags("tenant-new");
+      const tags = await service.getTags("tenant-new-workflow");
       expect(Array.isArray(tags)).toBe(true);
     });
 
@@ -183,7 +186,7 @@ describe("WorkflowAdvancedService", () => {
     });
 
     it("should return empty metrics", async () => {
-      const metrics = await service.getMetrics("tenant-new");
+      const metrics = await service.getMetrics("tenant-new-workflow");
       expect(Array.isArray(metrics)).toBe(true);
     });
   });

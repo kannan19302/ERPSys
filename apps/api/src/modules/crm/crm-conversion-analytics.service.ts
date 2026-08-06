@@ -1,5 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 
 /**
  * Lead-to-Opportunity Conversion Analytics (Up Next item 43, benchmark:
@@ -181,7 +182,7 @@ export class CrmConversionAnalyticsService {
     );
     const users =
       repIds.length > 0
-        ? await prisma.user.findMany({
+        ? await idpPrisma.user.findMany({
             where: { id: { in: repIds } },
             select: { id: true, firstName: true, lastName: true },
           })

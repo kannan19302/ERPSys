@@ -4,7 +4,8 @@ import '../../../../core/usecase/usecase.dart';
 import '../entities/analytics.dart';
 import '../repositories/analytics_repository.dart';
 
-class ListKpisUseCase extends UseCase<Cacheable<Paginated<AnalyticsKpi>>, ListQuery> {
+class ListKpisUseCase
+    extends UseCase<Cacheable<Paginated<AnalyticsKpi>>, ListQuery> {
   const ListKpisUseCase(this._repository);
   final AnalyticsRepository _repository;
   @override
@@ -44,11 +45,13 @@ class DeleteKpiUseCase extends UseCase<void, String> {
   Future<Result<void>> call(String id) => _repository.deleteKpi(id);
 }
 
-class ListDashboardsUseCase extends UseCase<Cacheable<Paginated<AnalyticsDashboard>>, ListQuery> {
+class ListDashboardsUseCase
+    extends UseCase<Cacheable<Paginated<AnalyticsDashboard>>, ListQuery> {
   const ListDashboardsUseCase(this._repository);
   final AnalyticsRepository _repository;
   @override
-  Future<Result<Cacheable<Paginated<AnalyticsDashboard>>>> call(ListQuery params) =>
+  Future<Result<Cacheable<Paginated<AnalyticsDashboard>>>> call(
+          ListQuery params) =>
       _repository.listDashboards(params);
 }
 
@@ -56,7 +59,8 @@ class GetDashboardUseCase extends UseCase<AnalyticsDashboard, String> {
   const GetDashboardUseCase(this._repository);
   final AnalyticsRepository _repository;
   @override
-  Future<Result<AnalyticsDashboard>> call(String id) => _repository.getDashboard(id);
+  Future<Result<AnalyticsDashboard>> call(String id) =>
+      _repository.getDashboard(id);
 }
 
 class SaveDashboardParams {
@@ -65,7 +69,8 @@ class SaveDashboardParams {
   final Map<String, dynamic> payload;
 }
 
-class SaveDashboardUseCase extends UseCase<AnalyticsDashboard, SaveDashboardParams> {
+class SaveDashboardUseCase
+    extends UseCase<AnalyticsDashboard, SaveDashboardParams> {
   const SaveDashboardUseCase(this._repository);
   final AnalyticsRepository _repository;
   @override
@@ -84,11 +89,13 @@ class DeleteDashboardUseCase extends UseCase<void, String> {
   Future<Result<void>> call(String id) => _repository.deleteDashboard(id);
 }
 
-class ListReportsUseCase extends UseCase<Cacheable<Paginated<AnalyticsReport>>, ListQuery> {
+class ListReportsUseCase
+    extends UseCase<Cacheable<Paginated<AnalyticsReport>>, ListQuery> {
   const ListReportsUseCase(this._repository);
   final AnalyticsRepository _repository;
   @override
-  Future<Result<Cacheable<Paginated<AnalyticsReport>>>> call(ListQuery params) =>
+  Future<Result<Cacheable<Paginated<AnalyticsReport>>>> call(
+          ListQuery params) =>
       _repository.listReports(params);
 }
 
@@ -124,19 +131,20 @@ class DeleteReportUseCase extends UseCase<void, String> {
   Future<Result<void>> call(String id) => _repository.deleteReport(id);
 }
 
-class ListPipelinesUseCase extends UseCase<Cacheable<Paginated<AnalyticsPipeline>>, ListQuery> {
+class ListPipelinesUseCase
+    extends UseCase<Cacheable<Paginated<AnalyticsPipeline>>, ListQuery> {
   const ListPipelinesUseCase(this._repository);
   final AnalyticsRepository _repository;
   @override
-  Future<Result<Cacheable<Paginated<AnalyticsPipeline>>>> call(ListQuery params) =>
+  Future<Result<Cacheable<Paginated<AnalyticsPipeline>>>> call(
+          ListQuery params) =>
       _repository.listPipelines(params);
 }
-
 
 class GetPipelineUseCase extends UseCase<AnalyticsPipeline, String> {
   GetPipelineUseCase(this.repository);
   final AnalyticsRepository repository;
   @override
-  Future<Result<AnalyticsPipeline>> call(String params) async => throw UnimplementedError();
+  Future<Result<AnalyticsPipeline>> call(String params) async =>
+      throw UnimplementedError();
 }
-

@@ -58,7 +58,7 @@ export class PeopleGeneratedController {
   @Permissions("people.peopleEntity1.create")
   async createPeopleEntity1(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createPeopleEntity1(req.user.tenantId, body);
   }
@@ -69,7 +69,7 @@ export class PeopleGeneratedController {
   async updatePeopleEntity1(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updatePeopleEntity1(req.user.tenantId, id, body);
   }
@@ -107,7 +107,7 @@ export class PeopleGeneratedController {
   @Permissions("people.peopleEntity2.create")
   async createPeopleEntity2(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createPeopleEntity2(req.user.tenantId, body);
   }
@@ -118,7 +118,7 @@ export class PeopleGeneratedController {
   async updatePeopleEntity2(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updatePeopleEntity2(req.user.tenantId, id, body);
   }
@@ -156,7 +156,7 @@ export class PeopleGeneratedController {
   @Permissions("people.peopleEntity3.create")
   async createPeopleEntity3(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createPeopleEntity3(req.user.tenantId, body);
   }
@@ -167,7 +167,7 @@ export class PeopleGeneratedController {
   async updatePeopleEntity3(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updatePeopleEntity3(req.user.tenantId, id, body);
   }
@@ -205,7 +205,7 @@ export class PeopleGeneratedController {
   @Permissions("people.peopleEntity4.create")
   async createPeopleEntity4(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createPeopleEntity4(req.user.tenantId, body);
   }
@@ -216,7 +216,7 @@ export class PeopleGeneratedController {
   async updatePeopleEntity4(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updatePeopleEntity4(req.user.tenantId, id, body);
   }
@@ -254,7 +254,7 @@ export class PeopleGeneratedController {
   @Permissions("people.peopleEntity5.create")
   async createPeopleEntity5(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createPeopleEntity5(req.user.tenantId, body);
   }
@@ -265,7 +265,7 @@ export class PeopleGeneratedController {
   async updatePeopleEntity5(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updatePeopleEntity5(req.user.tenantId, id, body);
   }
@@ -303,7 +303,7 @@ export class PeopleGeneratedController {
   @Permissions("people.peopleEntity6.create")
   async createPeopleEntity6(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createPeopleEntity6(req.user.tenantId, body);
   }
@@ -314,7 +314,7 @@ export class PeopleGeneratedController {
   async updatePeopleEntity6(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updatePeopleEntity6(req.user.tenantId, id, body);
   }
@@ -352,7 +352,7 @@ export class PeopleGeneratedController {
   @Permissions("people.peopleEntity7.create")
   async createPeopleEntity7(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createPeopleEntity7(req.user.tenantId, body);
   }
@@ -363,7 +363,7 @@ export class PeopleGeneratedController {
   async updatePeopleEntity7(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updatePeopleEntity7(req.user.tenantId, id, body);
   }
@@ -401,7 +401,7 @@ export class PeopleGeneratedController {
   @Permissions("people.peopleEntity8.create")
   async createPeopleEntity8(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createPeopleEntity8(req.user.tenantId, body);
   }
@@ -412,7 +412,7 @@ export class PeopleGeneratedController {
   async updatePeopleEntity8(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updatePeopleEntity8(req.user.tenantId, id, body);
   }
@@ -450,7 +450,7 @@ export class PeopleGeneratedController {
   @Permissions("people.peopleEntity9.create")
   async createPeopleEntity9(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createPeopleEntity9(req.user.tenantId, body);
   }
@@ -461,7 +461,7 @@ export class PeopleGeneratedController {
   async updatePeopleEntity9(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updatePeopleEntity9(req.user.tenantId, id, body);
   }
@@ -499,7 +499,7 @@ export class PeopleGeneratedController {
   @Permissions("people.peopleEntity10.create")
   async createPeopleEntity10(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createPeopleEntity10(req.user.tenantId, body);
   }
@@ -510,7 +510,7 @@ export class PeopleGeneratedController {
   async updatePeopleEntity10(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updatePeopleEntity10(req.user.tenantId, id, body);
   }
@@ -548,7 +548,7 @@ export class PeopleGeneratedController {
   @Permissions("people.peopleEntity11.create")
   async createPeopleEntity11(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createPeopleEntity11(req.user.tenantId, body);
   }
@@ -559,7 +559,7 @@ export class PeopleGeneratedController {
   async updatePeopleEntity11(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updatePeopleEntity11(req.user.tenantId, id, body);
   }
@@ -597,7 +597,7 @@ export class PeopleGeneratedController {
   @Permissions("people.peopleEntity12.create")
   async createPeopleEntity12(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createPeopleEntity12(req.user.tenantId, body);
   }
@@ -608,7 +608,7 @@ export class PeopleGeneratedController {
   async updatePeopleEntity12(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updatePeopleEntity12(req.user.tenantId, id, body);
   }
@@ -646,7 +646,7 @@ export class PeopleGeneratedController {
   @Permissions("people.peopleEntity13.create")
   async createPeopleEntity13(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createPeopleEntity13(req.user.tenantId, body);
   }
@@ -657,7 +657,7 @@ export class PeopleGeneratedController {
   async updatePeopleEntity13(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updatePeopleEntity13(req.user.tenantId, id, body);
   }
@@ -695,7 +695,7 @@ export class PeopleGeneratedController {
   @Permissions("people.peopleEntity14.create")
   async createPeopleEntity14(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createPeopleEntity14(req.user.tenantId, body);
   }
@@ -706,7 +706,7 @@ export class PeopleGeneratedController {
   async updatePeopleEntity14(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updatePeopleEntity14(req.user.tenantId, id, body);
   }
@@ -744,7 +744,7 @@ export class PeopleGeneratedController {
   @Permissions("people.peopleEntity15.create")
   async createPeopleEntity15(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createPeopleEntity15(req.user.tenantId, body);
   }
@@ -755,7 +755,7 @@ export class PeopleGeneratedController {
   async updatePeopleEntity15(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updatePeopleEntity15(req.user.tenantId, id, body);
   }
@@ -793,7 +793,7 @@ export class PeopleGeneratedController {
   @Permissions("people.peopleEntity16.create")
   async createPeopleEntity16(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createPeopleEntity16(req.user.tenantId, body);
   }
@@ -804,7 +804,7 @@ export class PeopleGeneratedController {
   async updatePeopleEntity16(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updatePeopleEntity16(req.user.tenantId, id, body);
   }
@@ -842,7 +842,7 @@ export class PeopleGeneratedController {
   @Permissions("people.peopleEntity17.create")
   async createPeopleEntity17(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createPeopleEntity17(req.user.tenantId, body);
   }
@@ -853,7 +853,7 @@ export class PeopleGeneratedController {
   async updatePeopleEntity17(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updatePeopleEntity17(req.user.tenantId, id, body);
   }
@@ -891,7 +891,7 @@ export class PeopleGeneratedController {
   @Permissions("people.peopleEntity18.create")
   async createPeopleEntity18(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createPeopleEntity18(req.user.tenantId, body);
   }
@@ -902,7 +902,7 @@ export class PeopleGeneratedController {
   async updatePeopleEntity18(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updatePeopleEntity18(req.user.tenantId, id, body);
   }
@@ -940,7 +940,7 @@ export class PeopleGeneratedController {
   @Permissions("people.peopleEntity19.create")
   async createPeopleEntity19(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createPeopleEntity19(req.user.tenantId, body);
   }
@@ -951,7 +951,7 @@ export class PeopleGeneratedController {
   async updatePeopleEntity19(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updatePeopleEntity19(req.user.tenantId, id, body);
   }
@@ -989,7 +989,7 @@ export class PeopleGeneratedController {
   @Permissions("people.peopleEntity20.create")
   async createPeopleEntity20(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createPeopleEntity20(req.user.tenantId, body);
   }
@@ -1000,7 +1000,7 @@ export class PeopleGeneratedController {
   async updatePeopleEntity20(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updatePeopleEntity20(req.user.tenantId, id, body);
   }
@@ -1038,7 +1038,7 @@ export class PeopleGeneratedController {
   @Permissions("people.peopleEntity21.create")
   async createPeopleEntity21(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createPeopleEntity21(req.user.tenantId, body);
   }
@@ -1049,7 +1049,7 @@ export class PeopleGeneratedController {
   async updatePeopleEntity21(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updatePeopleEntity21(req.user.tenantId, id, body);
   }
@@ -1087,7 +1087,7 @@ export class PeopleGeneratedController {
   @Permissions("people.peopleEntity22.create")
   async createPeopleEntity22(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createPeopleEntity22(req.user.tenantId, body);
   }
@@ -1098,7 +1098,7 @@ export class PeopleGeneratedController {
   async updatePeopleEntity22(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updatePeopleEntity22(req.user.tenantId, id, body);
   }
@@ -1136,7 +1136,7 @@ export class PeopleGeneratedController {
   @Permissions("people.peopleEntity23.create")
   async createPeopleEntity23(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createPeopleEntity23(req.user.tenantId, body);
   }
@@ -1147,7 +1147,7 @@ export class PeopleGeneratedController {
   async updatePeopleEntity23(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updatePeopleEntity23(req.user.tenantId, id, body);
   }
@@ -1185,7 +1185,7 @@ export class PeopleGeneratedController {
   @Permissions("people.peopleEntity24.create")
   async createPeopleEntity24(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createPeopleEntity24(req.user.tenantId, body);
   }
@@ -1196,7 +1196,7 @@ export class PeopleGeneratedController {
   async updatePeopleEntity24(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updatePeopleEntity24(req.user.tenantId, id, body);
   }
@@ -1234,7 +1234,7 @@ export class PeopleGeneratedController {
   @Permissions("people.peopleEntity25.create")
   async createPeopleEntity25(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createPeopleEntity25(req.user.tenantId, body);
   }
@@ -1245,7 +1245,7 @@ export class PeopleGeneratedController {
   async updatePeopleEntity25(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updatePeopleEntity25(req.user.tenantId, id, body);
   }
@@ -1283,7 +1283,7 @@ export class PeopleGeneratedController {
   @Permissions("people.peopleEntity26.create")
   async createPeopleEntity26(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createPeopleEntity26(req.user.tenantId, body);
   }
@@ -1294,7 +1294,7 @@ export class PeopleGeneratedController {
   async updatePeopleEntity26(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updatePeopleEntity26(req.user.tenantId, id, body);
   }
@@ -1332,7 +1332,7 @@ export class PeopleGeneratedController {
   @Permissions("people.peopleEntity27.create")
   async createPeopleEntity27(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createPeopleEntity27(req.user.tenantId, body);
   }
@@ -1343,7 +1343,7 @@ export class PeopleGeneratedController {
   async updatePeopleEntity27(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updatePeopleEntity27(req.user.tenantId, id, body);
   }
@@ -1381,7 +1381,7 @@ export class PeopleGeneratedController {
   @Permissions("people.peopleEntity28.create")
   async createPeopleEntity28(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createPeopleEntity28(req.user.tenantId, body);
   }
@@ -1392,7 +1392,7 @@ export class PeopleGeneratedController {
   async updatePeopleEntity28(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updatePeopleEntity28(req.user.tenantId, id, body);
   }
@@ -1430,7 +1430,7 @@ export class PeopleGeneratedController {
   @Permissions("people.peopleEntity29.create")
   async createPeopleEntity29(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createPeopleEntity29(req.user.tenantId, body);
   }
@@ -1441,7 +1441,7 @@ export class PeopleGeneratedController {
   async updatePeopleEntity29(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updatePeopleEntity29(req.user.tenantId, id, body);
   }
@@ -1479,7 +1479,7 @@ export class PeopleGeneratedController {
   @Permissions("people.peopleEntity30.create")
   async createPeopleEntity30(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createPeopleEntity30(req.user.tenantId, body);
   }
@@ -1490,7 +1490,7 @@ export class PeopleGeneratedController {
   async updatePeopleEntity30(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updatePeopleEntity30(req.user.tenantId, id, body);
   }
@@ -1528,7 +1528,7 @@ export class PeopleGeneratedController {
   @Permissions("people.peopleEntity31.create")
   async createPeopleEntity31(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createPeopleEntity31(req.user.tenantId, body);
   }
@@ -1539,7 +1539,7 @@ export class PeopleGeneratedController {
   async updatePeopleEntity31(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updatePeopleEntity31(req.user.tenantId, id, body);
   }
@@ -1577,7 +1577,7 @@ export class PeopleGeneratedController {
   @Permissions("people.peopleEntity32.create")
   async createPeopleEntity32(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createPeopleEntity32(req.user.tenantId, body);
   }
@@ -1588,7 +1588,7 @@ export class PeopleGeneratedController {
   async updatePeopleEntity32(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updatePeopleEntity32(req.user.tenantId, id, body);
   }
@@ -1626,7 +1626,7 @@ export class PeopleGeneratedController {
   @Permissions("people.peopleEntity33.create")
   async createPeopleEntity33(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createPeopleEntity33(req.user.tenantId, body);
   }
@@ -1637,7 +1637,7 @@ export class PeopleGeneratedController {
   async updatePeopleEntity33(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updatePeopleEntity33(req.user.tenantId, id, body);
   }
@@ -1675,7 +1675,7 @@ export class PeopleGeneratedController {
   @Permissions("people.peopleEntity34.create")
   async createPeopleEntity34(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createPeopleEntity34(req.user.tenantId, body);
   }
@@ -1686,7 +1686,7 @@ export class PeopleGeneratedController {
   async updatePeopleEntity34(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updatePeopleEntity34(req.user.tenantId, id, body);
   }
@@ -1724,7 +1724,7 @@ export class PeopleGeneratedController {
   @Permissions("people.peopleEntity35.create")
   async createPeopleEntity35(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createPeopleEntity35(req.user.tenantId, body);
   }
@@ -1735,7 +1735,7 @@ export class PeopleGeneratedController {
   async updatePeopleEntity35(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updatePeopleEntity35(req.user.tenantId, id, body);
   }
@@ -1773,7 +1773,7 @@ export class PeopleGeneratedController {
   @Permissions("people.peopleEntity36.create")
   async createPeopleEntity36(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createPeopleEntity36(req.user.tenantId, body);
   }
@@ -1784,7 +1784,7 @@ export class PeopleGeneratedController {
   async updatePeopleEntity36(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updatePeopleEntity36(req.user.tenantId, id, body);
   }
@@ -1822,7 +1822,7 @@ export class PeopleGeneratedController {
   @Permissions("people.peopleEntity37.create")
   async createPeopleEntity37(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createPeopleEntity37(req.user.tenantId, body);
   }
@@ -1833,7 +1833,7 @@ export class PeopleGeneratedController {
   async updatePeopleEntity37(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updatePeopleEntity37(req.user.tenantId, id, body);
   }
@@ -1871,7 +1871,7 @@ export class PeopleGeneratedController {
   @Permissions("people.peopleEntity38.create")
   async createPeopleEntity38(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createPeopleEntity38(req.user.tenantId, body);
   }
@@ -1882,7 +1882,7 @@ export class PeopleGeneratedController {
   async updatePeopleEntity38(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updatePeopleEntity38(req.user.tenantId, id, body);
   }
@@ -1920,7 +1920,7 @@ export class PeopleGeneratedController {
   @Permissions("people.peopleEntity39.create")
   async createPeopleEntity39(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createPeopleEntity39(req.user.tenantId, body);
   }
@@ -1931,7 +1931,7 @@ export class PeopleGeneratedController {
   async updatePeopleEntity39(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updatePeopleEntity39(req.user.tenantId, id, body);
   }
@@ -1969,7 +1969,7 @@ export class PeopleGeneratedController {
   @Permissions("people.peopleEntity40.create")
   async createPeopleEntity40(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createPeopleEntity40(req.user.tenantId, body);
   }
@@ -1980,7 +1980,7 @@ export class PeopleGeneratedController {
   async updatePeopleEntity40(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updatePeopleEntity40(req.user.tenantId, id, body);
   }

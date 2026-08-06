@@ -17,16 +17,22 @@ abstract class ApiPlatformRepository {
   Future<Result<void>> deleteApiKey(String id);
   Future<Result<ApiKey>> revokeApiKey(String id);
 
-  Future<Result<Cacheable<Paginated<WebhookEndpoint>>>> listWebhooks(ListQuery query);
+  Future<Result<Cacheable<Paginated<WebhookEndpoint>>>> listWebhooks(
+      ListQuery query);
   Future<Result<WebhookEndpoint>> getWebhook(String id);
   Future<Result<WebhookEndpoint>> createWebhook(Map<String, dynamic> payload);
-  Future<Result<WebhookEndpoint>> updateWebhook(String id, Map<String, dynamic> payload);
+  Future<Result<WebhookEndpoint>> updateWebhook(
+      String id, Map<String, dynamic> payload);
   Future<Result<void>> deleteWebhook(String id);
 
-  Future<Result<Cacheable<Paginated<ApiUsageLog>>>> listUsageLogs(ListQuery query);
+  Future<Result<Cacheable<Paginated<ApiUsageLog>>>> listUsageLogs(
+      ListQuery query);
 
-  Future<Result<Cacheable<Paginated<ApiRateLimitRule>>>> listRateLimits(ListQuery query);
-  Future<Result<ApiRateLimitRule>> createRateLimit(Map<String, dynamic> payload);
-  Future<Result<ApiRateLimitRule>> updateRateLimit(String id, Map<String, dynamic> payload);
+  Future<Result<Cacheable<Paginated<ApiRateLimitRule>>>> listRateLimits(
+      ListQuery query);
+  Future<Result<ApiRateLimitRule>> createRateLimit(
+      Map<String, dynamic> payload);
+  Future<Result<ApiRateLimitRule>> updateRateLimit(
+      String id, Map<String, dynamic> payload);
   Future<Result<void>> deleteRateLimit(String id);
 }

@@ -12,10 +12,12 @@ class MarketplaceAppListPage extends ConsumerStatefulWidget {
   static const String routeName = 'marketplace-apps';
   static const String routePath = '/marketplace/apps';
   @override
-  ConsumerState<MarketplaceAppListPage> createState() => _MarketplaceAppListPageState();
+  ConsumerState<MarketplaceAppListPage> createState() =>
+      _MarketplaceAppListPageState();
 }
 
-class _MarketplaceAppListPageState extends ConsumerState<MarketplaceAppListPage> {
+class _MarketplaceAppListPageState
+    extends ConsumerState<MarketplaceAppListPage> {
   final TextEditingController _search = TextEditingController();
 
   static const Map<String, String> _sortOptions = <String, String>{
@@ -48,8 +50,12 @@ class _MarketplaceAppListPageState extends ConsumerState<MarketplaceAppListPage>
             initialValue: state.query.sort,
             onSelected: controller.applySort,
             itemBuilder: (_) => _sortOptions.entries
-                .map((e) => PopupMenuItem<String>(
-                    value: e.key, child: Text(e.value),),)
+                .map(
+                  (e) => PopupMenuItem<String>(
+                    value: e.key,
+                    child: Text(e.value),
+                  ),
+                )
                 .toList(),
           ),
         ],
@@ -57,7 +63,8 @@ class _MarketplaceAppListPageState extends ConsumerState<MarketplaceAppListPage>
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
+            padding: const EdgeInsets.fromLTRB(
+                Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
             child: TextField(
               controller: _search,
               onChanged: controller.search,
@@ -69,21 +76,27 @@ class _MarketplaceAppListPageState extends ConsumerState<MarketplaceAppListPage>
                     ? null
                     : IconButton(
                         icon: const Icon(Icons.close),
-                        onPressed: () { _search.clear(); controller.search(''); },
+                        onPressed: () {
+                          _search.clear();
+                          controller.search('');
+                        },
                       ),
               ),
             ),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: Spacing.x4),
-            child: Row(children: [
-              Text(
-                state.isLoading
-                    ? 'Loading...'
-                    : '${state.meta.total} app${state.meta.total == 1 ? '' : 's'}',
-                style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
-              ),
-            ],),
+            child: Row(
+              children: [
+                Text(
+                  state.isLoading
+                      ? 'Loading...'
+                      : '${state.meta.total} app${state.meta.total == 1 ? '' : 's'}',
+                  style:
+                      TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
+                ),
+              ],
+            ),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -91,7 +104,8 @@ class _MarketplaceAppListPageState extends ConsumerState<MarketplaceAppListPage>
     );
   }
 
-  Widget _body(MarketplaceAppListState state, MarketplaceAppListController controller) {
+  Widget _body(
+      MarketplaceAppListState state, MarketplaceAppListController controller) {
     if (state.isLoading && state.items.isEmpty) return const LoadingView();
     final failure = state.failure;
     if (failure != null && state.items.isEmpty) {
@@ -114,31 +128,48 @@ class _MarketplaceAppListPageState extends ConsumerState<MarketplaceAppListPage>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(children: [
-                Expanded(
-                  child: Text(a.name,
-                      style: Theme.of(context).textTheme.titleSmall,),
-                ),
-                UiStatusBadge(label: a.status, tone: _statusTone(a.status)),
-              ],),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      a.name,
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
+                  ),
+                  UiStatusBadge(label: a.status, tone: _statusTone(a.status)),
+                ],
+              ),
               const SizedBox(height: Spacing.x1),
               if (a.description != null)
-                Text(a.description!,
-                    maxLines: 2, overflow: TextOverflow.ellipsis,
-                    style: TextStyle(color: palette.textSecondary, fontSize: TypeScale.xs),),
+                Text(
+                  a.description!,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                      color: palette.textSecondary, fontSize: TypeScale.xs),
+                ),
               const SizedBox(height: Spacing.x1),
-              Row(children: [
-                if (a.developer != null)
-                  Text(a.developer!,
-                      style: const TextStyle(fontSize: TypeScale.xs),),
-                const Spacer(),
-                if (a.rating != null && a.rating! > 0)
-                  Text('\u2605 ${a.rating!.toStringAsFixed(1)}',
-                      style: const TextStyle(fontSize: TypeScale.xs),),
-                const SizedBox(width: Spacing.x1),
-                Text('${a.downloadCount} downloads',
-                    style: TextStyle(fontSize: TypeScale.xs, color: palette.textSecondary),),
-              ],),
+              Row(
+                children: [
+                  if (a.developer != null)
+                    Text(
+                      a.developer!,
+                      style: const TextStyle(fontSize: TypeScale.xs),
+                    ),
+                  const Spacer(),
+                  if (a.rating != null && a.rating! > 0)
+                    Text(
+                      '\u2605 ${a.rating!.toStringAsFixed(1)}',
+                      style: const TextStyle(fontSize: TypeScale.xs),
+                    ),
+                  const SizedBox(width: Spacing.x1),
+                  Text(
+                    '${a.downloadCount} downloads',
+                    style: TextStyle(
+                        fontSize: TypeScale.xs, color: palette.textSecondary),
+                  ),
+                ],
+              ),
             ],
           ),
         ),
@@ -160,10 +191,12 @@ class MarketplaceSubmissionListPage extends ConsumerStatefulWidget {
   static const String routeName = 'marketplace-submissions';
   static const String routePath = '/marketplace/submissions';
   @override
-  ConsumerState<MarketplaceSubmissionListPage> createState() => _MarketplaceSubmissionListPageState();
+  ConsumerState<MarketplaceSubmissionListPage> createState() =>
+      _MarketplaceSubmissionListPageState();
 }
 
-class _MarketplaceSubmissionListPageState extends ConsumerState<MarketplaceSubmissionListPage> {
+class _MarketplaceSubmissionListPageState
+    extends ConsumerState<MarketplaceSubmissionListPage> {
   final TextEditingController _search = TextEditingController();
 
   @override
@@ -175,13 +208,15 @@ class _MarketplaceSubmissionListPageState extends ConsumerState<MarketplaceSubmi
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(marketplaceSubmissionListControllerProvider);
-    final controller = ref.read(marketplaceSubmissionListControllerProvider.notifier);
+    final controller =
+        ref.read(marketplaceSubmissionListControllerProvider.notifier);
     return Scaffold(
       appBar: AppBar(title: const Text('Submissions')),
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
+            padding: const EdgeInsets.fromLTRB(
+                Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
             child: TextField(
               controller: _search,
               onChanged: controller.search,
@@ -193,7 +228,10 @@ class _MarketplaceSubmissionListPageState extends ConsumerState<MarketplaceSubmi
                     ? null
                     : IconButton(
                         icon: const Icon(Icons.close),
-                        onPressed: () { _search.clear(); controller.search(''); },
+                        onPressed: () {
+                          _search.clear();
+                          controller.search('');
+                        },
                       ),
               ),
             ),
@@ -204,7 +242,8 @@ class _MarketplaceSubmissionListPageState extends ConsumerState<MarketplaceSubmi
     );
   }
 
-  Widget _body(MarketplaceSubmissionListState state, MarketplaceSubmissionListController controller) {
+  Widget _body(MarketplaceSubmissionListState state,
+      MarketplaceSubmissionListController controller) {
     if (state.isLoading && state.items.isEmpty) return const LoadingView();
     final failure = state.failure;
     if (failure != null && state.items.isEmpty) {
@@ -227,22 +266,34 @@ class _MarketplaceSubmissionListPageState extends ConsumerState<MarketplaceSubmi
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(children: [
-                Expanded(
-                  child: Text(s.appName ?? 'Submission',
-                      style: Theme.of(context).textTheme.titleSmall,),
-                ),
-                UiStatusBadge(label: s.status, tone: _submissionTone(s.status)),
-              ],),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      s.appName ?? 'Submission',
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
+                  ),
+                  UiStatusBadge(
+                      label: s.status, tone: _submissionTone(s.status)),
+                ],
+              ),
               const SizedBox(height: Spacing.x1),
-              Row(children: [
-                Text('Type: ${s.type}',
-                    style: TextStyle(color: palette.textSecondary, fontSize: TypeScale.xs),),
-                const Spacer(),
-                if (s.submitterName != null)
-                  Text(s.submitterName!,
-                      style: const TextStyle(fontSize: TypeScale.xs),),
-              ],),
+              Row(
+                children: [
+                  Text(
+                    'Type: ${s.type}',
+                    style: TextStyle(
+                        color: palette.textSecondary, fontSize: TypeScale.xs),
+                  ),
+                  const Spacer(),
+                  if (s.submitterName != null)
+                    Text(
+                      s.submitterName!,
+                      style: const TextStyle(fontSize: TypeScale.xs),
+                    ),
+                ],
+              ),
             ],
           ),
         ),

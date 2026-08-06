@@ -5,6 +5,7 @@ import {
   Inject,
 } from "@nestjs/common";
 import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 import { Prisma } from "@prisma/client";
 import { resolveOrgId } from "./crm-shared";
 import { CrmSlaService } from "./crm-sla.service";

@@ -334,7 +334,7 @@ function tabBtn(active: boolean): React.CSSProperties {
     borderRadius: 8,
     border: "1px solid var(--color-border)",
     background: active ? "var(--color-primary)" : "var(--color-bg-elevated)",
-    color: active ? "#fff" : "var(--color-text)",
+    color: active ? "var(--color-text-inverse)" : "var(--color-text)",
     fontWeight: 600,
     fontSize: 13,
     cursor: "pointer",

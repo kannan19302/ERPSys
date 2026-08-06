@@ -39,7 +39,8 @@ class SaasRepositoryImpl implements SaasRepository {
       final List<Map<String, dynamic>> jsonItems = page.data
           .map((dynamic e) => (e as dynamic).toJson() as Map<String, dynamic>)
           .toList(growable: false);
-      await _cache.write(_tenantId, namespace, query.cacheKey, <String, Object?>{
+      await _cache
+          .write(_tenantId, namespace, query.cacheKey, <String, Object?>{
         'data': jsonItems,
         'meta': page.meta.toJson(),
       });
@@ -47,9 +48,11 @@ class SaasRepositoryImpl implements SaasRepository {
         Cacheable<Paginated<T>>(value: page),
       );
     } on NetworkException catch (error) {
-      final cached = _cache.read<Map<String, dynamic>>(_tenantId, namespace, query.cacheKey);
+      final cached = _cache.read<Map<String, dynamic>>(
+          _tenantId, namespace, query.cacheKey);
       if (cached == null) {
-        return Result<Cacheable<Paginated<T>>>.err(mapExceptionToFailure(error));
+        return Result<Cacheable<Paginated<T>>>.err(
+            mapExceptionToFailure(error));
       }
       return Result<Cacheable<Paginated<T>>>.ok(
         Cacheable<Paginated<T>>(
@@ -92,7 +95,8 @@ class SaasRepositoryImpl implements SaasRepository {
 
   @override
   Future<Result<Cacheable<Paginated<SaasPlan>>>> listPlans(ListQuery query) =>
-      _paginated(_planNamespace, query, () => _remote.listPlans(query), SaasPlanModel.fromJson);
+      _paginated(_planNamespace, query, () => _remote.listPlans(query),
+          SaasPlanModel.fromJson);
 
   @override
   Future<Result<SaasPlan>> getPlan(String id) =>
@@ -103,7 +107,8 @@ class SaasRepositoryImpl implements SaasRepository {
       _write(() => _remote.createPlan(payload));
 
   @override
-  Future<Result<SaasPlan>> updatePlan(String id, Map<String, dynamic> payload) =>
+  Future<Result<SaasPlan>> updatePlan(
+          String id, Map<String, dynamic> payload) =>
       _write(() => _remote.updatePlan(id, payload));
 
   @override
@@ -111,19 +116,26 @@ class SaasRepositoryImpl implements SaasRepository {
       _delete(() => _remote.deletePlan(id));
 
   @override
-  Future<Result<Cacheable<Paginated<SaasSubscription>>>> listSubscriptions(ListQuery query) =>
-      _paginated(_subscriptionNamespace, query, () => _remote.listSubscriptions(query), SaasSubscriptionModel.fromJson);
+  Future<Result<Cacheable<Paginated<SaasSubscription>>>> listSubscriptions(
+          ListQuery query) =>
+      _paginated(
+          _subscriptionNamespace,
+          query,
+          () => _remote.listSubscriptions(query),
+          SaasSubscriptionModel.fromJson);
 
   @override
   Future<Result<SaasSubscription>> getSubscription(String id) =>
       _single(() => _remote.getSubscription(id));
 
   @override
-  Future<Result<SaasSubscription>> createSubscription(Map<String, dynamic> payload) =>
+  Future<Result<SaasSubscription>> createSubscription(
+          Map<String, dynamic> payload) =>
       _write(() => _remote.createSubscription(payload));
 
   @override
-  Future<Result<SaasSubscription>> updateSubscription(String id, Map<String, dynamic> payload) =>
+  Future<Result<SaasSubscription>> updateSubscription(
+          String id, Map<String, dynamic> payload) =>
       _write(() => _remote.updateSubscription(id, payload));
 
   @override
@@ -131,30 +143,38 @@ class SaasRepositoryImpl implements SaasRepository {
       _delete(() => _remote.cancelSubscription(id));
 
   @override
-  Future<Result<Cacheable<Paginated<SaasInvoice>>>> listInvoices(ListQuery query) =>
-      _paginated(_invoiceNamespace, query, () => _remote.listInvoices(query), SaasInvoiceModel.fromJson);
+  Future<Result<Cacheable<Paginated<SaasInvoice>>>> listInvoices(
+          ListQuery query) =>
+      _paginated(_invoiceNamespace, query, () => _remote.listInvoices(query),
+          SaasInvoiceModel.fromJson);
 
   @override
   Future<Result<SaasInvoice>> getInvoice(String id) =>
       _single(() => _remote.getInvoice(id));
 
   @override
-  Future<Result<Cacheable<Paginated<SaasUsageRecord>>>> listUsage(ListQuery query) =>
-      _paginated(_usageNamespace, query, () => _remote.listUsage(query), SaasUsageRecordModel.fromJson);
+  Future<Result<Cacheable<Paginated<SaasUsageRecord>>>> listUsage(
+          ListQuery query) =>
+      _paginated(_usageNamespace, query, () => _remote.listUsage(query),
+          SaasUsageRecordModel.fromJson);
 
   @override
   Future<Result<Cacheable<Paginated<SaasQuota>>>> listQuotas(ListQuery query) =>
-      _paginated(_quotaNamespace, query, () => _remote.listQuotas(query), SaasQuotaModel.fromJson);
+      _paginated(_quotaNamespace, query, () => _remote.listQuotas(query),
+          SaasQuotaModel.fromJson);
 
   @override
-  Future<Result<Cacheable<Paginated<SaasTenant>>>> listTenants(ListQuery query) =>
-      _paginated(_tenantNamespace, query, () => _remote.listTenants(query), SaasTenantModel.fromJson);
+  Future<Result<Cacheable<Paginated<SaasTenant>>>> listTenants(
+          ListQuery query) =>
+      _paginated(_tenantNamespace, query, () => _remote.listTenants(query),
+          SaasTenantModel.fromJson);
 
   @override
   Future<Result<SaasTenant>> getTenant(String id) =>
       _single(() => _remote.getTenant(id));
 
   @override
-  Future<Result<SaasTenant>> updateTenant(String id, Map<String, dynamic> payload) =>
+  Future<Result<SaasTenant>> updateTenant(
+          String id, Map<String, dynamic> payload) =>
       _write(() => _remote.updateTenant(id, payload));
 }

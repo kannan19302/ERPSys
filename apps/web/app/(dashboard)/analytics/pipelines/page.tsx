@@ -126,7 +126,11 @@ export default function AnalyticsPipelinesPage() {
         </h3>
         {pipelines.length === 0 ? (
           <p
-            style={{ color: "#64748b", textAlign: "center", padding: "32px 0" }}
+            style={{
+              color: "var(--color-text-secondary)",
+              textAlign: "center",
+              padding: "32px 0",
+            }}
           >
             No active ETL data pipelines.
           </p>
@@ -154,7 +158,7 @@ export default function AnalyticsPipelinesPage() {
                   <td
                     style={{
                       padding: "12px",
-                      color: "#64748b",
+                      color: "var(--color-text-secondary)",
                       fontSize: "13px",
                     }}
                   >

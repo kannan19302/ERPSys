@@ -9,6 +9,7 @@ vi.mock("@unerp/database", () => ({
 }));
 
 import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 import { AdvancedHrSuccessionPlanningDeepService } from "../advanced-hr-succession-planning-deep.service";
 
 describe("AdvancedHrSuccessionPlanningDeepService", () => {

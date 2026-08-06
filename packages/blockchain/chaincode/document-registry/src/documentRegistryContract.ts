@@ -14,17 +14,23 @@
  *  - GetTenantDocuments → list all documents for a tenant
  */
 
-import { Context, Contract, Info, Returns, Transaction } from 'fabric-contract-api';
-import { DocumentRecord, makeDocumentKey } from './models/documentRecord';
+import {
+  Context,
+  Contract,
+  Info,
+  Returns,
+  Transaction,
+} from "fabric-contract-api";
+import { DocumentRecord, makeDocumentKey } from "./models/documentRecord";
 
 @Info({
-  title: 'DocumentRegistryContract',
+  title: "DocumentRegistryContract",
   description:
-    'UniERP Document Authenticity Registry — stores SHA-256 hashes of documents on the immutable Fabric ledger.',
+    "UniERP Document Authenticity Registry — stores SHA-256 hashes of documents on the immutable Fabric ledger.",
 })
 export class DocumentRegistryContract extends Contract {
   constructor() {
-    super('DocumentRegistryContract');
+    super("DocumentRegistryContract");
   }
 
   /**
@@ -45,7 +51,7 @@ export class DocumentRegistryContract extends Contract {
    * Returns: DocumentRecord JSON
    */
   @Transaction()
-  @Returns('string')
+  @Returns("string")
   async RegisterDocument(ctx: Context, argsJson: string): Promise<string> {
     const args = JSON.parse(argsJson) as {
       tenantId: string;
@@ -61,7 +67,7 @@ export class DocumentRegistryContract extends Contract {
 
     // Validate required fields
     if (!args.tenantId || !args.documentId || !args.documentHash) {
-      throw new Error('tenantId, documentId, and documentHash are required');
+      throw new Error("tenantId, documentId, and documentHash are required");
     }
 
     const key = makeDocumentKey(args.tenantId, args.documentId);
@@ -69,7 +75,9 @@ export class DocumentRegistryContract extends Contract {
     // Check for idempotency — if same hash is already registered, return existing
     const existing = await ctx.stub.getState(key);
     if (existing && existing.length > 0) {
-      const existingRecord: DocumentRecord = JSON.parse(existing.toString('utf8'));
+      const existingRecord: DocumentRecord = JSON.parse(
+        existing.toString("utf8"),
+      );
       if (existingRecord.documentHash === args.documentHash) {
         return JSON.stringify(existingRecord);
       }
@@ -83,7 +91,7 @@ export class DocumentRegistryContract extends Contract {
     const now = new Date().toISOString();
 
     const record: DocumentRecord = {
-      docType: 'DocumentRecord',
+      docType: "DocumentRecord",
       documentId: args.documentId,
       tenantId: args.tenantId,
       documentHash: args.documentHash,
@@ -94,7 +102,7 @@ export class DocumentRegistryContract extends Contract {
       uploadedBy: args.uploadedBy,
       uploadedAt: args.uploadedAt,
       registrationTxId: txId,
-      registrationBlock: '0', // Will be set by the block event listener
+      registrationBlock: "0", // Will be set by the block event listener
       revoked: false,
       createdAt: now,
     };
@@ -103,7 +111,7 @@ export class DocumentRegistryContract extends Contract {
 
     // Emit chaincode event for the sync service
     await ctx.stub.setEvent(
-      'DocumentRegistered',
+      "DocumentRegistered",
       Buffer.from(
         JSON.stringify({
           tenantId: args.tenantId,
@@ -123,7 +131,7 @@ export class DocumentRegistryContract extends Contract {
    * Returns: DocumentRecord JSON, or "null" if not found.
    */
   @Transaction(false)
-  @Returns('string')
+  @Returns("string")
   async VerifyDocument(
     ctx: Context,
     tenantId: string,
@@ -132,9 +140,9 @@ export class DocumentRegistryContract extends Contract {
     const key = makeDocumentKey(tenantId, documentId);
     const data = await ctx.stub.getState(key);
     if (!data || data.length === 0) {
-      return 'null';
+      return "null";
     }
-    return data.toString('utf8');
+    return data.toString("utf8");
   }
 
   /**
@@ -145,7 +153,7 @@ export class DocumentRegistryContract extends Contract {
    *   tenantId, documentId, revokedBy, reason
    */
   @Transaction()
-  @Returns('string')
+  @Returns("string")
   async RevokeDocument(ctx: Context, argsJson: string): Promise<string> {
     const args = JSON.parse(argsJson) as {
       tenantId: string;
@@ -161,7 +169,7 @@ export class DocumentRegistryContract extends Contract {
       throw new Error(`Document ${args.documentId} not found on ledger`);
     }
 
-    const record: DocumentRecord = JSON.parse(data.toString('utf8'));
+    const record: DocumentRecord = JSON.parse(data.toString("utf8"));
 
     if (record.revoked) {
       throw new Error(`Document ${args.documentId} is already revoked`);
@@ -175,7 +183,7 @@ export class DocumentRegistryContract extends Contract {
     await ctx.stub.putState(key, Buffer.from(JSON.stringify(record)));
 
     await ctx.stub.setEvent(
-      'DocumentRevoked',
+      "DocumentRevoked",
       Buffer.from(
         JSON.stringify({
           tenantId: args.tenantId,
@@ -195,10 +203,10 @@ export class DocumentRegistryContract extends Contract {
    * Returns: DocumentRecord[] JSON
    */
   @Transaction(false)
-  @Returns('string')
+  @Returns("string")
   async GetTenantDocuments(ctx: Context, tenantId: string): Promise<string> {
     const prefix = `DOC~${tenantId}~`;
-    const iterator = await ctx.stub.getStateByRange(prefix, prefix + '\xFF');
+    const iterator = await ctx.stub.getStateByRange(prefix, prefix + "\xFF");
 
     const results: DocumentRecord[] = [];
     let result = await iterator.next();
@@ -207,7 +215,7 @@ export class DocumentRegistryContract extends Contract {
       if (result.value && result.value.value) {
         try {
           const record: DocumentRecord = JSON.parse(
-            result.value.value.toString('utf8'),
+            result.value.value.toString("utf8"),
           );
           results.push(record);
         } catch {

@@ -1,16 +1,25 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { CrmRevenueIntelligenceService } from "../crm-revenue-intelligence.service";
 
-vi.mock("@unerp/database", () => ({
-  prisma: {
-    pipelineRiskAlert: { findMany: vi.fn() },
-    dealRiskDigestRun: { create: vi.fn(), findMany: vi.fn() },
-    role: { findMany: vi.fn() },
-    userRole: { findMany: vi.fn() },
-  },
-}));
+vi.mock("@unerp/database", () => {
+  // Identity models (user, role, userSession, ...) are read through
+  // `idpPrisma`, not `prisma` — this spec predates that split and stubs
+  // them under `prisma`. Exporting the same stub object under both names
+  // keeps every `vi.mocked(prisma.user.*)` setup pointing at exactly the
+  // function the service calls.
+  const mocked = {
+    prisma: {
+      pipelineRiskAlert: { findMany: vi.fn() },
+      dealRiskDigestRun: { create: vi.fn(), findMany: vi.fn() },
+      role: { findMany: vi.fn() },
+      userRole: { findMany: vi.fn() },
+    },
+  };
+  return { ...mocked, idpPrisma: mocked.prisma };
+});
 
 import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 
 const TENANT = "tenant-1";
 const ORG = "org-1";
@@ -82,12 +91,12 @@ describe("CrmRevenueIntelligenceService — deal-risk digest", () => {
     ).mockImplementation(({ data }: never) =>
       Promise.resolve({ id: "run-1", ...data }),
     );
-    (prisma.role.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([
+    (idpPrisma.role.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([
       { id: "role-manager", permissions: ["crm.opportunity.update"] },
     ]);
-    (prisma.userRole.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([
-      { userId: "manager-1" },
-    ]);
+    (idpPrisma.userRole.findMany as ReturnType<typeof vi.fn>).mockResolvedValue(
+      [{ userId: "manager-1" }],
+    );
 
     const result = await service.generateAndSendDigests(TENANT, ORG, 24);
 
@@ -145,7 +154,7 @@ describe("CrmRevenueIntelligenceService — deal-risk digest", () => {
     ).mockImplementation(({ data }: never) =>
       Promise.resolve({ id: "run-2", ...data }),
     );
-    (prisma.role.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([]);
+    (idpPrisma.role.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([]);
 
     const result = await service.generateAndSendDigests(TENANT, ORG, 24);
 

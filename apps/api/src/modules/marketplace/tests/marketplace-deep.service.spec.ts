@@ -50,7 +50,7 @@ describe("MarketplaceDeepService", () => {
 
   describe("app reviews", () => {
     it("should get reviews with aggregate stats", async () => {
-      const { prisma } = require("@unerp/database");
+      const { prisma } = await import("@unerp/database");
       prisma.appReview.findMany.mockResolvedValue([]);
       prisma.appReview.count.mockResolvedValue(0);
       prisma.appReview.aggregate.mockResolvedValue({
@@ -67,7 +67,7 @@ describe("MarketplaceDeepService", () => {
     });
 
     it("should create a review", async () => {
-      const { prisma } = require("@unerp/database");
+      const { prisma } = await import("@unerp/database");
       prisma.appReview.findUnique.mockResolvedValue(null);
       prisma.appReview.create.mockResolvedValue({
         id: "1",
@@ -87,7 +87,7 @@ describe("MarketplaceDeepService", () => {
     });
 
     it("should reject duplicate reviews", async () => {
-      const { prisma } = require("@unerp/database");
+      const { prisma } = await import("@unerp/database");
       prisma.appReview.findUnique.mockResolvedValue({ id: "existing" });
       await expect(
         service.createAppReview("app-1", "u-1", "User", "t-1", { rating: 5 }),
@@ -97,7 +97,7 @@ describe("MarketplaceDeepService", () => {
 
   describe("app versions", () => {
     it("should list versions", async () => {
-      const { prisma } = require("@unerp/database");
+      const { prisma } = await import("@unerp/database");
       prisma.marketplaceAppVersion.findMany.mockResolvedValue([
         { id: "1", version: "1.0.0" },
       ]);
@@ -108,7 +108,7 @@ describe("MarketplaceDeepService", () => {
 
   describe("developer submissions", () => {
     it("should list submissions", async () => {
-      const { prisma } = require("@unerp/database");
+      const { prisma } = await import("@unerp/database");
       prisma.marketplaceDeveloperSubmission.findMany.mockResolvedValue([]);
       const result = await service.listSubmissions("t-1");
       expect(result).toEqual([]);
@@ -117,7 +117,7 @@ describe("MarketplaceDeepService", () => {
 
   describe("analytics", () => {
     it("should get analytics", async () => {
-      const { prisma } = require("@unerp/database");
+      const { prisma } = await import("@unerp/database");
       prisma.marketplaceAnalytics.findMany.mockResolvedValue([]);
       prisma.marketplaceAnalytics.aggregate.mockResolvedValue({
         _sum: { installs: 100, uninstalls: 10, revenue: 500 },

@@ -4,7 +4,7 @@
  * Thin re-export following the Finance/CRM tab-layout convention
  * (see apps/web/src/components/finance/FinanceTabLayout.tsx and
  * apps/web/src/components/crm/CrmTabLayout.tsx). The canonical
- * implementation lives in @unerp/ui-layout as ModuleTabLayout.
+ * implementation lives in @unerp/ui/layout as ModuleTabLayout.
  *
  * SETTINGS_TABS enumerates every page under
  * apps/web/app/(dashboard)/settings/** so the module is fully
@@ -75,13 +75,13 @@ import {
   CheckSquare,
   ShieldQuestion,
 } from "lucide-react";
-import type { ModuleTab } from "@unerp/ui-layout";
+import type { ModuleTab } from "@unerp/ui/layout";
 
 export {
   ModuleTabLayout as SettingsTabLayout,
   type ModuleTab as SettingsTab,
   type ModuleTabLayoutProps as SettingsTabLayoutProps,
-} from "@unerp/ui-layout";
+} from "@unerp/ui/layout";
 
 export const SETTINGS_TABS: ModuleTab[] = [
   {

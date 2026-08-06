@@ -25,7 +25,7 @@ import {
 } from "@unerp/ui";
 
 import { RouteGuard, useApiClient } from "@unerp/framework";
-import type { ModuleTab } from "@unerp/ui-layout";
+import type { ModuleTab } from "@unerp/ui/layout";
 
 const MANUFACTURING_TABS: ModuleTab[] = [
   {

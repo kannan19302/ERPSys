@@ -12,7 +12,7 @@ import {
   BarChart3,
   Settings,
 } from "lucide-react";
-import type { ModuleTab } from "@unerp/ui-layout";
+import type { ModuleTab } from "@unerp/ui/layout";
 
 export {
   ModuleTabLayout as EducationTabLayout,
@@ -20,7 +20,7 @@ export {
   type ModuleTabLayoutProps as EducationTabLayoutProps,
   SubTabBar,
   type SubTab,
-} from "@unerp/ui-layout";
+} from "@unerp/ui/layout";
 
 export const EDUCATION_TABS: ModuleTab[] = [
   {

@@ -58,7 +58,7 @@ export class ExtGatewayGeneratedController {
   @Permissions("ext-gateway.extGatewayEntity1.create")
   async createExtGatewayEntity1(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createExtGatewayEntity1(req.user.tenantId, body);
   }
@@ -69,7 +69,7 @@ export class ExtGatewayGeneratedController {
   async updateExtGatewayEntity1(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateExtGatewayEntity1(req.user.tenantId, id, body);
   }
@@ -107,7 +107,7 @@ export class ExtGatewayGeneratedController {
   @Permissions("ext-gateway.extGatewayEntity2.create")
   async createExtGatewayEntity2(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createExtGatewayEntity2(req.user.tenantId, body);
   }
@@ -118,7 +118,7 @@ export class ExtGatewayGeneratedController {
   async updateExtGatewayEntity2(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateExtGatewayEntity2(req.user.tenantId, id, body);
   }
@@ -156,7 +156,7 @@ export class ExtGatewayGeneratedController {
   @Permissions("ext-gateway.extGatewayEntity3.create")
   async createExtGatewayEntity3(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createExtGatewayEntity3(req.user.tenantId, body);
   }
@@ -167,7 +167,7 @@ export class ExtGatewayGeneratedController {
   async updateExtGatewayEntity3(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateExtGatewayEntity3(req.user.tenantId, id, body);
   }
@@ -205,7 +205,7 @@ export class ExtGatewayGeneratedController {
   @Permissions("ext-gateway.extGatewayEntity4.create")
   async createExtGatewayEntity4(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createExtGatewayEntity4(req.user.tenantId, body);
   }
@@ -216,7 +216,7 @@ export class ExtGatewayGeneratedController {
   async updateExtGatewayEntity4(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateExtGatewayEntity4(req.user.tenantId, id, body);
   }
@@ -254,7 +254,7 @@ export class ExtGatewayGeneratedController {
   @Permissions("ext-gateway.extGatewayEntity5.create")
   async createExtGatewayEntity5(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createExtGatewayEntity5(req.user.tenantId, body);
   }
@@ -265,7 +265,7 @@ export class ExtGatewayGeneratedController {
   async updateExtGatewayEntity5(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateExtGatewayEntity5(req.user.tenantId, id, body);
   }
@@ -303,7 +303,7 @@ export class ExtGatewayGeneratedController {
   @Permissions("ext-gateway.extGatewayEntity6.create")
   async createExtGatewayEntity6(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createExtGatewayEntity6(req.user.tenantId, body);
   }
@@ -314,7 +314,7 @@ export class ExtGatewayGeneratedController {
   async updateExtGatewayEntity6(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateExtGatewayEntity6(req.user.tenantId, id, body);
   }
@@ -352,7 +352,7 @@ export class ExtGatewayGeneratedController {
   @Permissions("ext-gateway.extGatewayEntity7.create")
   async createExtGatewayEntity7(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createExtGatewayEntity7(req.user.tenantId, body);
   }
@@ -363,7 +363,7 @@ export class ExtGatewayGeneratedController {
   async updateExtGatewayEntity7(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateExtGatewayEntity7(req.user.tenantId, id, body);
   }
@@ -401,7 +401,7 @@ export class ExtGatewayGeneratedController {
   @Permissions("ext-gateway.extGatewayEntity8.create")
   async createExtGatewayEntity8(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createExtGatewayEntity8(req.user.tenantId, body);
   }
@@ -412,7 +412,7 @@ export class ExtGatewayGeneratedController {
   async updateExtGatewayEntity8(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateExtGatewayEntity8(req.user.tenantId, id, body);
   }
@@ -450,7 +450,7 @@ export class ExtGatewayGeneratedController {
   @Permissions("ext-gateway.extGatewayEntity9.create")
   async createExtGatewayEntity9(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createExtGatewayEntity9(req.user.tenantId, body);
   }
@@ -461,7 +461,7 @@ export class ExtGatewayGeneratedController {
   async updateExtGatewayEntity9(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateExtGatewayEntity9(req.user.tenantId, id, body);
   }
@@ -499,7 +499,7 @@ export class ExtGatewayGeneratedController {
   @Permissions("ext-gateway.extGatewayEntity10.create")
   async createExtGatewayEntity10(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createExtGatewayEntity10(req.user.tenantId, body);
   }
@@ -510,7 +510,7 @@ export class ExtGatewayGeneratedController {
   async updateExtGatewayEntity10(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateExtGatewayEntity10(req.user.tenantId, id, body);
   }
@@ -548,7 +548,7 @@ export class ExtGatewayGeneratedController {
   @Permissions("ext-gateway.extGatewayEntity11.create")
   async createExtGatewayEntity11(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createExtGatewayEntity11(req.user.tenantId, body);
   }
@@ -559,7 +559,7 @@ export class ExtGatewayGeneratedController {
   async updateExtGatewayEntity11(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateExtGatewayEntity11(req.user.tenantId, id, body);
   }
@@ -597,7 +597,7 @@ export class ExtGatewayGeneratedController {
   @Permissions("ext-gateway.extGatewayEntity12.create")
   async createExtGatewayEntity12(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createExtGatewayEntity12(req.user.tenantId, body);
   }
@@ -608,7 +608,7 @@ export class ExtGatewayGeneratedController {
   async updateExtGatewayEntity12(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateExtGatewayEntity12(req.user.tenantId, id, body);
   }
@@ -646,7 +646,7 @@ export class ExtGatewayGeneratedController {
   @Permissions("ext-gateway.extGatewayEntity13.create")
   async createExtGatewayEntity13(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createExtGatewayEntity13(req.user.tenantId, body);
   }
@@ -657,7 +657,7 @@ export class ExtGatewayGeneratedController {
   async updateExtGatewayEntity13(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateExtGatewayEntity13(req.user.tenantId, id, body);
   }
@@ -695,7 +695,7 @@ export class ExtGatewayGeneratedController {
   @Permissions("ext-gateway.extGatewayEntity14.create")
   async createExtGatewayEntity14(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createExtGatewayEntity14(req.user.tenantId, body);
   }
@@ -706,7 +706,7 @@ export class ExtGatewayGeneratedController {
   async updateExtGatewayEntity14(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateExtGatewayEntity14(req.user.tenantId, id, body);
   }
@@ -744,7 +744,7 @@ export class ExtGatewayGeneratedController {
   @Permissions("ext-gateway.extGatewayEntity15.create")
   async createExtGatewayEntity15(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createExtGatewayEntity15(req.user.tenantId, body);
   }
@@ -755,7 +755,7 @@ export class ExtGatewayGeneratedController {
   async updateExtGatewayEntity15(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateExtGatewayEntity15(req.user.tenantId, id, body);
   }
@@ -793,7 +793,7 @@ export class ExtGatewayGeneratedController {
   @Permissions("ext-gateway.extGatewayEntity16.create")
   async createExtGatewayEntity16(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createExtGatewayEntity16(req.user.tenantId, body);
   }
@@ -804,7 +804,7 @@ export class ExtGatewayGeneratedController {
   async updateExtGatewayEntity16(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateExtGatewayEntity16(req.user.tenantId, id, body);
   }
@@ -842,7 +842,7 @@ export class ExtGatewayGeneratedController {
   @Permissions("ext-gateway.extGatewayEntity17.create")
   async createExtGatewayEntity17(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createExtGatewayEntity17(req.user.tenantId, body);
   }
@@ -853,7 +853,7 @@ export class ExtGatewayGeneratedController {
   async updateExtGatewayEntity17(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateExtGatewayEntity17(req.user.tenantId, id, body);
   }
@@ -891,7 +891,7 @@ export class ExtGatewayGeneratedController {
   @Permissions("ext-gateway.extGatewayEntity18.create")
   async createExtGatewayEntity18(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createExtGatewayEntity18(req.user.tenantId, body);
   }
@@ -902,7 +902,7 @@ export class ExtGatewayGeneratedController {
   async updateExtGatewayEntity18(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateExtGatewayEntity18(req.user.tenantId, id, body);
   }
@@ -940,7 +940,7 @@ export class ExtGatewayGeneratedController {
   @Permissions("ext-gateway.extGatewayEntity19.create")
   async createExtGatewayEntity19(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createExtGatewayEntity19(req.user.tenantId, body);
   }
@@ -951,7 +951,7 @@ export class ExtGatewayGeneratedController {
   async updateExtGatewayEntity19(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateExtGatewayEntity19(req.user.tenantId, id, body);
   }
@@ -989,7 +989,7 @@ export class ExtGatewayGeneratedController {
   @Permissions("ext-gateway.extGatewayEntity20.create")
   async createExtGatewayEntity20(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createExtGatewayEntity20(req.user.tenantId, body);
   }
@@ -1000,7 +1000,7 @@ export class ExtGatewayGeneratedController {
   async updateExtGatewayEntity20(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateExtGatewayEntity20(req.user.tenantId, id, body);
   }
@@ -1038,7 +1038,7 @@ export class ExtGatewayGeneratedController {
   @Permissions("ext-gateway.extGatewayEntity21.create")
   async createExtGatewayEntity21(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createExtGatewayEntity21(req.user.tenantId, body);
   }
@@ -1049,7 +1049,7 @@ export class ExtGatewayGeneratedController {
   async updateExtGatewayEntity21(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateExtGatewayEntity21(req.user.tenantId, id, body);
   }
@@ -1087,7 +1087,7 @@ export class ExtGatewayGeneratedController {
   @Permissions("ext-gateway.extGatewayEntity22.create")
   async createExtGatewayEntity22(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createExtGatewayEntity22(req.user.tenantId, body);
   }
@@ -1098,7 +1098,7 @@ export class ExtGatewayGeneratedController {
   async updateExtGatewayEntity22(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateExtGatewayEntity22(req.user.tenantId, id, body);
   }
@@ -1136,7 +1136,7 @@ export class ExtGatewayGeneratedController {
   @Permissions("ext-gateway.extGatewayEntity23.create")
   async createExtGatewayEntity23(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createExtGatewayEntity23(req.user.tenantId, body);
   }
@@ -1147,7 +1147,7 @@ export class ExtGatewayGeneratedController {
   async updateExtGatewayEntity23(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateExtGatewayEntity23(req.user.tenantId, id, body);
   }
@@ -1185,7 +1185,7 @@ export class ExtGatewayGeneratedController {
   @Permissions("ext-gateway.extGatewayEntity24.create")
   async createExtGatewayEntity24(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createExtGatewayEntity24(req.user.tenantId, body);
   }
@@ -1196,7 +1196,7 @@ export class ExtGatewayGeneratedController {
   async updateExtGatewayEntity24(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateExtGatewayEntity24(req.user.tenantId, id, body);
   }
@@ -1234,7 +1234,7 @@ export class ExtGatewayGeneratedController {
   @Permissions("ext-gateway.extGatewayEntity25.create")
   async createExtGatewayEntity25(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createExtGatewayEntity25(req.user.tenantId, body);
   }
@@ -1245,7 +1245,7 @@ export class ExtGatewayGeneratedController {
   async updateExtGatewayEntity25(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateExtGatewayEntity25(req.user.tenantId, id, body);
   }
@@ -1283,7 +1283,7 @@ export class ExtGatewayGeneratedController {
   @Permissions("ext-gateway.extGatewayEntity26.create")
   async createExtGatewayEntity26(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createExtGatewayEntity26(req.user.tenantId, body);
   }
@@ -1294,7 +1294,7 @@ export class ExtGatewayGeneratedController {
   async updateExtGatewayEntity26(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateExtGatewayEntity26(req.user.tenantId, id, body);
   }
@@ -1332,7 +1332,7 @@ export class ExtGatewayGeneratedController {
   @Permissions("ext-gateway.extGatewayEntity27.create")
   async createExtGatewayEntity27(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createExtGatewayEntity27(req.user.tenantId, body);
   }
@@ -1343,7 +1343,7 @@ export class ExtGatewayGeneratedController {
   async updateExtGatewayEntity27(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateExtGatewayEntity27(req.user.tenantId, id, body);
   }
@@ -1381,7 +1381,7 @@ export class ExtGatewayGeneratedController {
   @Permissions("ext-gateway.extGatewayEntity28.create")
   async createExtGatewayEntity28(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createExtGatewayEntity28(req.user.tenantId, body);
   }
@@ -1392,7 +1392,7 @@ export class ExtGatewayGeneratedController {
   async updateExtGatewayEntity28(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateExtGatewayEntity28(req.user.tenantId, id, body);
   }
@@ -1430,7 +1430,7 @@ export class ExtGatewayGeneratedController {
   @Permissions("ext-gateway.extGatewayEntity29.create")
   async createExtGatewayEntity29(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createExtGatewayEntity29(req.user.tenantId, body);
   }
@@ -1441,7 +1441,7 @@ export class ExtGatewayGeneratedController {
   async updateExtGatewayEntity29(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateExtGatewayEntity29(req.user.tenantId, id, body);
   }
@@ -1479,7 +1479,7 @@ export class ExtGatewayGeneratedController {
   @Permissions("ext-gateway.extGatewayEntity30.create")
   async createExtGatewayEntity30(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createExtGatewayEntity30(req.user.tenantId, body);
   }
@@ -1490,7 +1490,7 @@ export class ExtGatewayGeneratedController {
   async updateExtGatewayEntity30(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateExtGatewayEntity30(req.user.tenantId, id, body);
   }
@@ -1528,7 +1528,7 @@ export class ExtGatewayGeneratedController {
   @Permissions("ext-gateway.extGatewayEntity31.create")
   async createExtGatewayEntity31(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createExtGatewayEntity31(req.user.tenantId, body);
   }
@@ -1539,7 +1539,7 @@ export class ExtGatewayGeneratedController {
   async updateExtGatewayEntity31(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateExtGatewayEntity31(req.user.tenantId, id, body);
   }
@@ -1577,7 +1577,7 @@ export class ExtGatewayGeneratedController {
   @Permissions("ext-gateway.extGatewayEntity32.create")
   async createExtGatewayEntity32(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createExtGatewayEntity32(req.user.tenantId, body);
   }
@@ -1588,7 +1588,7 @@ export class ExtGatewayGeneratedController {
   async updateExtGatewayEntity32(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateExtGatewayEntity32(req.user.tenantId, id, body);
   }
@@ -1626,7 +1626,7 @@ export class ExtGatewayGeneratedController {
   @Permissions("ext-gateway.extGatewayEntity33.create")
   async createExtGatewayEntity33(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createExtGatewayEntity33(req.user.tenantId, body);
   }
@@ -1637,7 +1637,7 @@ export class ExtGatewayGeneratedController {
   async updateExtGatewayEntity33(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateExtGatewayEntity33(req.user.tenantId, id, body);
   }
@@ -1675,7 +1675,7 @@ export class ExtGatewayGeneratedController {
   @Permissions("ext-gateway.extGatewayEntity34.create")
   async createExtGatewayEntity34(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createExtGatewayEntity34(req.user.tenantId, body);
   }
@@ -1686,7 +1686,7 @@ export class ExtGatewayGeneratedController {
   async updateExtGatewayEntity34(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateExtGatewayEntity34(req.user.tenantId, id, body);
   }
@@ -1724,7 +1724,7 @@ export class ExtGatewayGeneratedController {
   @Permissions("ext-gateway.extGatewayEntity35.create")
   async createExtGatewayEntity35(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createExtGatewayEntity35(req.user.tenantId, body);
   }
@@ -1735,7 +1735,7 @@ export class ExtGatewayGeneratedController {
   async updateExtGatewayEntity35(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateExtGatewayEntity35(req.user.tenantId, id, body);
   }

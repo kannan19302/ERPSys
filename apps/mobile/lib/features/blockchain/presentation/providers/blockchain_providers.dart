@@ -29,7 +29,8 @@ final Provider<BlockchainRepository> blockchainRepositoryProvider =
 class BlockchainTransactionListState extends Equatable {
   const BlockchainTransactionListState({
     this.items = const <BlockchainTransaction>[],
-    this.meta = const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
+    this.meta =
+        const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
     this.query = const ListQuery(sort: '-createdAt'),
     this.isLoading = true,
     this.isLoadingMore = false,
@@ -48,31 +49,51 @@ class BlockchainTransactionListState extends Equatable {
   final DateTime? cachedAt;
 
   BlockchainTransactionListState copyWith({
-    List<BlockchainTransaction>? items, PaginationMeta? meta, ListQuery? query,
-    bool? isLoading, bool? isLoadingMore, Failure? failure,
-    Failure? loadMoreFailure, DateTime? cachedAt,
-    bool clearFailures = false, bool clearCachedAt = false,
+    List<BlockchainTransaction>? items,
+    PaginationMeta? meta,
+    ListQuery? query,
+    bool? isLoading,
+    bool? isLoadingMore,
+    Failure? failure,
+    Failure? loadMoreFailure,
+    DateTime? cachedAt,
+    bool clearFailures = false,
+    bool clearCachedAt = false,
   }) =>
       BlockchainTransactionListState(
-        items: items ?? this.items, meta: meta ?? this.meta,
-        query: query ?? this.query, isLoading: isLoading ?? this.isLoading,
+        items: items ?? this.items,
+        meta: meta ?? this.meta,
+        query: query ?? this.query,
+        isLoading: isLoading ?? this.isLoading,
         isLoadingMore: isLoadingMore ?? this.isLoadingMore,
         failure: clearFailures ? null : (failure ?? this.failure),
-        loadMoreFailure: clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
+        loadMoreFailure:
+            clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
         cachedAt: clearCachedAt ? null : (cachedAt ?? this.cachedAt),
       );
 
   @override
-  List<Object?> get props => <Object?>[items, meta, query.cacheKey, isLoading, isLoadingMore, failure, loadMoreFailure, cachedAt];
+  List<Object?> get props => <Object?>[
+        items,
+        meta,
+        query.cacheKey,
+        isLoading,
+        isLoadingMore,
+        failure,
+        loadMoreFailure,
+        cachedAt
+      ];
 }
 
-final NotifierProvider<BlockchainTransactionListController, BlockchainTransactionListState>
-    blockchainTransactionListControllerProvider =
-    NotifierProvider<BlockchainTransactionListController, BlockchainTransactionListState>(
+final NotifierProvider<BlockchainTransactionListController,
+        BlockchainTransactionListState>
+    blockchainTransactionListControllerProvider = NotifierProvider<
+        BlockchainTransactionListController, BlockchainTransactionListState>(
   BlockchainTransactionListController.new,
 );
 
-class BlockchainTransactionListController extends Notifier<BlockchainTransactionListState> {
+class BlockchainTransactionListController
+    extends Notifier<BlockchainTransactionListState> {
   Timer? _searchDebounce;
 
   @override
@@ -93,8 +114,12 @@ class BlockchainTransactionListController extends Notifier<BlockchainTransaction
     state = result.fold(
       (f) => state.copyWith(isLoading: false, failure: f, items: const []),
       (page) => state.copyWith(
-        items: page.value.data, meta: page.value.meta, query: query,
-        isLoading: false, clearFailures: true, cachedAt: page.cachedAt,
+        items: page.value.data,
+        meta: page.value.meta,
+        query: query,
+        isLoading: false,
+        clearFailures: true,
+        cachedAt: page.cachedAt,
         clearCachedAt: !page.isFromCache,
       ),
     );
@@ -108,8 +133,11 @@ class BlockchainTransactionListController extends Notifier<BlockchainTransaction
     state = result.fold(
       (f) => state.copyWith(isLoadingMore: false, loadMoreFailure: f),
       (page) => state.copyWith(
-        items: [...state.items, ...page.value.data], meta: page.value.meta,
-        query: next, isLoadingMore: false, clearFailures: true,
+        items: [...state.items, ...page.value.data],
+        meta: page.value.meta,
+        query: next,
+        isLoadingMore: false,
+        clearFailures: true,
       ),
     );
   }
@@ -117,7 +145,8 @@ class BlockchainTransactionListController extends Notifier<BlockchainTransaction
   void search(String term) {
     _searchDebounce?.cancel();
     _searchDebounce = Timer(const Duration(milliseconds: 350), () {
-      state = state.copyWith(query: state.query.copyWith(search: term, page: 1));
+      state =
+          state.copyWith(query: state.query.copyWith(search: term, page: 1));
       refresh();
     });
   }
@@ -131,7 +160,8 @@ class BlockchainTransactionListController extends Notifier<BlockchainTransaction
 class BlockchainContractListState extends Equatable {
   const BlockchainContractListState({
     this.items = const <BlockchainContract>[],
-    this.meta = const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
+    this.meta =
+        const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
     this.query = const ListQuery(sort: '-createdAt'),
     this.isLoading = true,
     this.isLoadingMore = false,
@@ -148,29 +178,47 @@ class BlockchainContractListState extends Equatable {
   final Failure? loadMoreFailure;
 
   BlockchainContractListState copyWith({
-    List<BlockchainContract>? items, PaginationMeta? meta, ListQuery? query,
-    bool? isLoading, bool? isLoadingMore, Failure? failure,
-    Failure? loadMoreFailure, bool clearFailures = false,
+    List<BlockchainContract>? items,
+    PaginationMeta? meta,
+    ListQuery? query,
+    bool? isLoading,
+    bool? isLoadingMore,
+    Failure? failure,
+    Failure? loadMoreFailure,
+    bool clearFailures = false,
   }) =>
       BlockchainContractListState(
-        items: items ?? this.items, meta: meta ?? this.meta,
-        query: query ?? this.query, isLoading: isLoading ?? this.isLoading,
+        items: items ?? this.items,
+        meta: meta ?? this.meta,
+        query: query ?? this.query,
+        isLoading: isLoading ?? this.isLoading,
         isLoadingMore: isLoadingMore ?? this.isLoadingMore,
         failure: clearFailures ? null : (failure ?? this.failure),
-        loadMoreFailure: clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
+        loadMoreFailure:
+            clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
       );
 
   @override
-  List<Object?> get props => <Object?>[items, meta, query.cacheKey, isLoading, isLoadingMore, failure, loadMoreFailure];
+  List<Object?> get props => <Object?>[
+        items,
+        meta,
+        query.cacheKey,
+        isLoading,
+        isLoadingMore,
+        failure,
+        loadMoreFailure
+      ];
 }
 
-final NotifierProvider<BlockchainContractListController, BlockchainContractListState>
-    blockchainContractListControllerProvider =
-    NotifierProvider<BlockchainContractListController, BlockchainContractListState>(
+final NotifierProvider<BlockchainContractListController,
+        BlockchainContractListState> blockchainContractListControllerProvider =
+    NotifierProvider<BlockchainContractListController,
+        BlockchainContractListState>(
   BlockchainContractListController.new,
 );
 
-class BlockchainContractListController extends Notifier<BlockchainContractListState> {
+class BlockchainContractListController
+    extends Notifier<BlockchainContractListState> {
   Timer? _searchDebounce;
 
   @override
@@ -191,8 +239,11 @@ class BlockchainContractListController extends Notifier<BlockchainContractListSt
     state = result.fold(
       (f) => state.copyWith(isLoading: false, failure: f, items: const []),
       (page) => state.copyWith(
-        items: page.value.data, meta: page.value.meta, query: query,
-        isLoading: false, clearFailures: true,
+        items: page.value.data,
+        meta: page.value.meta,
+        query: query,
+        isLoading: false,
+        clearFailures: true,
       ),
     );
   }
@@ -205,8 +256,11 @@ class BlockchainContractListController extends Notifier<BlockchainContractListSt
     state = result.fold(
       (f) => state.copyWith(isLoadingMore: false, loadMoreFailure: f),
       (page) => state.copyWith(
-        items: [...state.items, ...page.value.data], meta: page.value.meta,
-        query: next, isLoadingMore: false, clearFailures: true,
+        items: [...state.items, ...page.value.data],
+        meta: page.value.meta,
+        query: next,
+        isLoadingMore: false,
+        clearFailures: true,
       ),
     );
   }
@@ -214,18 +268,29 @@ class BlockchainContractListController extends Notifier<BlockchainContractListSt
   void search(String term) {
     _searchDebounce?.cancel();
     _searchDebounce = Timer(const Duration(milliseconds: 350), () {
-      state = state.copyWith(query: state.query.copyWith(search: term, page: 1));
+      state =
+          state.copyWith(query: state.query.copyWith(search: term, page: 1));
       refresh();
     });
   }
 }
 
-final FutureProviderFamily<BlockchainTransaction, String> blockchainTransactionDetailProvider =
-    FutureProvider.family<BlockchainTransaction, String>((Ref ref, String id) async {
+final FutureProviderFamily<BlockchainTransaction, String>
+    blockchainTransactionDetailProvider =
+    FutureProvider.family<BlockchainTransaction, String>(
+        (Ref ref, String id) async {
   final result = await GetBlockchainTransactionUseCase(
-    ref.watch(blockchainRepositoryProvider),)(id);
+    ref.watch(blockchainRepositoryProvider),
+  )(id);
   return result.fold((f) => throw f, (v) => v);
 });
 
-final FutureProviderFamily<BlockchainContract, String> blockchainContractDetailProvider = FutureProvider.family((ref, id) async => throw UnimplementedError());
-extension SaveBlockchainContract on BlockchainContractListController { Future<Result<BlockchainContract>> save(Map<String, dynamic> payload, {String? id}) async => throw UnimplementedError(); }
+final FutureProviderFamily<BlockchainContract, String>
+    blockchainContractDetailProvider =
+    FutureProvider.family((ref, id) async => throw UnimplementedError());
+
+extension SaveBlockchainContract on BlockchainContractListController {
+  Future<Result<BlockchainContract>> save(Map<String, dynamic> payload,
+          {String? id}) async =>
+      throw UnimplementedError();
+}

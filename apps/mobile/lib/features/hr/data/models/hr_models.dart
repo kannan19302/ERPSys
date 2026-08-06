@@ -103,7 +103,8 @@ class DepartmentModel extends Department {
 
   factory DepartmentModel.fromJson(Map<String, dynamic> json) {
     final Object? id = json['id'];
-    if (id is! String) throw const ParseException('Department is missing its id');
+    if (id is! String)
+      throw const ParseException('Department is missing its id');
     return DepartmentModel(
       id: id,
       name: json['name'] as String? ?? '',
@@ -147,7 +148,8 @@ class LeaveRequestModel extends LeaveRequest {
 
   factory LeaveRequestModel.fromJson(Map<String, dynamic> json) {
     final Object? id = json['id'];
-    if (id is! String) throw const ParseException('LeaveRequest is missing its id');
+    if (id is! String)
+      throw const ParseException('LeaveRequest is missing its id');
     return LeaveRequestModel(
       id: id,
       employeeId: json['employeeId'] as String? ?? '',
@@ -197,7 +199,8 @@ class LeaveTypeModel extends LeaveType {
 
   factory LeaveTypeModel.fromJson(Map<String, dynamic> json) {
     final Object? id = json['id'];
-    if (id is! String) throw const ParseException('LeaveType is missing its id');
+    if (id is! String)
+      throw const ParseException('LeaveType is missing its id');
     return LeaveTypeModel(
       id: id,
       name: json['name'] as String? ?? '',
@@ -237,7 +240,8 @@ class AttendanceModel extends Attendance {
 
   factory AttendanceModel.fromJson(Map<String, dynamic> json) {
     final Object? id = json['id'];
-    if (id is! String) throw const ParseException('Attendance is missing its id');
+    if (id is! String)
+      throw const ParseException('Attendance is missing its id');
     return AttendanceModel(
       id: id,
       employeeId: json['employeeId'] as String? ?? '',
@@ -278,7 +282,8 @@ class TimesheetEntryModel extends TimesheetEntry {
 
   factory TimesheetEntryModel.fromJson(Map<String, dynamic> json) {
     final Object? id = json['id'];
-    if (id is! String) throw const ParseException('TimesheetEntry is missing its id');
+    if (id is! String)
+      throw const ParseException('TimesheetEntry is missing its id');
     return TimesheetEntryModel(
       id: id,
       date: parseDate(json['date']) ?? DateTime.now(),
@@ -313,11 +318,14 @@ class TimesheetModel extends Timesheet {
 
   factory TimesheetModel.fromJson(Map<String, dynamic> json) {
     final Object? id = json['id'];
-    if (id is! String) throw const ParseException('Timesheet is missing its id');
+    if (id is! String)
+      throw const ParseException('Timesheet is missing its id');
     final List<TimesheetEntryModel> entries =
         (json['entries'] as List<dynamic>?)
-                ?.map((dynamic e) =>
-                    TimesheetEntryModel.fromJson(e as Map<String, dynamic>),)
+                ?.map(
+                  (dynamic e) =>
+                      TimesheetEntryModel.fromJson(e as Map<String, dynamic>),
+                )
                 .toList(growable: false) ??
             const <TimesheetEntryModel>[];
     return TimesheetModel(
@@ -339,7 +347,9 @@ class TimesheetModel extends Timesheet {
         'weekStart': weekStart.toIso8601String(),
         'totalHours': totalHours,
         'status': status,
-        'entries': entries.map((TimesheetEntry e) => (e as TimesheetEntryModel).toJson()).toList(),
+        'entries': entries
+            .map((TimesheetEntry e) => (e as TimesheetEntryModel).toJson())
+            .toList(),
         'createdAt': createdAt?.toIso8601String(),
       };
 }
@@ -361,7 +371,8 @@ class PayrollRunModel extends PayrollRun {
 
   factory PayrollRunModel.fromJson(Map<String, dynamic> json) {
     final Object? id = json['id'];
-    if (id is! String) throw const ParseException('PayrollRun is missing its id');
+    if (id is! String)
+      throw const ParseException('PayrollRun is missing its id');
     return PayrollRunModel(
       id: id,
       name: json['name'] as String? ?? '',
@@ -448,7 +459,8 @@ class SalaryComponentModel extends SalaryComponent {
 
   factory SalaryComponentModel.fromJson(Map<String, dynamic> json) {
     final Object? id = json['id'];
-    if (id is! String) throw const ParseException('SalaryComponent is missing its id');
+    if (id is! String)
+      throw const ParseException('SalaryComponent is missing its id');
     return SalaryComponentModel(
       id: id,
       type: json['type'] as String? ?? SalaryComponentType.earning,
@@ -483,11 +495,14 @@ class SalaryStructureModel extends SalaryStructure {
 
   factory SalaryStructureModel.fromJson(Map<String, dynamic> json) {
     final Object? id = json['id'];
-    if (id is! String) throw const ParseException('SalaryStructure is missing its id');
+    if (id is! String)
+      throw const ParseException('SalaryStructure is missing its id');
     final List<SalaryComponentModel> components =
         (json['components'] as List<dynamic>?)
-                ?.map((dynamic e) =>
-                    SalaryComponentModel.fromJson(e as Map<String, dynamic>),)
+                ?.map(
+                  (dynamic e) =>
+                      SalaryComponentModel.fromJson(e as Map<String, dynamic>),
+                )
                 .toList(growable: false) ??
             const <SalaryComponentModel>[];
     return SalaryStructureModel(
@@ -665,11 +680,14 @@ class OrgChartNodeModel extends OrgChartNode {
 
   factory OrgChartNodeModel.fromJson(Map<String, dynamic> json) {
     final Object? id = json['id'];
-    if (id is! String) throw const ParseException('OrgChartNode is missing its id');
+    if (id is! String)
+      throw const ParseException('OrgChartNode is missing its id');
     final List<OrgChartNodeModel> children =
         (json['children'] as List<dynamic>?)
-                ?.map((dynamic e) =>
-                    OrgChartNodeModel.fromJson(e as Map<String, dynamic>),)
+                ?.map(
+                  (dynamic e) =>
+                      OrgChartNodeModel.fromJson(e as Map<String, dynamic>),
+                )
                 .toList(growable: false) ??
             const <OrgChartNodeModel>[];
     return OrgChartNodeModel(
@@ -686,7 +704,8 @@ class OrgChartNodeModel extends OrgChartNode {
         'name': name,
         'position': position,
         'imageUrl': imageUrl,
-        'children':
-            children.map((OrgChartNode n) => (n as OrgChartNodeModel).toJson()).toList(),
+        'children': children
+            .map((OrgChartNode n) => (n as OrgChartNodeModel).toJson())
+            .toList(),
       };
 }

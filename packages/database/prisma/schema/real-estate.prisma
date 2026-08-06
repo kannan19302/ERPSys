@@ -1,0 +1,650 @@
+model LeaseSchedule {
+  id                 String   @id @default(cuid())
+  tenantId           String   @map("tenant_id")
+  financeLeaseId     String   @map("finance_lease_id")
+  periodStart        DateTime @map("period_start")
+  periodEnd          DateTime @map("period_end")
+  paymentAmount      Decimal  @map("payment_amount") @db.Decimal(18, 4)
+  interestExpense    Decimal? @map("interest_expense") @db.Decimal(18, 4)
+  principalRepayment Decimal? @map("principal_repayment") @db.Decimal(18, 4)
+  rouAmortization    Decimal? @map("rou_amortization") @db.Decimal(18, 4)
+  journalPosted      Boolean  @default(false) @map("journal_posted")
+  journalEntryId     String?  @map("journal_entry_id")
+  createdAt          DateTime @default(now()) @map("created_at")
+
+  financeLease FinanceLease @relation(fields: [financeLeaseId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([financeLeaseId])
+  @@map("lease_schedules")
+}
+
+model UnitOfMeasure {
+  id           String   @id @default(cuid())
+  tenantId     String   @map("tenant_id")
+  name         String
+  abbreviation String
+  type         String   @default("UNIT") // UNIT, WEIGHT, VOLUME, LENGTH, AREA, TIME
+  isBase       Boolean  @default(false) @map("is_base")
+  isActive     Boolean  @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  fromConversions UoMConversion[]  @relation("FromUoM")
+  toConversions   UoMConversion[]  @relation("ToUoM")
+  stockEntryItems StockEntryItem[]
+
+  @@unique([tenantId, abbreviation])
+  @@index([tenantId])
+  @@map("units_of_measure")
+}
+
+model ProposalDocument {
+  id          String    @id @default(cuid())
+  tenantId    String    @map("tenant_id")
+  orgId       String    @map("org_id")
+  quotationId String    @map("quotation_id")
+  title       String
+  templateId  String?   @map("template_id")
+  content     Json      @default("{}")
+  generatedAt DateTime? @map("generated_at")
+  generatedBy String?   @map("generated_by")
+  fileUrl     String?   @map("file_url")
+  status      String    @default("DRAFT") // DRAFT, GENERATED, SENT, ACCEPTED, REJECTED
+  sentAt      DateTime? @map("sent_at")
+  viewedAt    DateTime? @map("viewed_at")
+  acceptedAt  DateTime? @map("accepted_at")
+  expiresAt   DateTime? @map("expires_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@index([quotationId])
+  @@map("proposal_documents")
+}
+
+model RealEstateProperty {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  name        String
+  type        String   @default("RESIDENTIAL") // RESIDENTIAL, COMMERCIAL, INDUSTRIAL, LAND, MIXED_USE
+  portfolioId String?  @map("portfolio_id")
+  buildingId  String?  @map("building_id")
+  address     String?
+  city        String?
+  state       String?
+  zipCode     String?  @map("zip_code")
+  country     String?  @default("US")
+  latitude    Float?
+  longitude   Float?
+  specs       Json     @default("{}") // bedrooms, bathrooms, sqft, yearBuilt, lotSize, floors
+  amenities   Json     @default("[]")
+  images      Json     @default("[]") // array of image URLs
+  floorPlan   String?  @map("floor_plan")
+  status      String   @default("AVAILABLE") // AVAILABLE, LEASED, UNDER_MAINTENANCE, SOLD, OFF_MARKET
+  featured    Boolean  @default(false)
+  parentId    String?  @map("parent_id")
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  children        RealEstateProperty[]             @relation("PropertyHierarchy")
+  parent          RealEstateProperty?              @relation("PropertyHierarchy", fields: [parentId], references: [id])
+  portfolio       RealEstatePropertyPortfolio?     @relation(fields: [portfolioId], references: [id])
+  building        RealEstatePropertyBuilding?      @relation(fields: [buildingId], references: [id])
+  leases          RealEstateLease[]
+  maintenance     RealEstateMaintenanceWorkOrder[]
+  tenants         RealEstateTenant[]
+  valuations      RealEstatePropertyValuation[]
+  units           RealEstatePropertyUnit[]
+  commissionPlans RealEstateCommissionPlan[]
+
+  @@index([tenantId])
+  @@index([parentId])
+  @@index([portfolioId])
+  @@index([buildingId])
+  @@index([tenantId, type])
+  @@index([tenantId, status])
+  @@index([tenantId, city, state])
+  @@map("real_estate_properties")
+}
+
+model RealEstatePropertyPortfolio {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  name        String
+  description String?
+  type        String   @default("RESIDENTIAL") // RESIDENTIAL, COMMERCIAL, MIXED
+  targetRoi   Decimal? @map("target_roi")
+  totalValue  Decimal? @map("total_value") @default(0)
+  status      String   @default("ACTIVE") // ACTIVE, ARCHIVED
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  properties RealEstateProperty[]
+
+  @@index([tenantId])
+  @@index([tenantId, type])
+  @@map("real_estate_portfolios")
+}
+
+model RealEstatePropertyBuilding {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  name        String
+  description String?
+  totalFloors Int      @default(1) @map("total_floors")
+  totalUnits  Int      @default(0) @map("total_units")
+  amenities   Json     @default("[]")
+  yearBuilt   Int?
+  parkingSpaces Int?   @map("parking_spaces")
+  hasElevator Boolean  @default(false) @map("has_elevator")
+  hasSecurity Boolean  @default(false) @map("has_security")
+  status      String   @default("ACTIVE")
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  properties RealEstateProperty[]
+
+  @@index([tenantId])
+  @@map("real_estate_buildings")
+}
+
+model RealEstatePropertyUnit {
+  id             String   @id @default(cuid())
+  tenantId       String   @map("tenant_id")
+  propertyId     String   @map("property_id")
+  unitNumber     String   @map("unit_number")
+  floor          Int?
+  bedrooms       Int      @default(0)
+  bathrooms      Int      @default(0)
+  sqft           Int      @default(0)
+  rentAmount     Decimal  @default(0) @map("rent_amount")
+  depositAmount  Decimal  @default(0) @map("deposit_amount")
+  marketValue    Decimal? @map("market_value")
+  status         String   @default("VACANT") // VACANT, OCCUPIED, RESERVED, UNDER_MAINTENANCE
+  features       Json     @default("[]")
+  images         Json     @default("[]")
+  isActive       Boolean  @default(true) @map("is_active")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  property RealEstateProperty @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  leases   RealEstateLease[]
+
+  @@index([tenantId])
+  @@index([propertyId])
+  @@index([tenantId, status])
+  @@map("real_estate_units")
+}
+
+model RealEstateLease {
+  id               String    @id @default(cuid())
+  tenantId         String    @map("tenant_id")
+  propertyId       String    @map("property_id")
+  unitId           String?   @map("unit_id")
+  tenantName       String    @map("tenant_name")
+  tenantEmail      String?   @map("tenant_email")
+  tenantPhone      String?   @map("tenant_phone")
+  startDate        DateTime? @map("start_date")
+  endDate          DateTime? @map("end_date")
+  rentAmount       Decimal   @map("rent_amount")
+  securityDeposit  Decimal   @default(0) @map("security_deposit")
+  depositHeld      Boolean   @default(true) @map("deposit_held")
+  billingFrequency String    @default("MONTHLY") @map("billing_frequency") // MONTHLY, QUARTERLY, YEARLY
+  paymentDueDay    Int       @default(1) @map("payment_due_day")
+  lateFeePercent   Decimal   @default(0) @map("late_fee_percent")
+  lateFeeFixed     Decimal   @default(0) @map("late_fee_fixed")
+  terms            String?   @default("")
+  renewalTerms     String?   @map("renewal_terms")
+  nextRenewalDate  DateTime? @map("next_renewal_date")
+  autoRenewal      Boolean   @default(false) @map("auto_renewal")
+  status           String    @default("ACTIVE") // ACTIVE, EXPIRED, TERMINATED, RENEWED, PENDING
+  documents        Json      @default("[]")
+  notes            String?
+  isActive         Boolean   @default(true) @map("is_active")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  property RealEstateProperty @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  unit     RealEstatePropertyUnit? @relation(fields: [unitId], references: [id])
+  payments RealEstateLeasePayment[]
+
+  @@index([tenantId])
+  @@index([propertyId])
+  @@index([unitId])
+  @@index([tenantId, status])
+  @@index([tenantId, startDate, endDate])
+  @@map("real_estate_leases")
+}
+
+model RealEstateLeasePayment {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  leaseId     String   @map("lease_id")
+  amount      Decimal
+  paidAmount  Decimal? @map("paid_amount")
+  dueDate     DateTime @map("due_date")
+  paidDate    DateTime? @map("paid_date")
+  method      String   @default("BANK_TRANSFER") // CASH, CHECK, BANK_TRANSFER, CREDIT_CARD, ONLINE
+  reference   String?  // check number, transaction id, etc.
+  periodStart DateTime? @map("period_start")
+  periodEnd   DateTime? @map("period_end")
+  lateFee     Decimal  @default(0) @map("late_fee")
+  discount    Decimal  @default(0)
+  status      String   @default("PENDING") // PENDING, PAID, PARTIAL, OVERDUE, CANCELLED, REFUNDED
+  notes       String?
+  receiptUrl  String?  @map("receipt_url")
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  lease RealEstateLease @relation(fields: [leaseId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([leaseId])
+  @@index([tenantId, status])
+  @@index([tenantId, dueDate])
+  @@map("real_estate_lease_payments")
+}
+
+model RealEstateTenant {
+  id          String    @id @default(cuid())
+  tenantId    String    @map("tenant_id")
+  propertyId  String    @map("property_id")
+  name        String
+  email       String?
+  phone       String?
+  unit        String?
+  leaseStart  DateTime? @map("lease_start")
+  leaseEnd    DateTime? @map("lease_end")
+  rent        Decimal   @default(0)
+  deposit     Decimal   @default(0)
+  status      String    @default("ACTIVE") // ACTIVE, PAST, PROSPECT
+  documents   Json      @default("[]")
+  notes       String?
+  isActive    Boolean   @default(true) @map("is_active")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  property RealEstateProperty @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([propertyId])
+  @@index([tenantId, status])
+  @@map("real_estate_tenants")
+}
+
+model RealEstateMaintenanceWorkOrder {
+  id             String    @id @default(cuid())
+  tenantId       String    @map("tenant_id")
+  propertyId     String    @map("property_id")
+  unitId         String?   @map("unit_id")
+  requestedBy    String?   @map("requested_by")
+  tenantName     String?   @map("tenant_name")
+  title          String?   @default("")
+  description    String
+  category       String    @default("GENERAL") // PLUMBING, ELECTRICAL, HVAC, APPLIANCE, STRUCTURAL, PEST, GENERAL
+  priority       String    @default("MEDIUM") // LOW, MEDIUM, HIGH, URGENT, EMERGENCY
+  status         String    @default("OPEN") // OPEN, ASSIGNED, IN_PROGRESS, COMPLETED, CANCELLED, ON_HOLD
+  vendorId       String?   @map("vendor_id")
+  assignedTo     String?   @map("assigned_to")
+  estimatedCost  Decimal?  @map("estimated_cost")
+  actualCost     Decimal   @default(0) @map("actual_cost")
+  scheduledDate  DateTime? @map("scheduled_date")
+  completedDate  DateTime? @map("completed_date")
+  images         Json      @default("[]")
+  partsUsed      Json      @default("[]")
+  notes          String?
+  resolution     String?
+  isBillable     Boolean   @default(true) @map("is_billable")
+  isActive       Boolean   @default(true) @map("is_active")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  property RealEstateProperty @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  vendor   RealEstateMaintenanceVendor? @relation(fields: [vendorId], references: [id])
+
+  @@index([tenantId])
+  @@index([propertyId])
+  @@index([vendorId])
+  @@index([tenantId, status])
+  @@index([tenantId, priority])
+  @@index([tenantId, category])
+  @@map("real_estate_maintenance_work_orders")
+}
+
+model RealEstateMaintenanceVendor {
+  id            String   @id @default(cuid())
+  tenantId      String   @map("tenant_id")
+  name          String
+  contactName   String?  @map("contact_name")
+  email         String?
+  phone         String?
+  address       String?
+  specialties   Json     @default("[]") // e.g. ["PLUMBING", "ELECTRICAL"]
+  rating        Decimal  @default(0)
+  licenseNumber String?  @map("license_number")
+  insuranceInfo String?  @map("insurance_info")
+  hourlyRate    Decimal? @map("hourly_rate")
+  responseTime  Int?     @map("response_time") // in minutes
+  isPreferred   Boolean  @default(false) @map("is_preferred")
+  status        String   @default("ACTIVE")
+  contractStart DateTime? @map("contract_start")
+  contractEnd   DateTime? @map("contract_end")
+  notes         String?
+  isActive      Boolean  @default(true) @map("is_active")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  workOrders RealEstateMaintenanceWorkOrder[]
+
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@map("real_estate_maintenance_vendors")
+}
+
+model RealEstateCommissionPlan {
+  id            String   @id @default(cuid())
+  tenantId      String   @map("tenant_id")
+  name          String
+  description   String?
+  agentName     String   @map("agent_name")
+  agentEmail    String?  @map("agent_email")
+  agentPhone    String?  @map("agent_phone")
+  agentLicense  String?  @map("agent_license")
+  propertyId    String?  @map("property_id")
+  propertyTier  String   @default("STANDARD") // STANDARD, PREMIUM, LUXURY, COMMERCIAL
+  commissionRate Decimal @default(3.0) @map("commission_rate") // percentage
+  splitType     String   @default("EQUAL") // EQUAL, PERCENTAGE, TIERED, CUSTOM
+  splits        Json     @default("[]") // agent splits array
+  baseAmount    Decimal? @map("base_amount")
+  maxCap        Decimal? @map("max_cap")
+  terms         String?
+  status        String   @default("ACTIVE")
+  isActive      Boolean  @default(true) @map("is_active")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  property RealEstateProperty? @relation(fields: [propertyId], references: [id])
+  payouts  RealEstateCommissionPayout[]
+
+  @@index([tenantId])
+  @@index([propertyId])
+  @@index([tenantId, agentName])
+  @@map("real_estate_commission_plans")
+}
+
+model RealEstateCommissionPayout {
+  id            String    @id @default(cuid())
+  tenantId      String    @map("tenant_id")
+  planId        String    @map("plan_id")
+  agentName     String    @map("agent_name")
+  dealName      String?   @map("deal_name")
+  dealValue     Decimal?  @map("deal_value")
+  amount        Decimal
+  commissionRate Decimal?  @default(0) @map("commission_rate")
+  splitRatio    Decimal   @default(100) @map("split_ratio")
+  splitAmount   Decimal?  @map("split_amount")
+  generalLedgerRef String? @map("general_ledger_ref")
+  status        String    @default("PENDING") // PENDING, APPROVED, PAID, CANCELLED
+  paymentDate   DateTime? @map("payment_date")
+  paymentMethod String?   @map("payment_method")
+  invoiceRef    String?   @map("invoice_ref")
+  notes         String?
+  paidTo        String?   @map("paid_to")
+  isActive      Boolean   @default(true) @map("is_active")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  plan RealEstateCommissionPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([planId])
+  @@index([tenantId, status])
+  @@map("real_estate_commission_payouts")
+}
+
+model RealEstatePropertyValuation {
+  id              String    @id @default(cuid())
+  tenantId        String    @map("tenant_id")
+  propertyId      String    @map("property_id")
+  valuationDate   DateTime  @map("valuation_date")
+  appraisedValue  Decimal   @map("appraised_value")
+  marketValue     Decimal?  @map("market_value")
+  assessedValue   Decimal?  @map("assessed_value")
+  method          String    @default("COMPARABLE") // COMPARABLE, INCOME, COST, AUTOMATED, APPRAISAL
+  appraiser       String?
+  appraiserLicense String?  @map("appraiser_license")
+  conditionScore  Int?      @map("condition_score") // 1-10
+  locationScore   Int?      @map("location_score") // 1-10
+  capRate         Decimal?  @map("cap_rate")
+  noi             Decimal?  // Net Operating Income
+  adjustments     Json      @default("{}")
+  comparableSales Json      @default("[]")
+  attachments     Json      @default("[]")
+  notes           String?
+  status          String    @default("DRAFT") // DRAFT, FINAL, SUPERSEDED
+  isActive        Boolean   @default(true) @map("is_active")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  property RealEstateProperty @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([propertyId])
+  @@index([tenantId, valuationDate])
+  @@map("real_estate_valuations")
+}
+
+model RealEstateMaintenanceRequest {
+  id              String    @id @default(cuid())
+  tenantId        String    @map("tenant_id")
+  propertyId      String    @map("property_id")
+  unitId          String?   @map("unit_id")
+  leaseId         String?   @map("lease_id")
+  requestedBy     String?   @map("requested_by")
+  requestedName   String?   @map("requested_name")
+  requestedEmail  String?   @map("requested_email")
+  requestedPhone  String?   @map("requested_phone")
+  title           String
+  description     String?   @db.Text
+  category        String    @default("GENERAL") // PLUMBING, ELECTRICAL, HVAC, APPLIANCE, STRUCTURAL, PEST, GENERAL, OTHER
+  priority        String    @default("MEDIUM") // LOW, MEDIUM, HIGH, URGENT, EMERGENCY
+  status          String    @default("OPEN") // OPEN, ASSIGNED, IN_PROGRESS, COMPLETED, CANCELLED, ON_HOLD
+  vendorId        String?   @map("vendor_id")
+  assignedTo      String?   @map("assigned_to")
+  estimatedCost   Decimal?  @map("estimated_cost")
+  actualCost      Decimal   @default(0) @map("actual_cost")
+  scheduledDate   DateTime? @map("scheduled_date")
+  completedDate   DateTime? @map("completed_date")
+  partsUsed       Json      @default("[]")
+  images          Json      @default("[]")
+  notes           String?
+  resolution      String?   @db.Text
+  isBillable      Boolean   @default(true) @map("is_billable")
+  isActive        Boolean   @default(true) @map("is_active")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@index([propertyId])
+  @@index([vendorId])
+  @@index([tenantId, status])
+  @@index([tenantId, priority])
+  @@index([tenantId, category])
+  @@map("real_estate_maintenance_requests")
+}
+
+model RealEstateLeaseRenewal {
+  id                  String    @id @default(cuid())
+  tenantId            String    @map("tenant_id")
+  leaseId             String    @map("lease_id")
+  propertyId          String    @map("property_id")
+  unitId              String?   @map("unit_id")
+  tenantName          String    @map("tenant_name")
+  tenantEmail         String?   @map("tenant_email")
+  currentRent         Decimal   @map("current_rent")
+  proposedRent        Decimal   @map("proposed_rent")
+  rentChangePercent   Decimal   @default(0) @map("rent_change_percent")
+  renewalTermMonths   Int       @default(12) @map("renewal_term_months")
+  currentEndDate      DateTime  @map("current_end_date")
+  proposedStartDate   DateTime  @map("proposed_start_date")
+  proposedEndDate     DateTime  @map("proposed_end_date")
+  escalationRate      Decimal   @default(0) @map("escalation_rate") // annual escalation %
+  concessionAmount    Decimal   @default(0) @map("concession_amount") // free rent or discount
+  status              String    @default("DRAFT") // DRAFT, SENT, NEGOTIATING, APPROVED, EXECUTED, DECLINED, EXPIRED
+  approvedBy          String?   @map("approved_by")
+  approvedAt          DateTime? @map("approved_at")
+  executedAt          DateTime? @map("executed_at")
+  documents           Json      @default("[]")
+  notes               String?
+  isActive            Boolean   @default(true) @map("is_active")
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@index([leaseId])
+  @@index([propertyId])
+  @@index([tenantId, status])
+  @@map("real_estate_lease_renewals")
+}
+
+model RealEstateRentEscalation {
+  id                String    @id @default(cuid())
+  tenantId          String    @map("tenant_id")
+  leaseId           String    @map("lease_id")
+  propertyId        String    @map("property_id")
+  unitId            String?   @map("unit_id")
+  scheduleName      String    @map("schedule_name")
+  escalationType    String    @default("PERCENTAGE") // PERCENTAGE, FIXED_AMOUNT, CPI_INDEX, MARKET_REVIEW, STEPPED
+  escalationRate    Decimal   @default(0) @map("escalation_rate")
+  frequencyMonths   Int       @default(12) @map("frequency_months")
+  nextEscalationDate DateTime? @map("next_escalation_date")
+  lastEscalationDate DateTime? @map("last_escalation_date")
+  capRate           Decimal?  @map("cap_rate") // maximum % increase per period
+  floorRate         Decimal?  @map("floor_rate") // minimum % increase per period
+  baseRent          Decimal   @map("base_rent")
+  currentRent       Decimal   @map("current_rent")
+  cpiIndexName      String?   @map("cpi_index_name")
+  cpiCurrentValue   Decimal?  @map("cpi_current_value")
+  notes             String?
+  status            String    @default("ACTIVE") // ACTIVE, PAUSED, COMPLETED, CANCELLED
+  isActive          Boolean   @default(true) @map("is_active")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@index([leaseId])
+  @@index([propertyId])
+  @@index([tenantId, nextEscalationDate])
+  @@map("real_estate_rent_escalations")
+}
+
+model RealEstatePropertyFinancial {
+  id              String    @id @default(cuid())
+  tenantId        String    @map("tenant_id")
+  propertyId      String    @map("property_id")
+  periodStart     DateTime  @map("period_start")
+  periodEnd       DateTime  @map("period_end")
+  grossRentIncome Decimal   @default(0) @map("gross_rent_income")
+  otherIncome     Decimal   @default(0) @map("other_income") // parking, laundry, storage
+  totalIncome     Decimal   @default(0) @map("total_income")
+  vacancyLoss     Decimal   @default(0) @map("vacancy_loss")
+  effectiveIncome Decimal   @default(0) @map("effective_income")
+  operatingExpenses Decimal @default(0) @map("operating_expenses")
+  repairsMaintenance Decimal @default(0) @map("repairs_maintenance")
+  propertyManagement Decimal @default(0) @map("property_management")
+  insurance       Decimal   @default(0)
+  taxes           Decimal   @default(0)
+  utilities       Decimal   @default(0)
+  hoaFees         Decimal   @default(0) @map("hoa_fees")
+  otherExpenses   Decimal   @default(0) @map("other_expenses")
+  totalExpenses   Decimal   @default(0) @map("total_expenses")
+  netOperatingIncome Decimal @default(0) @map("net_operating_income")
+  debtService     Decimal   @default(0) @map("debt_service") // mortgage payments
+  cashFlowBeforeTax Decimal @default(0) @map("cash_flow_before_tax")
+  capitalExpenditures Decimal @default(0) @map("capital_expenditures")
+  netCashFlow     Decimal   @default(0) @map("net_cash_flow")
+  capRate         Decimal?  @map("cap_rate") // calculated NOI / property value
+  cashOnCashReturn Decimal? @map("cash_on_cash_return") // percentage
+  occupancyRate   Decimal?  @map("occupancy_rate") // percentage
+  status          String    @default("DRAFT") // DRAFT, FINAL, ARCHIVED
+  currency        String    @default("USD")
+  notes           String?
+  isActive        Boolean   @default(true) @map("is_active")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@index([propertyId])
+  @@index([tenantId, periodStart, periodEnd])
+  @@map("real_estate_property_financials")
+}
+
+model RealEstateExpenseCategory {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  name        String
+  code        String
+  description String?
+  type        String   @default("OPERATING") // OPERATING, CAPITAL, ADMINISTRATIVE, OTHER
+  isTaxDeductible Boolean @default(true) @map("is_tax_deductible")
+  sortOrder   Int      @default(0) @map("sort_order")
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@unique([tenantId, code])
+  @@index([tenantId])
+  @@map("real_estate_expense_categories")
+}
+
+model RealEstatePropertyInspection {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  propertyId  String   @map("property_id")
+  inspectorId String   @map("inspector_id")
+  type        String   @default("MOVE_IN") // MOVE_IN, MOVE_OUT, ROUTINE
+  checklist   Json     @default("[]")
+  passed      Boolean  @default(true)
+  notes       String?  @db.Text
+  inspectedAt DateTime @default(now()) @map("inspected_at")
+
+  @@index([tenantId])
+  @@index([tenantId, propertyId])
+  @@map("real_estate_property_inspections")
+}
+
+model RealEstateRentCollectionLog {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  leaseId     String   @map("lease_id")
+  tenantUser  String   @map("tenant_user")
+  amountPaid  Decimal  @db.Decimal(15, 2) @map("amount_paid")
+  paymentMethod String @map("payment_method")
+  transactionRef String? @map("transaction_ref")
+  paidAt      DateTime @default(now()) @map("paid_at")
+  lateFee     Decimal  @default(0) @db.Decimal(15, 2) @map("late_fee")
+
+  @@index([tenantId])
+  @@index([tenantId, leaseId])
+  @@map("real_estate_rent_collection_logs")
+}
+
+model RealEstateListingSyndicate {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  propertyId  String   @map("property_id")
+  platform    String   // ZILLOW, REDFIN, REALTOR, MLS
+  externalId  String?  @map("external_id")
+  status      String   @default("ACTIVE") // ACTIVE, PAUSED, REMOVED
+  lastSyncedAt DateTime? @map("last_synced_at")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([tenantId])
+  @@index([tenantId, propertyId])
+  @@map("real_estate_listing_syndicates")
+}

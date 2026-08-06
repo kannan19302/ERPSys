@@ -41,9 +41,23 @@ class MarketplaceApp extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, name, description, developer, developerId, category, icon,
-        price, currency, version, rating, downloadCount, reviewCount,
-        status, permissions, createdAt, updatedAt,
+        id,
+        name,
+        description,
+        developer,
+        developerId,
+        category,
+        icon,
+        price,
+        currency,
+        version,
+        rating,
+        downloadCount,
+        reviewCount,
+        status,
+        permissions,
+        createdAt,
+        updatedAt,
       ];
 }
 
@@ -74,8 +88,16 @@ class MarketplaceReview extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, appId, appName, userId, userName, rating, comment,
-        status, createdAt, updatedAt,
+        id,
+        appId,
+        appName,
+        userId,
+        userName,
+        rating,
+        comment,
+        status,
+        createdAt,
+        updatedAt,
       ];
 }
 
@@ -106,8 +128,16 @@ class MarketplaceAppVersion extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, appId, appName, version, releaseNotes, fileUrl, fileSize,
-        status, createdAt, updatedAt,
+        id,
+        appId,
+        appName,
+        version,
+        releaseNotes,
+        fileUrl,
+        fileSize,
+        status,
+        createdAt,
+        updatedAt,
       ];
 }
 
@@ -144,7 +174,18 @@ class MarketplaceSubmission extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, appId, appName, submitterId, submitterName, type, notes,
-        status, reviewedBy, reviewDecision, reviewNotes, createdAt, updatedAt,
+        id,
+        appId,
+        appName,
+        submitterId,
+        submitterName,
+        type,
+        notes,
+        status,
+        reviewedBy,
+        reviewDecision,
+        reviewNotes,
+        createdAt,
+        updatedAt,
       ];
 }

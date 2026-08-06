@@ -28,7 +28,8 @@ class LocalizationTranslationModel extends LocalizationTranslation {
 
   factory LocalizationTranslationModel.fromJson(Map<String, dynamic> json) {
     final Object? id = json['id'];
-    if (id is! String) throw const ParseException('LocalizationTranslation missing id');
+    if (id is! String)
+      throw const ParseException('LocalizationTranslation missing id');
     return LocalizationTranslationModel(
       id: id,
       locale: json['locale'] as String?,
@@ -68,7 +69,8 @@ class LocalizationLanguageModel extends LocalizationLanguage {
 
   factory LocalizationLanguageModel.fromJson(Map<String, dynamic> json) {
     final Object? id = json['id'];
-    if (id is! String) throw const ParseException('LocalizationLanguage missing id');
+    if (id is! String)
+      throw const ParseException('LocalizationLanguage missing id');
     return LocalizationLanguageModel(
       id: id,
       code: json['code'] as String? ?? '',
@@ -111,7 +113,8 @@ class LocalizationRegionModel extends LocalizationRegion {
 
   factory LocalizationRegionModel.fromJson(Map<String, dynamic> json) {
     final Object? id = json['id'];
-    if (id is! String) throw const ParseException('LocalizationRegion missing id');
+    if (id is! String)
+      throw const ParseException('LocalizationRegion missing id');
     return LocalizationRegionModel(
       id: id,
       code: json['code'] as String? ?? '',

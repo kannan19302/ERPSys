@@ -49,7 +49,8 @@ class _MfaChallengePageState extends ConsumerState<MfaChallengePage> {
   }
 
   Future<void> _pollPushApproval() async {
-    final String? challenge = ref.read(authControllerProvider).mfaChallengeToken;
+    final String? challenge =
+        ref.read(authControllerProvider).mfaChallengeToken;
     if (challenge == null) return;
 
     final Result<Session?> result = await ref

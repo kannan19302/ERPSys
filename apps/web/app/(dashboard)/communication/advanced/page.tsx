@@ -3,7 +3,7 @@ import styles from "./page.module.css";
 import React, { useEffect, useState, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import { useApiClient } from "@unerp/framework";
-import { SubTabBar, type SubTab } from "@unerp/ui-layout";
+import { SubTabBar, type SubTab } from "@unerp/ui/layout";
 import { MessageSquare, Inbox, Phone, Megaphone } from "lucide-react";
 import { DataTable, Card, Spinner, type Column } from "@unerp/ui";
 

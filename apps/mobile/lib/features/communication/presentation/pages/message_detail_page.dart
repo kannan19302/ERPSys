@@ -26,7 +26,9 @@ class MessageDetailPage extends ConsumerWidget {
       body: msgAsync.when(
         loading: () => const LoadingView(),
         error: (Object error, StackTrace _) => FailureView(
-          failure: error is Failure ? error : const ServerFailure('Could not load message.'),
+          failure: error is Failure
+              ? error
+              : const ServerFailure('Could not load message.'),
           onRetry: () => ref.invalidate(messageDetailProvider(messageId)),
         ),
         data: (Message message) => _MessageDetail(message: message),
@@ -66,7 +68,8 @@ class _MessageDetail extends StatelessWidget {
                       message.senderName.isNotEmpty
                           ? message.senderName[0].toUpperCase()
                           : '?',
-                      style: TextStyle(color: t.primary, fontWeight: TypeScale.semibold),
+                      style: TextStyle(
+                          color: t.primary, fontWeight: TypeScale.semibold),
                     ),
                   ),
                   const SizedBox(width: Spacing.x3),
@@ -74,16 +77,19 @@ class _MessageDetail extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
-                        Text(message.senderName, style: Theme.of(context).textTheme.titleMedium),
+                        Text(message.senderName,
+                            style: Theme.of(context).textTheme.titleMedium),
                         Text(
                           Formatters.dateTime(message.createdAt),
-                          style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
+                          style: TextStyle(
+                              color: t.textSecondary, fontSize: TypeScale.xs),
                         ),
                       ],
                     ),
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: Spacing.x2_5, vertical: Spacing.x1),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: Spacing.x2_5, vertical: Spacing.x1),
                     decoration: BoxDecoration(
                       color: t.primaryLight,
                       borderRadius: Radii.pill,
@@ -102,12 +108,14 @@ class _MessageDetail extends StatelessWidget {
               const SizedBox(height: Spacing.x4),
               const Divider(),
               const SizedBox(height: Spacing.x2),
-              Text(message.content, style: Theme.of(context).textTheme.bodyLarge),
+              Text(message.content,
+                  style: Theme.of(context).textTheme.bodyLarge),
               if (message.editedAt != null) ...<Widget>[
                 const SizedBox(height: Spacing.x2),
                 Text(
                   'Edited ${Formatters.relative(message.editedAt!)}',
-                  style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs),
+                  style:
+                      TextStyle(color: t.textTertiary, fontSize: TypeScale.xs),
                 ),
               ],
             ],

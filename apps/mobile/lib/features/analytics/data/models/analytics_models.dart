@@ -111,7 +111,8 @@ class AnalyticsDashboardModel extends AnalyticsDashboard {
 
   factory AnalyticsDashboardModel.fromJson(Map<String, dynamic> json) {
     final Object? id = json['id'];
-    if (id is! String) throw const ParseException('AnalyticsDashboard missing id');
+    if (id is! String)
+      throw const ParseException('AnalyticsDashboard missing id');
     return AnalyticsDashboardModel(
       id: id,
       title: json['title'] as String? ?? '',
@@ -216,7 +217,8 @@ class AnalyticsPipelineModel extends AnalyticsPipeline {
 
   factory AnalyticsPipelineModel.fromJson(Map<String, dynamic> json) {
     final Object? id = json['id'];
-    if (id is! String) throw const ParseException('AnalyticsPipeline missing id');
+    if (id is! String)
+      throw const ParseException('AnalyticsPipeline missing id');
     return AnalyticsPipelineModel(
       id: id,
       name: json['name'] as String? ?? '',
@@ -231,7 +233,8 @@ class AnalyticsPipelineModel extends AnalyticsPipeline {
   Map<String, dynamic> toJson() => <String, dynamic>{
         'id': id,
         'name': name,
-        'stages': stages.map((e) => (e as PipelineStageModel).toJson()).toList(),
+        'stages':
+            stages.map((e) => (e as PipelineStageModel).toJson()).toList(),
         'totalValue': totalValue,
         'status': status,
         'createdAt': createdAt?.toIso8601String(),

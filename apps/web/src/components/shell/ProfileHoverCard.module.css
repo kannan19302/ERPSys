@@ -2,7 +2,7 @@
   background: transparent;
   border: none;
   cursor: pointer;
-  padding: 4px;
+  padding: var(--space-1);
   border-radius: var(--radius-lg);
   display: flex;
   align-items: center;
@@ -53,7 +53,7 @@
   width: 10px;
   height: 10px;
   border-radius: var(--radius-full);
-  background: #10b981;
+  background: var(--color-success);
   border: 2px solid var(--color-bg-elevated);
 }
 
@@ -100,7 +100,7 @@
   border: none;
   cursor: pointer;
   color: var(--color-text-tertiary);
-  padding: 4px;
+  padding: var(--space-1);
   border-radius: var(--radius-md);
   display: flex;
 }
@@ -128,7 +128,7 @@
   height: 56px;
   border-radius: var(--radius-full);
   background: linear-gradient(135deg, var(--color-primary), #7c3aed);
-  color: #fff;
+  color: var(--color-text-inverse);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -151,14 +151,14 @@
   width: 14px;
   height: 14px;
   border-radius: var(--radius-full);
-  background: #10b981;
+  background: var(--color-success);
   border: 3px solid var(--color-bg-elevated);
 }
 
 .heroInfo {
   min-width: 0;
   flex: 1;
-  padding-top: 2px;
+  padding-top: var(--space-half);
 }
 
 .nameRow {
@@ -185,7 +185,7 @@
   border: none;
   cursor: pointer;
   color: var(--color-primary);
-  padding: 2px;
+  padding: var(--space-half);
   display: flex;
   border-radius: var(--radius-md);
 }
@@ -210,9 +210,9 @@
 .roleRow {
   font-size: var(--text-xs);
   color: var(--color-text-secondary);
-  margin-top: 2px;
+  margin-top: var(--space-half);
   display: flex;
-  gap: 4px;
+  gap: var(--space-1);
   flex-wrap: wrap;
 }
 
@@ -310,7 +310,7 @@
   border-top: 1px solid var(--color-border);
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--space-half);
 }
 
 .footerBtn {

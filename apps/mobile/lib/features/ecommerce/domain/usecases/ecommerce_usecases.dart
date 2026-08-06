@@ -4,11 +4,13 @@ import '../../../../core/usecase/usecase.dart';
 import '../entities/ecommerce.dart';
 import '../repositories/ecommerce_repository.dart';
 
-class ListEcommerceProductsUseCase extends UseCase<Cacheable<Paginated<EcommerceProduct>>, ListQuery> {
+class ListEcommerceProductsUseCase
+    extends UseCase<Cacheable<Paginated<EcommerceProduct>>, ListQuery> {
   const ListEcommerceProductsUseCase(this._repository);
   final EcommerceRepository _repository;
   @override
-  Future<Result<Cacheable<Paginated<EcommerceProduct>>>> call(ListQuery params) =>
+  Future<Result<Cacheable<Paginated<EcommerceProduct>>>> call(
+          ListQuery params) =>
       _repository.listProducts(params);
 }
 
@@ -16,7 +18,8 @@ class GetEcommerceProductUseCase extends UseCase<EcommerceProduct, String> {
   const GetEcommerceProductUseCase(this._repository);
   final EcommerceRepository _repository;
   @override
-  Future<Result<EcommerceProduct>> call(String id) => _repository.getProduct(id);
+  Future<Result<EcommerceProduct>> call(String id) =>
+      _repository.getProduct(id);
 }
 
 class SaveEcommerceProductParams {
@@ -25,7 +28,8 @@ class SaveEcommerceProductParams {
   final Map<String, dynamic> payload;
 }
 
-class SaveEcommerceProductUseCase extends UseCase<EcommerceProduct, SaveEcommerceProductParams> {
+class SaveEcommerceProductUseCase
+    extends UseCase<EcommerceProduct, SaveEcommerceProductParams> {
   const SaveEcommerceProductUseCase(this._repository);
   final EcommerceRepository _repository;
   @override
@@ -44,11 +48,13 @@ class DeleteEcommerceProductUseCase extends UseCase<void, String> {
   Future<Result<void>> call(String id) => _repository.deleteProduct(id);
 }
 
-class ListEcommerceCategoriesUseCase extends UseCase<Cacheable<Paginated<EcommerceCategory>>, ListQuery> {
+class ListEcommerceCategoriesUseCase
+    extends UseCase<Cacheable<Paginated<EcommerceCategory>>, ListQuery> {
   const ListEcommerceCategoriesUseCase(this._repository);
   final EcommerceRepository _repository;
   @override
-  Future<Result<Cacheable<Paginated<EcommerceCategory>>>> call(ListQuery params) =>
+  Future<Result<Cacheable<Paginated<EcommerceCategory>>>> call(
+          ListQuery params) =>
       _repository.listCategories(params);
 }
 
@@ -56,7 +62,8 @@ class GetEcommerceCategoryUseCase extends UseCase<EcommerceCategory, String> {
   const GetEcommerceCategoryUseCase(this._repository);
   final EcommerceRepository _repository;
   @override
-  Future<Result<EcommerceCategory>> call(String id) => _repository.getCategory(id);
+  Future<Result<EcommerceCategory>> call(String id) =>
+      _repository.getCategory(id);
 }
 
 class SaveEcommerceCategoryParams {
@@ -65,7 +72,8 @@ class SaveEcommerceCategoryParams {
   final Map<String, dynamic> payload;
 }
 
-class SaveEcommerceCategoryUseCase extends UseCase<EcommerceCategory, SaveEcommerceCategoryParams> {
+class SaveEcommerceCategoryUseCase
+    extends UseCase<EcommerceCategory, SaveEcommerceCategoryParams> {
   const SaveEcommerceCategoryUseCase(this._repository);
   final EcommerceRepository _repository;
   @override
@@ -84,7 +92,8 @@ class DeleteEcommerceCategoryUseCase extends UseCase<void, String> {
   Future<Result<void>> call(String id) => _repository.deleteCategory(id);
 }
 
-class ListEcommerceOrdersUseCase extends UseCase<Cacheable<Paginated<EcommerceOrder>>, ListQuery> {
+class ListEcommerceOrdersUseCase
+    extends UseCase<Cacheable<Paginated<EcommerceOrder>>, ListQuery> {
   const ListEcommerceOrdersUseCase(this._repository);
   final EcommerceRepository _repository;
   @override
@@ -103,10 +112,12 @@ class GetCartUseCase extends UseCase<List<EcommerceCartItem>, NoParams> {
   const GetCartUseCase(this._repository);
   final EcommerceRepository _repository;
   @override
-  Future<Result<List<EcommerceCartItem>>> call(NoParams _) => _repository.getCart();
+  Future<Result<List<EcommerceCartItem>>> call(NoParams _) =>
+      _repository.getCart();
 }
 
-class AddToCartUseCase extends UseCase<EcommerceCartItem, Map<String, dynamic>> {
+class AddToCartUseCase
+    extends UseCase<EcommerceCartItem, Map<String, dynamic>> {
   const AddToCartUseCase(this._repository);
   final EcommerceRepository _repository;
   @override

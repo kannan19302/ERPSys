@@ -66,7 +66,8 @@ class _RFQListPageState extends ConsumerState<RFQListPage> {
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
+            padding: const EdgeInsets.fromLTRB(
+                Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
             child: TextField(
               controller: _search,
               onChanged: controller.search,
@@ -78,36 +79,46 @@ class _RFQListPageState extends ConsumerState<RFQListPage> {
                     ? null
                     : IconButton(
                         icon: const Icon(Icons.close),
-                        onPressed: () { _search.clear(); controller.search(''); },
+                        onPressed: () {
+                          _search.clear();
+                          controller.search('');
+                        },
                       ),
               ),
             ),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: Spacing.x4),
-            child: Row(children: [
-              Text(
-                state.isLoading ? 'Loading...' : '${state.meta.total} RFQ${state.meta.total == 1 ? '' : 's'}',
-                style: TextStyle(color: context.tokens.textSecondary, fontSize: TypeScale.xs),
-              ),
-              const Spacer(),
-              DropdownButton<String?>(
-                value: _statusFilter,
-                hint: const Text('Status'),
-                underline: const SizedBox.shrink(),
-                items: _statusFilters.entries
-                    .map((e) => DropdownMenuItem(value: e.key, child: Text(e.value)))
-                    .toList(),
-                onChanged: (v) {
-                  setState(() => _statusFilter = v);
-                  if (v == null) {
-                    controller.applyFilters(const {});
-                  } else {
-                    controller.applyFilters({'status': v});
-                  }
-                },
-              ),
-            ],),
+            child: Row(
+              children: [
+                Text(
+                  state.isLoading
+                      ? 'Loading...'
+                      : '${state.meta.total} RFQ${state.meta.total == 1 ? '' : 's'}',
+                  style: TextStyle(
+                      color: context.tokens.textSecondary,
+                      fontSize: TypeScale.xs),
+                ),
+                const Spacer(),
+                DropdownButton<String?>(
+                  value: _statusFilter,
+                  hint: const Text('Status'),
+                  underline: const SizedBox.shrink(),
+                  items: _statusFilters.entries
+                      .map((e) =>
+                          DropdownMenuItem(value: e.key, child: Text(e.value)))
+                      .toList(),
+                  onChanged: (v) {
+                    setState(() => _statusFilter = v);
+                    if (v == null) {
+                      controller.applyFilters(const {});
+                    } else {
+                      controller.applyFilters({'status': v});
+                    }
+                  },
+                ),
+              ],
+            ),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -135,20 +146,29 @@ class _RFQListPageState extends ConsumerState<RFQListPage> {
       itemBuilder: (_, rfq, __) => Card(
         margin: EdgeInsets.zero,
         child: InkWell(
-          onTap: () => context.pushNamed('rfq-detail', pathParameters: {'id': rfq.id}),
+          onTap: () =>
+              context.pushNamed('rfq-detail', pathParameters: {'id': rfq.id}),
           child: Padding(
             padding: const EdgeInsets.all(Spacing.x3),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(children: [
-                  Expanded(child: Text(rfq.rfqNumber, style: Theme.of(context).textTheme.titleSmall)),
-                  UiStatusBadge(label: rfq.status, tone: _statusTone(rfq.status)),
-                ],),
+                Row(
+                  children: [
+                    Expanded(
+                        child: Text(rfq.rfqNumber,
+                            style: Theme.of(context).textTheme.titleSmall)),
+                    UiStatusBadge(
+                        label: rfq.status, tone: _statusTone(rfq.status)),
+                  ],
+                ),
                 const SizedBox(height: Spacing.x1),
-                Text(rfq.vendorName ?? rfq.id, style: TextStyle(color: context.tokens.textSecondary)),
+                Text(rfq.vendorName ?? rfq.id,
+                    style: TextStyle(color: context.tokens.textSecondary)),
                 const SizedBox(height: Spacing.x1),
-                Text('${rfq.vendorCount} vendor${rfq.vendorCount == 1 ? '' : 's'}', style: const TextStyle(fontSize: TypeScale.xs)),
+                Text(
+                    '${rfq.vendorCount} vendor${rfq.vendorCount == 1 ? '' : 's'}',
+                    style: const TextStyle(fontSize: TypeScale.xs)),
               ],
             ),
           ),
@@ -158,7 +178,9 @@ class _RFQListPageState extends ConsumerState<RFQListPage> {
   }
 
   UiTone _statusTone(String status) => switch (status) {
-        'DRAFT' => UiTone.neutral, 'SENT' => UiTone.info,
-        'CLOSED' => UiTone.success, _ => UiTone.neutral,
+        'DRAFT' => UiTone.neutral,
+        'SENT' => UiTone.info,
+        'CLOSED' => UiTone.success,
+        _ => UiTone.neutral,
       };
 }

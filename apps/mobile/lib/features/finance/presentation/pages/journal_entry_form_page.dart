@@ -13,7 +13,8 @@ class JournalEntryFormPage extends ConsumerStatefulWidget {
   final String? journalEntryId;
 
   @override
-  ConsumerState<JournalEntryFormPage> createState() => _JournalEntryFormPageState();
+  ConsumerState<JournalEntryFormPage> createState() =>
+      _JournalEntryFormPageState();
 }
 
 class _JournalEntryFormPageState extends ConsumerState<JournalEntryFormPage> {
@@ -35,7 +36,8 @@ class _JournalEntryFormPageState extends ConsumerState<JournalEntryFormPage> {
                   children: <Widget>[
                     const UiSectionHeader(title: 'Entry Details'),
                     TextFormField(
-                      decoration: const InputDecoration(labelText: 'Description'),
+                      decoration:
+                          const InputDecoration(labelText: 'Description'),
                       maxLines: 3,
                     ),
                     const SizedBox(height: Spacing.x3),

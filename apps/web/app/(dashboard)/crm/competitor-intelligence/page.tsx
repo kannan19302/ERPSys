@@ -17,21 +17,21 @@ const features = [
     desc: "SWOT, pricing, competitor analysis reports",
     icon: FileText,
     href: "/crm/competitor-intelligence/reports",
-    color: "#8b5cf6",
+    color: "var(--chart-5)",
   },
   {
     name: "Competitor Landscape",
     desc: "Full competitor SWOT and positioning",
     icon: Layers,
     href: "/crm/competitor-intelligence/landscape",
-    color: "#3b82f6",
+    color: "var(--color-primary)",
   },
   {
     name: "Win/Loss Categories",
     desc: "Win/loss reason category management",
     icon: PieChart,
     href: "/crm/competitor-intelligence/win-loss-categories",
-    color: "#10b981",
+    color: "var(--chart-9)",
   },
 ];
 
@@ -71,7 +71,7 @@ export default function CompetitorIntelligencePage() {
                     style={{
                       margin: "0.25rem 0 0",
                       fontSize: "0.85rem",
-                      color: "#666",
+                      color: "var(--color-text-secondary)",
                     }}
                   >
                     {f.desc}

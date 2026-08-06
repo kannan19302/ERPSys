@@ -1,7 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { ErrorReportsService } from "../error-reports.service";
 import { ErrorReportsController } from "../error-reports.controller";
-import { prisma } from "@unerp/database";
+import { prisma, runWithTenantSession } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 
 vi.mock("@unerp/database", () => {
   return {

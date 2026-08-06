@@ -83,7 +83,11 @@ export default function AnalyticsFunnelsPage() {
             Compute Live Funnel Conversions
           </h3>
           <p
-            style={{ fontSize: "13px", color: "#64748b", margin: "4px 0 0 0" }}
+            style={{
+              fontSize: "13px",
+              color: "var(--color-text-secondary)",
+              margin: "4px 0 0 0",
+            }}
           >
             Analyze conversion steps across user onboarding journeys.
           </p>
@@ -97,7 +101,11 @@ export default function AnalyticsFunnelsPage() {
         </h3>
         {conversions.length === 0 ? (
           <p
-            style={{ color: "#64748b", textAlign: "center", padding: "32px 0" }}
+            style={{
+              color: "var(--color-text-secondary)",
+              textAlign: "center",
+              padding: "32px 0",
+            }}
           >
             No conversion funnel calculations recorded.
           </p>
@@ -123,7 +131,7 @@ export default function AnalyticsFunnelsPage() {
                   <td
                     style={{
                       padding: "12px",
-                      color: "#ef4444",
+                      color: "var(--chart-4)",
                       fontWeight: "bold",
                     }}
                   >
@@ -132,7 +140,7 @@ export default function AnalyticsFunnelsPage() {
                   <td
                     style={{
                       padding: "12px",
-                      color: "#64748b",
+                      color: "var(--color-text-secondary)",
                       fontSize: "13px",
                     }}
                   >

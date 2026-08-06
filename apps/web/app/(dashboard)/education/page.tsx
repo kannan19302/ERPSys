@@ -172,7 +172,11 @@ export default function EducationDashboard() {
             config={{
               xAxisKey: "name",
               series: [
-                { dataKey: "count", name: "Students", color: "#6366f1" },
+                {
+                  dataKey: "count",
+                  name: "Students",
+                  color: "var(--chart-10)",
+                },
               ],
             }}
             defaultChartType="line"
@@ -186,8 +190,16 @@ export default function EducationDashboard() {
             config={{
               xAxisKey: "name",
               series: [
-                { dataKey: "collected", name: "Collected", color: "#22c55e" },
-                { dataKey: "pending", name: "Pending", color: "#f59e0b" },
+                {
+                  dataKey: "collected",
+                  name: "Collected",
+                  color: "var(--chart-2)",
+                },
+                {
+                  dataKey: "pending",
+                  name: "Pending",
+                  color: "var(--chart-3)",
+                },
               ],
             }}
             defaultChartType="bar"

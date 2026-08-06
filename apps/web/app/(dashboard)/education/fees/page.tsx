@@ -25,7 +25,7 @@ import {
   BookOpen,
 } from "lucide-react";
 import { RouteGuard, useApiClient } from "@unerp/framework";
-import { SubTabBar, type SubTab } from "@unerp/ui-layout";
+import { SubTabBar, type SubTab } from "@unerp/ui/layout";
 
 interface FeeStructure {
   id: string;

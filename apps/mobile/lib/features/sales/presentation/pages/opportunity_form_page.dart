@@ -18,7 +18,8 @@ class OpportunityFormPage extends ConsumerStatefulWidget {
   final String? opportunityId;
 
   @override
-  ConsumerState<OpportunityFormPage> createState() => _OpportunityFormPageState();
+  ConsumerState<OpportunityFormPage> createState() =>
+      _OpportunityFormPageState();
 }
 
 class _OpportunityFormPageState extends ConsumerState<OpportunityFormPage> {
@@ -28,7 +29,8 @@ class _OpportunityFormPageState extends ConsumerState<OpportunityFormPage> {
   final TextEditingController _companyCtrl = TextEditingController();
   final TextEditingController _contactCtrl = TextEditingController();
   final TextEditingController _amountCtrl = TextEditingController();
-  final TextEditingController _currencyCtrl = TextEditingController(text: 'USD');
+  final TextEditingController _currencyCtrl =
+      TextEditingController(text: 'USD');
   final TextEditingController _notesCtrl = TextEditingController();
   final TextEditingController _assignedCtrl = TextEditingController();
 
@@ -49,9 +51,8 @@ class _OpportunityFormPageState extends ConsumerState<OpportunityFormPage> {
   }
 
   Future<void> _loadOpportunity() async {
-    final Opportunity? opp = ref
-        .read(opportunityDetailProvider(widget.opportunityId!))
-        .valueOrNull;
+    final Opportunity? opp =
+        ref.read(opportunityDetailProvider(widget.opportunityId!)).valueOrNull;
     if (opp != null) {
       _titleCtrl.text = opp.title;
       _customerCtrl.text = opp.customerName;
@@ -100,16 +101,20 @@ class _OpportunityFormPageState extends ConsumerState<OpportunityFormPage> {
     final Map<String, dynamic> payload = <String, dynamic>{
       'title': _titleCtrl.text.trim(),
       'customerName': _customerCtrl.text.trim(),
-      'company': _companyCtrl.text.trim().isEmpty ? null : _companyCtrl.text.trim(),
-      'contactName': _contactCtrl.text.trim().isEmpty ? null : _contactCtrl.text.trim(),
+      'company':
+          _companyCtrl.text.trim().isEmpty ? null : _companyCtrl.text.trim(),
+      'contactName':
+          _contactCtrl.text.trim().isEmpty ? null : _contactCtrl.text.trim(),
       'expectedRevenue': double.tryParse(_amountCtrl.text),
-      'currency': _currencyCtrl.text.trim().isEmpty ? null : _currencyCtrl.text.trim(),
+      'currency':
+          _currencyCtrl.text.trim().isEmpty ? null : _currencyCtrl.text.trim(),
       'stage': _stage,
       'probability': _probability,
       'closeDate': _closeDate?.toIso8601String(),
       'pipelineName': _pipeline.isEmpty ? null : _pipeline,
       'notes': _notesCtrl.text.trim().isEmpty ? null : _notesCtrl.text.trim(),
-      'assignedTo': _assignedCtrl.text.trim().isEmpty ? null : _assignedCtrl.text.trim(),
+      'assignedTo':
+          _assignedCtrl.text.trim().isEmpty ? null : _assignedCtrl.text.trim(),
     };
 
     final Result<Opportunity> result = await ref
@@ -153,7 +158,8 @@ class _OpportunityFormPageState extends ConsumerState<OpportunityFormPage> {
           children: <Widget>[
             TextFormField(
               controller: _titleCtrl,
-              decoration: const InputDecoration(labelText: 'Opportunity Name *'),
+              decoration:
+                  const InputDecoration(labelText: 'Opportunity Name *'),
               validator: (String? v) =>
                   v == null || v.trim().isEmpty ? 'Required' : null,
             ),
@@ -213,11 +219,16 @@ class _OpportunityFormPageState extends ConsumerState<OpportunityFormPage> {
               initialValue: _stage,
               decoration: const InputDecoration(labelText: 'Stage'),
               items: const <DropdownMenuItem<String>>[
-                DropdownMenuItem<String>(value: 'PROSPECTING', child: Text('Prospecting')),
-                DropdownMenuItem<String>(value: 'QUALIFICATION', child: Text('Qualification')),
-                DropdownMenuItem<String>(value: 'NEGOTIATION', child: Text('Negotiation')),
-                DropdownMenuItem<String>(value: 'CLOSED_WON', child: Text('Closed Won')),
-                DropdownMenuItem<String>(value: 'CLOSED_LOST', child: Text('Closed Lost')),
+                DropdownMenuItem<String>(
+                    value: 'PROSPECTING', child: Text('Prospecting')),
+                DropdownMenuItem<String>(
+                    value: 'QUALIFICATION', child: Text('Qualification')),
+                DropdownMenuItem<String>(
+                    value: 'NEGOTIATION', child: Text('Negotiation')),
+                DropdownMenuItem<String>(
+                    value: 'CLOSED_WON', child: Text('Closed Won')),
+                DropdownMenuItem<String>(
+                    value: 'CLOSED_LOST', child: Text('Closed Lost')),
               ],
               onChanged: (String? v) {
                 if (v != null) setState(() => _stage = v);
@@ -229,8 +240,10 @@ class _OpportunityFormPageState extends ConsumerState<OpportunityFormPage> {
               decoration: const InputDecoration(labelText: 'Assigned To'),
             ),
             const SizedBox(height: Spacing.x4),
-            Text('Probability: ${_probability.round()}%',
-                style: Theme.of(context).textTheme.bodySmall,),
+            Text(
+              'Probability: ${_probability.round()}%',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
             Slider(
               value: _probability,
               min: 0,

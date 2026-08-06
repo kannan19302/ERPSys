@@ -37,7 +37,8 @@ class AnalyticsRepositoryImpl implements AnalyticsRepository {
       final List<Map<String, dynamic>> jsonItems = page.data
           .map((dynamic e) => (e as dynamic).toJson() as Map<String, dynamic>)
           .toList(growable: false);
-      await _cache.write(_tenantId, namespace, query.cacheKey, <String, Object?>{
+      await _cache
+          .write(_tenantId, namespace, query.cacheKey, <String, Object?>{
         'data': jsonItems,
         'meta': page.meta.toJson(),
       });
@@ -45,9 +46,11 @@ class AnalyticsRepositoryImpl implements AnalyticsRepository {
         Cacheable<Paginated<T>>(value: page),
       );
     } on NetworkException catch (error) {
-      final cached = _cache.read<Map<String, dynamic>>(_tenantId, namespace, query.cacheKey);
+      final cached = _cache.read<Map<String, dynamic>>(
+          _tenantId, namespace, query.cacheKey);
       if (cached == null) {
-        return Result<Cacheable<Paginated<T>>>.err(mapExceptionToFailure(error));
+        return Result<Cacheable<Paginated<T>>>.err(
+            mapExceptionToFailure(error));
       }
       return Result<Cacheable<Paginated<T>>>.ok(
         Cacheable<Paginated<T>>(
@@ -89,9 +92,14 @@ class AnalyticsRepositoryImpl implements AnalyticsRepository {
   }
 
   @override
-  Future<Result<Cacheable<Paginated<AnalyticsKpi>>>> listKpis(ListQuery query) =>
-      _paginated(_kpiNamespace, query, () => _remote.listKpis(query),
-        AnalyticsKpiModel.fromJson,);
+  Future<Result<Cacheable<Paginated<AnalyticsKpi>>>> listKpis(
+          ListQuery query) =>
+      _paginated(
+        _kpiNamespace,
+        query,
+        () => _remote.listKpis(query),
+        AnalyticsKpiModel.fromJson,
+      );
 
   @override
   Future<Result<AnalyticsKpi>> getKpi(String id) =>
@@ -111,9 +119,14 @@ class AnalyticsRepositoryImpl implements AnalyticsRepository {
 
   @override
   Future<Result<Cacheable<Paginated<AnalyticsDashboard>>>> listDashboards(
-    ListQuery query,) =>
-      _paginated(_dashboardNamespace, query, () => _remote.listDashboards(query),
-        AnalyticsDashboardModel.fromJson,);
+    ListQuery query,
+  ) =>
+      _paginated(
+        _dashboardNamespace,
+        query,
+        () => _remote.listDashboards(query),
+        AnalyticsDashboardModel.fromJson,
+      );
 
   @override
   Future<Result<AnalyticsDashboard>> getDashboard(String id) =>
@@ -124,7 +137,8 @@ class AnalyticsRepositoryImpl implements AnalyticsRepository {
       _write(() => _remote.createDashboard(p));
 
   @override
-  Future<Result<AnalyticsDashboard>> updateDashboard(String id, Map<String, dynamic> p) =>
+  Future<Result<AnalyticsDashboard>> updateDashboard(
+          String id, Map<String, dynamic> p) =>
       _write(() => _remote.updateDashboard(id, p));
 
   @override
@@ -133,9 +147,14 @@ class AnalyticsRepositoryImpl implements AnalyticsRepository {
 
   @override
   Future<Result<Cacheable<Paginated<AnalyticsReport>>>> listReports(
-    ListQuery query,) =>
-      _paginated(_reportNamespace, query, () => _remote.listReports(query),
-        AnalyticsReportModel.fromJson,);
+    ListQuery query,
+  ) =>
+      _paginated(
+        _reportNamespace,
+        query,
+        () => _remote.listReports(query),
+        AnalyticsReportModel.fromJson,
+      );
 
   @override
   Future<Result<AnalyticsReport>> getReport(String id) =>
@@ -146,7 +165,8 @@ class AnalyticsRepositoryImpl implements AnalyticsRepository {
       _write(() => _remote.createReport(p));
 
   @override
-  Future<Result<AnalyticsReport>> updateReport(String id, Map<String, dynamic> p) =>
+  Future<Result<AnalyticsReport>> updateReport(
+          String id, Map<String, dynamic> p) =>
       _write(() => _remote.updateReport(id, p));
 
   @override
@@ -155,7 +175,12 @@ class AnalyticsRepositoryImpl implements AnalyticsRepository {
 
   @override
   Future<Result<Cacheable<Paginated<AnalyticsPipeline>>>> listPipelines(
-    ListQuery query,) =>
-      _paginated(_pipelineNamespace, query, () => _remote.listPipelines(query),
-        AnalyticsPipelineModel.fromJson,);
+    ListQuery query,
+  ) =>
+      _paginated(
+        _pipelineNamespace,
+        query,
+        () => _remote.listPipelines(query),
+        AnalyticsPipelineModel.fromJson,
+      );
 }

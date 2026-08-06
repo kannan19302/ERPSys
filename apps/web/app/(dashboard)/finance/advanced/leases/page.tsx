@@ -118,19 +118,19 @@ export default function LeasesPage() {
               label: "Total Lease Liability",
               value: fmt(summary.totalLiability),
               icon: <TrendingDown size={20} />,
-              color: "#ef4444",
+              color: "var(--chart-4)",
             },
             {
               label: "Active Leases",
               value: String(summary.activeLeases),
               icon: <Calendar size={20} />,
-              color: "#22c55e",
+              color: "var(--chart-2)",
             },
             {
               label: "Finance / Operating",
               value: `${summary.financeCount} / ${summary.operatingCount}`,
               icon: <AlertCircle size={20} />,
-              color: "#f59e0b",
+              color: "var(--chart-3)",
             },
           ]}
         />

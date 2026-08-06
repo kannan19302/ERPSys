@@ -12,7 +12,8 @@ class SearchSynonymListPage extends ConsumerStatefulWidget {
   static const String routeName = 'search-synonyms';
   static const String routePath = '/search/synonyms';
   @override
-  ConsumerState<SearchSynonymListPage> createState() => _SearchSynonymListPageState();
+  ConsumerState<SearchSynonymListPage> createState() =>
+      _SearchSynonymListPageState();
 }
 
 class _SearchSynonymListPageState extends ConsumerState<SearchSynonymListPage> {
@@ -28,7 +29,8 @@ class _SearchSynonymListPageState extends ConsumerState<SearchSynonymListPage> {
     );
   }
 
-  Widget _body(SearchSynonymListState state, SearchSynonymListController controller, Palette t) {
+  Widget _body(SearchSynonymListState state,
+      SearchSynonymListController controller, Palette t) {
     if (state.isLoading && state.items.isEmpty) return const LoadingView();
     final failure = state.failure;
     if (failure != null && state.items.isEmpty) {
@@ -50,29 +52,41 @@ class _SearchSynonymListPageState extends ConsumerState<SearchSynonymListPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(children: [
-                Expanded(
-                  child: Text(group.terms.join(', '),
-                      style: Theme.of(context).textTheme.titleSmall,),
-                ),
-                UiStatusBadge(
-                  label: group.isActive ? 'ACTIVE' : 'INACTIVE',
-                  tone: group.isActive ? UiTone.success : UiTone.neutral,
-                ),
-              ],),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      group.terms.join(', '),
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
+                  ),
+                  UiStatusBadge(
+                    label: group.isActive ? 'ACTIVE' : 'INACTIVE',
+                    tone: group.isActive ? UiTone.success : UiTone.neutral,
+                  ),
+                ],
+              ),
               if (group.locale != null) ...[
                 const SizedBox(height: Spacing.x1),
-                Text('Locale: ${group.locale}',
-                    style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),),
+                Text(
+                  'Locale: ${group.locale}',
+                  style:
+                      TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
+                ),
               ],
               const SizedBox(height: Spacing.x1),
               Wrap(
                 spacing: Spacing.x1,
                 runSpacing: Spacing.x1,
-                children: group.terms.map((t) => Chip(
-                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  label: Text(t, style: const TextStyle(fontSize: TypeScale.xs)),
-                ),).toList(),
+                children: group.terms
+                    .map(
+                      (t) => Chip(
+                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        label: Text(t,
+                            style: const TextStyle(fontSize: TypeScale.xs)),
+                      ),
+                    )
+                    .toList(),
               ),
             ],
           ),

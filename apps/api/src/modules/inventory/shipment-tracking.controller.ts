@@ -12,17 +12,20 @@ import {
 import { ShipmentTrackingService } from "./shipment-tracking.service";
 import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard";
 import { ShipmentDirection, ShipmentExceptionStatus } from "@prisma/client";
+import { Permissions } from "../../common/decorators/permissions.decorator";
+import { RbacGuard } from "../../common/guards/rbac.guard";
 
 interface AuthRequest {
   user: { tenantId: string; userId: string };
 }
 
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RbacGuard)
 @Controller("inventory/shipment-tracking")
 export class ShipmentTrackingController {
   constructor(private readonly svc: ShipmentTrackingService) {}
 
   // Inbound
+  @Permissions("inventory.inbound.create")
   @Post("inbound")
   createInbound(
     @Request() req: AuthRequest,
@@ -47,6 +50,7 @@ export class ShipmentTrackingController {
     });
   }
 
+  @Permissions("inventory.inbound-status.update")
   @Patch("inbound/:id/status")
   updateInboundStatus(
     @Request() req: AuthRequest,
@@ -56,6 +60,7 @@ export class ShipmentTrackingController {
     return this.svc.updateInboundStatus(req.user.tenantId, id, status);
   }
 
+  @Permissions("inventory.inbound-shipment.read")
   @Get("inbound")
   listInbound(
     @Request() req: AuthRequest,
@@ -70,6 +75,7 @@ export class ShipmentTrackingController {
   }
 
   // Outbound
+  @Permissions("inventory.outbound.create")
   @Post("outbound")
   createOutbound(
     @Request() req: AuthRequest,
@@ -97,6 +103,7 @@ export class ShipmentTrackingController {
     });
   }
 
+  @Permissions("inventory.outbound-status.update")
   @Patch("outbound/:id/status")
   updateOutboundStatus(
     @Request() req: AuthRequest,
@@ -112,6 +119,7 @@ export class ShipmentTrackingController {
     );
   }
 
+  @Permissions("inventory.outbound-shipment.read")
   @Get("outbound")
   listOutbound(
     @Request() req: AuthRequest,
@@ -126,6 +134,7 @@ export class ShipmentTrackingController {
   }
 
   // Tracking events
+  @Permissions("inventory.tracking-event.create")
   @Post("events")
   addTrackingEvent(
     @Request() req: AuthRequest,
@@ -146,6 +155,7 @@ export class ShipmentTrackingController {
     });
   }
 
+  @Permissions("inventory.tracking-history.read")
   @Get("events")
   getTrackingHistory(
     @Request() req: AuthRequest,
@@ -160,6 +170,7 @@ export class ShipmentTrackingController {
   }
 
   // Exceptions
+  @Permissions("inventory.exception.report")
   @Post("exceptions")
   reportException(
     @Request() req: AuthRequest,
@@ -175,6 +186,7 @@ export class ShipmentTrackingController {
     return this.svc.reportException(req.user.tenantId, req.user.userId, body);
   }
 
+  @Permissions("inventory.exception-status.update")
   @Patch("exceptions/:id/status")
   updateExceptionStatus(
     @Request() req: AuthRequest,
@@ -191,6 +203,7 @@ export class ShipmentTrackingController {
     );
   }
 
+  @Permissions("inventory.exception.read")
   @Get("exceptions")
   listExceptions(
     @Request() req: AuthRequest,
@@ -200,6 +213,7 @@ export class ShipmentTrackingController {
     return this.svc.listExceptions(req.user.tenantId, status, shipmentId);
   }
 
+  @Permissions("inventory.dashboard.read")
   @Get("dashboard")
   getDashboard(@Request() req: AuthRequest) {
     return this.svc.getDashboard(req.user.tenantId);

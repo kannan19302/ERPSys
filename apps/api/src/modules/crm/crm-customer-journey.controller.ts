@@ -3,22 +3,31 @@ import { ApiTags, ApiBearerAuth } from "@nestjs/swagger";
 import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard";
 import { RbacGuard } from "../../common/guards/rbac.guard";
 import { CrmCustomerJourneyService } from "./crm-customer-journey.service";
+import { Permissions } from "../../common/decorators/permissions.decorator";
 @ApiTags("crm-customer-journey")
 @ApiBearerAuth()
 @Controller("crm/customer-journey")
 @UseGuards(JwtAuthGuard, RbacGuard)
 export class CrmCustomerJourneyController {
   constructor(private readonly svc: CrmCustomerJourneyService) {}
-  @Get("cj_0") async g0() {
+  @Permissions("crm.journey.read")
+  @Get("cj_0")
+  async g0() {
     return this.svc.getJourneys();
   }
-  @Get("cj_1") async g1() {
+  @Permissions("crm.journey.create")
+  @Get("cj_1")
+  async g1() {
     return this.svc.createJourney();
   }
-  @Get("cj_2") async g2() {
+  @Permissions("crm.milestone.read")
+  @Get("cj_2")
+  async g2() {
     return this.svc.getMilestones();
   }
-  @Get("cj_3") async g3() {
+  @Permissions("crm.health-score.read")
+  @Get("cj_3")
+  async g3() {
     return this.svc.getHealthScores();
   }
 }

@@ -34,8 +34,8 @@ class OnboardingController extends AsyncNotifier<OnboardingChecklist> {
   @override
   Future<OnboardingChecklist> build() async {
     ref.watch(activeTenantIdProvider);
-    final Result<OnboardingChecklist> result =
-        await GetOnboardingStateUseCase(ref.watch(onboardingRepositoryProvider))(
+    final Result<OnboardingChecklist> result = await GetOnboardingStateUseCase(
+        ref.watch(onboardingRepositoryProvider))(
       const NoParams(),
     );
     return result.fold(
@@ -47,12 +47,14 @@ class OnboardingController extends AsyncNotifier<OnboardingChecklist> {
   /// The only step a client can mark done — "the user opened their
   /// dashboard" has no better backend proxy (see onboarding.service.ts).
   Future<void> completeDashboardStep() async {
-    final Result<OnboardingChecklist> result = await CompleteOnboardingStepUseCase(
+    final Result<OnboardingChecklist> result =
+        await CompleteOnboardingStepUseCase(
       ref.read(onboardingRepositoryProvider),
     )('dashboard');
     result.fold(
       (Failure _) => null,
-      (OnboardingChecklist checklist) => state = AsyncData<OnboardingChecklist>(checklist),
+      (OnboardingChecklist checklist) =>
+          state = AsyncData<OnboardingChecklist>(checklist),
     );
   }
 
@@ -61,7 +63,8 @@ class OnboardingController extends AsyncNotifier<OnboardingChecklist> {
     state = await AsyncValue.guard(
       () async {
         final Result<OnboardingChecklist> result =
-            await GetOnboardingStateUseCase(ref.read(onboardingRepositoryProvider))(
+            await GetOnboardingStateUseCase(
+                ref.read(onboardingRepositoryProvider))(
           const NoParams(),
         );
         return result.fold(

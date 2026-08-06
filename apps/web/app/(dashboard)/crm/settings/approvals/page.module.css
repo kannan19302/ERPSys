@@ -5,7 +5,7 @@
 }
 
 .style1 {
-  padding: 24px;
+  padding: var(--space-6);
   max-width: 1200px;
   margin: 0 auto;
 }
@@ -13,30 +13,30 @@
 .style2 {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-  margin-bottom: 24px;
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
 }
 
 .style3 {
-  padding: 16px 20px;
+  padding: var(--space-4) var(--space-5);
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .style4 {
-  font-size: 24px;
+  font-size: var(--text-2xl);
   font-weight: var(--weight-bold);
   color: var(--text-primary);
 }
 
 .style5 {
-  font-size: 12px;
+  font-size: var(--text-xs);
   color: var(--text-secondary);
 }
 
 .style6 {
-  padding: 16px 20px;
+  padding: var(--space-4) var(--space-5);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -46,11 +46,11 @@
 .style7 {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .style8 {
-  font-size: 16px;
+  font-size: var(--text-base);
   font-weight: var(--weight-semibold);
   color: var(--text-primary);
 }
@@ -69,7 +69,7 @@
 
 .style11 {
   display: flex;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .style12 {
@@ -82,7 +82,7 @@
 .style13 {
   position: fixed;
   inset: 0;
-  background-color: rgba(0,0,0,0.5);
+  background-color: rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -91,19 +91,19 @@
 
 .style14 {
   background-color: var(--bg-primary);
-  border-radius: 12px;
-  padding: 24px;
+  border-radius: var(--radius-xl);
+  padding: var(--space-6);
   width: 600px;
   max-height: 80vh;
   overflow-y: auto;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
 }
 
 .style15 {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: var(--space-5);
 }
 
 .style16 {
@@ -120,14 +120,14 @@
 
 .style18 {
   display: grid;
-  gap: 16px;
+  gap: var(--space-4);
 }
 
 .style19 {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px;
+  margin-bottom: var(--space-3);
 }
 
 .style20 {
@@ -142,12 +142,12 @@
 .style21 {
   display: grid;
   grid-template-columns: 40px 1fr 1fr 120px 32px;
-  gap: 8px;
-  margin-bottom: 10px;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2-5);
   align-items: center;
-  padding: 12px;
+  padding: var(--space-3);
   background-color: var(--bg-secondary);
-  border-radius: 8px;
+  border-radius: var(--radius-lg);
 }
 
 .style22 {
@@ -160,14 +160,14 @@
 .style23 {
   display: flex;
   justify-content: flex-end;
-  gap: 12px;
-  margin-top: 24px;
+  gap: var(--space-3);
+  margin-top: var(--space-6);
 }
 
 .style24 {
   position: fixed;
   inset: 0;
-  background-color: rgba(0,0,0,0.5);
+  background-color: rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -176,24 +176,24 @@
 
 .style25 {
   background-color: var(--bg-primary);
-  border-radius: 12px;
-  padding: 24px;
+  border-radius: var(--radius-xl);
+  padding: var(--space-6);
   width: 420px;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
 }
 
 .style26 {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 16px;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
 }
 
 .style27 {
   width: 40px;
   height: 40px;
   border-radius: 10px;
-  background-color: rgba(239,68,68,0.1);
+  background-color: rgba(239, 68, 68, 0.1);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -202,11 +202,11 @@
 .style28 {
   margin: calc(var(--space-1) * 0);
   color: var(--text-primary);
-  font-size: 16px;
+  font-size: var(--text-base);
 }
 
 .style29 {
-  margin: 4px 0 0;
+  margin: var(--space-1) 0 0;
   font-size: 13px;
   color: var(--text-secondary);
 }
@@ -214,10 +214,24 @@
 .style30 {
   display: flex;
   justify-content: flex-end;
-  gap: 12px;
-  margin-top: 20px;
+  gap: var(--space-3);
+  margin-top: var(--space-5);
 }
-.s1 { align-items: center; border-radius: 10px; display: flex; height: 40px; justify-content: center; width: 40px; }
-.s2 { padding-left: 32px; width: 220px; }
-.s3 { width: 160px; }
-.s4 { margin-bottom: 0; }
+.s1 {
+  align-items: center;
+  border-radius: 10px;
+  display: flex;
+  height: 40px;
+  justify-content: center;
+  width: 40px;
+}
+.s2 {
+  padding-left: var(--space-8);
+  width: 220px;
+}
+.s3 {
+  width: 160px;
+}
+.s4 {
+  margin-bottom: 0;
+}

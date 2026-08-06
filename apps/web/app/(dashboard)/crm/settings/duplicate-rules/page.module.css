@@ -39,5 +39,16 @@
   gap: var(--space-2);
   font-size: var(--text-sm);
 }
-.s1 { align-items: center; border-radius: var(--radius-md); border: 1px solid var(--color-border); cursor: pointer; display: flex; font-size: var(--text-sm); gap: var(--space-1); padding: var(--space-1) var(--space-2); }
-.s2 { opacity: 0.4; }
+.s1 {
+  align-items: center;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  cursor: pointer;
+  display: flex;
+  font-size: var(--text-sm);
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-2);
+}
+.s2 {
+  opacity: 0.4;
+}

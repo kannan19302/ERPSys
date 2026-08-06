@@ -86,8 +86,16 @@ export default function VitalsDashboardPage() {
           config={{
             xAxisKey: "name",
             series: [
-              { dataKey: "systolic", name: "Systolic", color: "#ef4444" },
-              { dataKey: "diastolic", name: "Diastolic", color: "#6366f1" },
+              {
+                dataKey: "systolic",
+                name: "Systolic",
+                color: "var(--chart-4)",
+              },
+              {
+                dataKey: "diastolic",
+                name: "Diastolic",
+                color: "var(--chart-10)",
+              },
             ],
           }}
           defaultChartType="line"
@@ -100,7 +108,7 @@ export default function VitalsDashboardPage() {
           data={HR_DATA}
           config={{
             xAxisKey: "name",
-            series: [{ dataKey: "rate", name: "BPM", color: "#ef4444" }],
+            series: [{ dataKey: "rate", name: "BPM", color: "var(--chart-4)" }],
           }}
           defaultChartType="area"
           allowedChartTypes={["area", "line", "bar"]}
@@ -115,7 +123,9 @@ export default function VitalsDashboardPage() {
           data={TEMP_DATA}
           config={{
             xAxisKey: "name",
-            series: [{ dataKey: "temp", name: "Temp (°F)", color: "#f59e0b" }],
+            series: [
+              { dataKey: "temp", name: "Temp (°F)", color: "var(--chart-3)" },
+            ],
           }}
           defaultChartType="line"
           allowedChartTypes={["line", "area"]}
@@ -127,7 +137,9 @@ export default function VitalsDashboardPage() {
           data={SPO2_DATA}
           config={{
             xAxisKey: "name",
-            series: [{ dataKey: "level", name: "SpO2 %", color: "#22c55e" }],
+            series: [
+              { dataKey: "level", name: "SpO2 %", color: "var(--chart-2)" },
+            ],
           }}
           defaultChartType="area"
           allowedChartTypes={["area", "line"]}

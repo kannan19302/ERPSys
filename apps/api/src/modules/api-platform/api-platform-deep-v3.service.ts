@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 import { randomUUID } from "node:crypto";
 
 interface IntegrationTemplateRecord {
@@ -38,16 +39,19 @@ export class ApiPlatformDeepV3Service {
   private corsConfigs: CorsConfigRecord[] = [];
 
   async getApiKey(tenantId: string, id: string) {
-    const key = await prisma.apiKey.findFirst({ where: { id, tenantId } });
+    const key = await idpPrisma.apiKey.findFirst({ where: { id, tenantId } });
     if (!key) throw new NotFoundException("API key not found");
     return key;
   }
   async renameApiKey(tenantId: string, id: string, name: string) {
-    await prisma.apiKey.updateMany({ where: { id, tenantId }, data: { name } });
+    await idpPrisma.apiKey.updateMany({
+      where: { id, tenantId },
+      data: { name },
+    });
     return { renamed: true };
   }
   async regenerateApiKey(tenantId: string, id: string) {
-    await prisma.apiKey.updateMany({
+    await idpPrisma.apiKey.updateMany({
       where: { id, tenantId },
       data: { hashedKey: "reg-" + Date.now() },
     });
@@ -159,7 +163,7 @@ export class ApiPlatformDeepV3Service {
   }
   async getPlatformDashboard(tenantId: string) {
     const [apiKeys, webhooks, logs] = await Promise.all([
-      prisma.apiKey.count({ where: { tenantId } }),
+      idpPrisma.apiKey.count({ where: { tenantId } }),
       prisma.webhookSubscription.count({ where: { tenantId } }),
       prisma.apiUsageMetric.count({ where: { tenantId } }),
     ]);

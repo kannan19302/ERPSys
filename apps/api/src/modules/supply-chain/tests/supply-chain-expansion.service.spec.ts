@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { Test, TestingModule } from "@nestjs/testing";
+import { withTenantSession } from "../../../../test/tenant-session";
 import { FreightManagementService } from "../services/freight-management.service";
 import { SupplierCollaborationService } from "../services/supplier-collaboration.service";
 import { SupplyNetworkRiskService } from "../services/supply-network-risk.service";
@@ -23,11 +24,15 @@ describe("SupplyChainExpansionServices", () => {
       ],
     }).compile();
 
-    freightSvc = module.get<FreightManagementService>(FreightManagementService);
+    freightSvc = withTenantSession(
+      module.get<FreightManagementService>(FreightManagementService),
+    );
     supplierSvc = module.get<SupplierCollaborationService>(
       SupplierCollaborationService,
     );
-    riskSvc = module.get<SupplyNetworkRiskService>(SupplyNetworkRiskService);
+    riskSvc = withTenantSession(
+      module.get<SupplyNetworkRiskService>(SupplyNetworkRiskService),
+    );
     controlTowerSvc = module.get<ScmControlTowerService>(
       ScmControlTowerService,
     );

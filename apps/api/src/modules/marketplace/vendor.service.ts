@@ -3,8 +3,12 @@ import {
   NotFoundException,
   BadRequestException,
   ConflictException,
+  ForbiddenException,
 } from "@nestjs/common";
+import { createPublicKey, verify } from "node:crypto";
 import { prisma } from "@unerp/database";
+import { bundleDigestInput } from "@unerp/extension-api";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 import { BundleStoreService } from "./bundle-store.service";
 import { validateManifest, AppManifest } from "./manifest";
 import { resolveUniqueSlug } from "../../common/utils/slug.util";
@@ -235,6 +239,90 @@ export class VendorService {
    * version, and upserts the MarketplaceApp listing projection (which the store and
    * install path read). "Deploy"/update = approving a newer version.
    */
+  /**
+   * A bundle may only be published if its signature verifies against a
+   * registered, unrevoked key belonging to its own vendor.
+   *
+   * Fails closed in every direction: no signature, no key id, an unknown key, a
+   * key belonging to a different vendor, a revoked key, or a digest that does
+   * not match all cause a rejection. Unsigned bundles created before signing
+   * existed cannot be published — they must be re-uploaded signed, which is the
+   * correct outcome rather than a grandfather clause that never closes.
+   */
+  private async assertSignedForPublication(bundle: {
+    id: string;
+    manifest: unknown;
+    checksum: string | null;
+    signature: unknown;
+    signingKeyId: string | null;
+    package: { vendorId: string };
+  }): Promise<void> {
+    if (!bundle.signature || !bundle.signingKeyId) {
+      throw new BadRequestException(
+        "Bundle is unsigned and cannot be published. PLATFORM_ARCHITECTURE § 8.2: an " +
+          "extension is a signed bundle — publication makes it installable by every tenant, " +
+          "so authorship must be established first. Re-upload the bundle signed with a " +
+          "registered vendor key.",
+      );
+    }
+
+    const key = await prisma.appVendorSigningKey.findUnique({
+      where: { keyId: bundle.signingKeyId },
+    });
+    if (!key) {
+      throw new BadRequestException(
+        `Bundle is signed with unregistered key "${bundle.signingKeyId}". An unrecognised ` +
+          `key is a rejection, never a warning.`,
+      );
+    }
+    if (key.vendorId !== bundle.package.vendorId) {
+      throw new ForbiddenException(
+        `Bundle is signed with a key belonging to a different vendor. A vendor cannot ` +
+          `publish under another vendor's identity.`,
+      );
+    }
+    if (key.revoked) {
+      throw new ForbiddenException(
+        `Bundle is signed with revoked key "${bundle.signingKeyId}"` +
+          (key.revokedReason ? `: ${key.revokedReason}` : "") +
+          ". Re-sign with a current key.",
+      );
+    }
+
+    const signature = bundle.signature as Record<string, unknown>;
+    const files = Array.isArray(signature.files)
+      ? (signature.files as Array<{
+          path: string;
+          sha256: string;
+          bytes: number;
+        }>)
+      : [];
+    if (!files.length) {
+      throw new BadRequestException(
+        "Bundle signature does not cover a file list, so it proves nothing about content.",
+      );
+    }
+
+    const digest = bundleDigestInput({ manifest: bundle.manifest, files });
+    const ok = verify(
+      null,
+      Buffer.from(digest, "utf8"),
+      createPublicKey({
+        key: Buffer.from(key.publicKey, "base64"),
+        format: "der",
+        type: "spki",
+      }),
+      Buffer.from(String(signature.signature ?? ""), "base64"),
+    );
+    if (!ok) {
+      throw new ForbiddenException(
+        "Bundle signature is invalid — the manifest or file list was modified after signing. " +
+          "Because the digest covers the manifest, this also means the reviewed scope set " +
+          "cannot be swapped for another after approval.",
+      );
+    }
+  }
+
   async approveBundle(bundleId: string, reviewedBy: string) {
     const bundle = await prisma.appBundle.findUnique({
       where: { id: bundleId },
@@ -243,6 +331,23 @@ export class VendorService {
     if (!bundle) throw new NotFoundException("Bundle not found");
     const pkg = bundle.package;
     const vendor = pkg.vendor;
+
+    // Signature BEFORE manifest validation. Validating first would mean parsing
+    // and acting on a manifest whose authorship has not been established — and
+    // the signature covers the manifest, so a bundle that fails here has no
+    // trustworthy manifest to validate in the first place.
+    //
+    // Publishing makes this bundle installable by every tenant on the platform,
+    // so it is the last point at which authorship can still be established.
+    // PLATFORM_ARCHITECTURE § 8.2/§ 10: an extension is a *signed* bundle. The
+    // store's sha256 checksum proves the blob did not rot in storage; it proves
+    // nothing about who wrote it, because whoever changes the blob can change
+    // the checksum with it. Only a signature over the manifest and file list
+    // binds the content to a registered publisher key — and because the digest
+    // covers the manifest, a reviewer's decision cannot be re-targeted at a
+    // different scope set after approval.
+    await this.assertSignedForPublication(bundle);
+
     const manifest = validateManifest(bundle.manifest);
 
     const published = await prisma.appBundle.update({

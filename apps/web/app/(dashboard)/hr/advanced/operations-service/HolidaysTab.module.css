@@ -29,7 +29,7 @@
 .s5 {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--space-1-5);
 }
 
 .s6 {
@@ -40,9 +40,9 @@
 .s7 {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--space-1-5);
   font-size: var(--text-xs);
   background: var(--color-bg-sunken);
-  padding: 2px 8px;
+  padding: var(--space-half) var(--space-2);
   border-radius: var(--radius-full);
 }

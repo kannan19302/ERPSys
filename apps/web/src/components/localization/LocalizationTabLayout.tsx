@@ -9,14 +9,14 @@ import {
   Calendar,
   FileText,
 } from "lucide-react";
-import type { ModuleTab } from "@unerp/ui-layout";
+import type { ModuleTab } from "@unerp/ui/layout";
 export {
   ModuleTabLayout as LocalizationTabLayout,
   type ModuleTab as LocalizationTab,
   type ModuleTabLayoutProps as LocalizationTabLayoutProps,
   SubTabBar,
   type SubTab,
-} from "@unerp/ui-layout";
+} from "@unerp/ui/layout";
 
 export const LOCALIZATION_TABS: ModuleTab[] = [
   {

@@ -38,7 +38,8 @@ class AdvancedHrRepositoryImpl implements AdvancedHrRepository {
       final jsonItems = page.data
           .map((dynamic e) => (e as dynamic).toJson() as Map<String, dynamic>)
           .toList(growable: false);
-      await _cache.write(_tenantId, namespace, query.cacheKey, <String, Object?>{
+      await _cache
+          .write(_tenantId, namespace, query.cacheKey, <String, Object?>{
         'data': jsonItems,
         'meta': page.meta.toJson(),
       });
@@ -46,9 +47,11 @@ class AdvancedHrRepositoryImpl implements AdvancedHrRepository {
         Cacheable<Paginated<T>>(value: page),
       );
     } on NetworkException catch (error) {
-      final cached = _cache.read<Map<String, dynamic>>(_tenantId, namespace, query.cacheKey);
+      final cached = _cache.read<Map<String, dynamic>>(
+          _tenantId, namespace, query.cacheKey);
       if (cached == null) {
-        return Result<Cacheable<Paginated<T>>>.err(mapExceptionToFailure(error));
+        return Result<Cacheable<Paginated<T>>>.err(
+            mapExceptionToFailure(error));
       }
       return Result<Cacheable<Paginated<T>>>.ok(
         Cacheable<Paginated<T>>(
@@ -91,20 +94,27 @@ class AdvancedHrRepositoryImpl implements AdvancedHrRepository {
 
   @override
   Future<Result<Cacheable<Paginated<CompensationBand>>>> listCompensationBands(
-    ListQuery query,) =>
-      _paginated(_compBandsNamespace, query, () => _remote.listCompensationBands(query),
-        CompensationBandModel.fromJson,);
+    ListQuery query,
+  ) =>
+      _paginated(
+        _compBandsNamespace,
+        query,
+        () => _remote.listCompensationBands(query),
+        CompensationBandModel.fromJson,
+      );
 
   @override
   Future<Result<CompensationBand>> getCompensationBand(String id) =>
       _single(() => _remote.getCompensationBand(id));
 
   @override
-  Future<Result<CompensationBand>> createCompensationBand(Map<String, dynamic> p) =>
+  Future<Result<CompensationBand>> createCompensationBand(
+          Map<String, dynamic> p) =>
       _write(() => _remote.createCompensationBand(p));
 
   @override
-  Future<Result<CompensationBand>> updateCompensationBand(String id, Map<String, dynamic> p) =>
+  Future<Result<CompensationBand>> updateCompensationBand(
+          String id, Map<String, dynamic> p) =>
       _write(() => _remote.updateCompensationBand(id, p));
 
   @override
@@ -113,9 +123,14 @@ class AdvancedHrRepositoryImpl implements AdvancedHrRepository {
 
   @override
   Future<Result<Cacheable<Paginated<BenefitPlan>>>> listBenefitPlans(
-    ListQuery query,) =>
-      _paginated(_benefitsNamespace, query, () => _remote.listBenefitPlans(query),
-        BenefitPlanModel.fromJson,);
+    ListQuery query,
+  ) =>
+      _paginated(
+        _benefitsNamespace,
+        query,
+        () => _remote.listBenefitPlans(query),
+        BenefitPlanModel.fromJson,
+      );
 
   @override
   Future<Result<BenefitPlan>> getBenefitPlan(String id) =>
@@ -126,7 +141,8 @@ class AdvancedHrRepositoryImpl implements AdvancedHrRepository {
       _write(() => _remote.createBenefitPlan(p));
 
   @override
-  Future<Result<BenefitPlan>> updateBenefitPlan(String id, Map<String, dynamic> p) =>
+  Future<Result<BenefitPlan>> updateBenefitPlan(
+          String id, Map<String, dynamic> p) =>
       _write(() => _remote.updateBenefitPlan(id, p));
 
   @override
@@ -135,9 +151,14 @@ class AdvancedHrRepositoryImpl implements AdvancedHrRepository {
 
   @override
   Future<Result<Cacheable<Paginated<SuccessionPlan>>>> listSuccessionPlans(
-    ListQuery query,) =>
-      _paginated(_successionNamespace, query, () => _remote.listSuccessionPlans(query),
-        SuccessionPlanModel.fromJson,);
+    ListQuery query,
+  ) =>
+      _paginated(
+        _successionNamespace,
+        query,
+        () => _remote.listSuccessionPlans(query),
+        SuccessionPlanModel.fromJson,
+      );
 
   @override
   Future<Result<SuccessionPlan>> getSuccessionPlan(String id) =>
@@ -148,14 +169,21 @@ class AdvancedHrRepositoryImpl implements AdvancedHrRepository {
       _write(() => _remote.createSuccessionPlan(p));
 
   @override
-  Future<Result<SuccessionPlan>> updateSuccessionPlan(String id, Map<String, dynamic> p) =>
+  Future<Result<SuccessionPlan>> updateSuccessionPlan(
+          String id, Map<String, dynamic> p) =>
       _write(() => _remote.updateSuccessionPlan(id, p));
 
   @override
-  Future<Result<Cacheable<Paginated<WorkforceAnalytic>>>> listWorkforceAnalytics(
-    ListQuery query,) =>
-      _paginated(_analyticsNamespace, query, () => _remote.listWorkforceAnalytics(query),
-        WorkforceAnalyticModel.fromJson,);
+  Future<Result<Cacheable<Paginated<WorkforceAnalytic>>>>
+      listWorkforceAnalytics(
+    ListQuery query,
+  ) =>
+          _paginated(
+            _analyticsNamespace,
+            query,
+            () => _remote.listWorkforceAnalytics(query),
+            WorkforceAnalyticModel.fromJson,
+          );
 
   @override
   Future<Result<WorkforceAnalytic>> getWorkforceAnalytic(String id) =>
@@ -163,9 +191,14 @@ class AdvancedHrRepositoryImpl implements AdvancedHrRepository {
 
   @override
   Future<Result<Cacheable<Paginated<LearningPath>>>> listLearningPaths(
-    ListQuery query,) =>
-      _paginated(_learningNamespace, query, () => _remote.listLearningPaths(query),
-        LearningPathModel.fromJson,);
+    ListQuery query,
+  ) =>
+      _paginated(
+        _learningNamespace,
+        query,
+        () => _remote.listLearningPaths(query),
+        LearningPathModel.fromJson,
+      );
 
   @override
   Future<Result<LearningPath>> getLearningPath(String id) =>
@@ -176,6 +209,7 @@ class AdvancedHrRepositoryImpl implements AdvancedHrRepository {
       _write(() => _remote.createLearningPath(p));
 
   @override
-  Future<Result<LearningPath>> updateLearningPath(String id, Map<String, dynamic> p) =>
+  Future<Result<LearningPath>> updateLearningPath(
+          String id, Map<String, dynamic> p) =>
       _write(() => _remote.updateLearningPath(id, p));
 }

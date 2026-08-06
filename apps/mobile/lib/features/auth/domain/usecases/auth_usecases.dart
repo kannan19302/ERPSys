@@ -123,7 +123,8 @@ class RestoreSessionUseCase extends UseCase<Session?, NoParams> {
   final AuthRepository _repository;
 
   @override
-  Future<Result<Session?>> call(NoParams params) => _repository.restoreSession();
+  Future<Result<Session?>> call(NoParams params) =>
+      _repository.restoreSession();
 }
 
 class LogoutUseCase extends UseCase<void, NoParams> {
@@ -141,7 +142,8 @@ class ListTenantsUseCase extends UseCase<List<Tenant>, NoParams> {
   final AuthRepository _repository;
 
   @override
-  Future<Result<List<Tenant>>> call(NoParams params) => _repository.listTenants();
+  Future<Result<List<Tenant>>> call(NoParams params) =>
+      _repository.listTenants();
 }
 
 class SwitchTenantUseCase extends UseCase<Session, String> {

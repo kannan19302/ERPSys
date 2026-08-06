@@ -40,7 +40,8 @@ class AuthState extends Equatable {
   /// Set when the email exists in more than one organisation.
   final bool requiresTenantSlug;
 
-  bool get isAuthenticated => status == AuthStatus.authenticated && session != null;
+  bool get isAuthenticated =>
+      status == AuthStatus.authenticated && session != null;
 
   AuthUser? get user => session?.user;
 

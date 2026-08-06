@@ -1,5 +1,6 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, NotFoundException } from "@nestjs/common";
 import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 
 @Injectable()
 export class CommunicationSearchService {
@@ -171,7 +172,18 @@ export class CommunicationSearchService {
     const existing = await prisma.savedSearch.findFirst({
       where: { id, tenantId, userId },
     });
-    if (!existing) return null;
+    // The lookup above is scoped to this user, so a miss means either "no such
+    // saved search" or "it belongs to someone else". Both are a 404 — returning
+    // null instead made the endpoint answer 200 for a delete that deleted
+    // nothing, and told a caller probing another user's id that the request had
+    // succeeded.
+    if (!existing || existing.userId !== userId) {
+      throw new NotFoundException("Saved search not found");
+    }
+    // The ownership check is asserted explicitly rather than left entirely to
+    // the `where` clause above. If a later refactor drops `userId` from that
+    // query — an easy thing to do while "simplifying" a filter — this line is
+    // what still stops one user deleting another's saved search.
     return prisma.savedSearch.delete({ where: { id } });
   }
 

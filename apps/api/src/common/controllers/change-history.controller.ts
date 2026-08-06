@@ -10,17 +10,20 @@ import {
 import { JwtAuthGuard } from "../guards/jwt-auth.guard";
 import { TenantInterceptor } from "../guards/tenant.interceptor";
 import { ChangeHistoryService } from "../services/change-history.service";
+import { Permissions } from "../../common/decorators/permissions.decorator";
+import { RbacGuard } from "../../common/guards/rbac.guard";
 
 interface AuthenticatedRequest {
   user: { tenantId: string; userId: string };
 }
 
 @Controller("change-history")
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RbacGuard)
 @UseInterceptors(TenantInterceptor)
 export class ChangeHistoryController {
   constructor(private readonly changeHistoryService: ChangeHistoryService) {}
 
+  @Permissions("admin.history.read")
   @Get(":entityType/:entityId")
   async getHistory(
     @Req() req: AuthenticatedRequest,

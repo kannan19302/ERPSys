@@ -1,9 +1,8 @@
-
 import 'package:flutter/material.dart';
 
 class PosShiftListPage extends StatelessWidget {
   const PosShiftListPage({super.key});
-  
+
   static const String routeName = 'pos-shifts';
   static const String routePath = '/pos/shifts';
   @override

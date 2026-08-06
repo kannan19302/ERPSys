@@ -31,10 +31,10 @@ function getPasswordStrength(password: string): {
   if (score <= 1) return { score, label: "Weak", color: "var(--color-danger)" };
   if (score <= 2)
     return { score, label: "Fair", color: "var(--color-warning)" };
-  if (score <= 3) return { score, label: "Good", color: "#f59e0b" };
+  if (score <= 3) return { score, label: "Good", color: "var(--chart-3)" };
   if (score <= 4)
     return { score, label: "Strong", color: "var(--color-success)" };
-  return { score, label: "Excellent", color: "#22c55e" };
+  return { score, label: "Excellent", color: "var(--chart-2)" };
 }
 
 function ResetPasswordContent() {

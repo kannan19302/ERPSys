@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { AdvancedFinanceService } from "../advanced-finance.service";
 import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 import { BadRequestException } from "@nestjs/common";
 import {
   GlAccountingService,

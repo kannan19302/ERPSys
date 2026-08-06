@@ -1,3 +1,5 @@
+import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { EventEmitter2 } from "@nestjs/event-emitter";
 import { PipelineRiskNotificationService } from "../pipeline-risk-notification.service";
@@ -9,14 +11,22 @@ import { PipelineRiskNotificationService } from "../pipeline-risk-notification.s
  * to CRM-permissioned tenant users on unassigned deals, and stays tenant-scoped.
  */
 
-vi.mock("@unerp/database", () => ({
-  prisma: {
-    opportunity: { findFirst: vi.fn() },
-    user: { findFirst: vi.fn() },
-    role: { findMany: vi.fn() },
-    userRole: { findMany: vi.fn() },
-  },
-}));
+vi.mock("@unerp/database", () => {
+  // Identity models (user, role, userSession, ...) are read through
+  // `idpPrisma`, not `prisma` — this spec predates that split and stubs
+  // them under `prisma`. Exporting the same stub object under both names
+  // keeps every `vi.mocked(prisma.user.*)` setup pointing at exactly the
+  // function the service calls.
+  const mocked = {
+    prisma: {
+      opportunity: { findFirst: vi.fn() },
+      user: { findFirst: vi.fn() },
+      role: { findMany: vi.fn() },
+      userRole: { findMany: vi.fn() },
+    },
+  };
+  return { ...mocked, idpPrisma: mocked.prisma };
+});
 
 describe("PipelineRiskNotificationService — pipeline.deal.at_risk consumer", () => {
   let service: PipelineRiskNotificationService;
@@ -35,7 +45,7 @@ describe("PipelineRiskNotificationService — pipeline.deal.at_risk consumer", (
       name: "Acme Renewal",
       assignedToId: "rep-1",
     } as never);
-    vi.mocked(prisma.user.findFirst).mockResolvedValue({
+    vi.mocked(idpPrisma.user.findFirst).mockResolvedValue({
       id: "rep-1",
     } as never);
 
@@ -47,7 +57,7 @@ describe("PipelineRiskNotificationService — pipeline.deal.at_risk consumer", (
       message: '"Acme Renewal" has been in PROPOSAL for 20 days.',
     });
 
-    expect(prisma.role.findMany).not.toHaveBeenCalled();
+    expect(idpPrisma.role.findMany).not.toHaveBeenCalled();
     expect(emitter.emit).toHaveBeenCalledTimes(1);
     expect(emitter.emit).toHaveBeenCalledWith(
       "notification.send",
@@ -68,11 +78,11 @@ describe("PipelineRiskNotificationService — pipeline.deal.at_risk consumer", (
       name: "Beta Deal",
       assignedToId: null,
     } as never);
-    vi.mocked(prisma.role.findMany).mockResolvedValue([
+    vi.mocked(idpPrisma.role.findMany).mockResolvedValue([
       { id: "role-crm", permissions: ["crm.opportunity.update"] },
       { id: "role-hr", permissions: ["hr.employee.read"] },
     ] as never);
-    vi.mocked(prisma.userRole.findMany).mockResolvedValue([
+    vi.mocked(idpPrisma.userRole.findMany).mockResolvedValue([
       { userId: "manager-1" },
       { userId: "manager-2" },
     ] as never);
@@ -85,7 +95,7 @@ describe("PipelineRiskNotificationService — pipeline.deal.at_risk consumer", (
       message: '"Beta Deal" has had no logged activity in 14+ days.',
     });
 
-    expect(prisma.userRole.findMany).toHaveBeenCalledWith(
+    expect(idpPrisma.userRole.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: expect.objectContaining({ roleId: { in: ["role-crm"] } }),
       }),
@@ -100,11 +110,11 @@ describe("PipelineRiskNotificationService — pipeline.deal.at_risk consumer", (
       name: "Gamma Deal",
       assignedToId: "former-rep",
     } as never);
-    vi.mocked(prisma.user.findFirst).mockResolvedValue(null as never);
-    vi.mocked(prisma.role.findMany).mockResolvedValue([
+    vi.mocked(idpPrisma.user.findFirst).mockResolvedValue(null as never);
+    vi.mocked(idpPrisma.role.findMany).mockResolvedValue([
       { id: "role-crm", permissions: ["*"] },
     ] as never);
-    vi.mocked(prisma.userRole.findMany).mockResolvedValue([
+    vi.mocked(idpPrisma.userRole.findMany).mockResolvedValue([
       { userId: "admin-1" },
     ] as never);
 
@@ -134,8 +144,8 @@ describe("PipelineRiskNotificationService — pipeline.deal.at_risk consumer", (
       message: "irrelevant",
     });
 
-    expect(prisma.user.findFirst).not.toHaveBeenCalled();
-    expect(prisma.role.findMany).not.toHaveBeenCalled();
+    expect(idpPrisma.user.findFirst).not.toHaveBeenCalled();
+    expect(idpPrisma.role.findMany).not.toHaveBeenCalled();
     expect(emitter.emit).not.toHaveBeenCalled();
   });
 
@@ -159,7 +169,7 @@ describe("PipelineRiskNotificationService — pipeline.deal.at_risk consumer", (
       name: "Delta Deal",
       assignedToId: null,
     } as never);
-    vi.mocked(prisma.role.findMany).mockResolvedValue([
+    vi.mocked(idpPrisma.role.findMany).mockResolvedValue([
       { id: "role-hr", permissions: ["hr.employee.read"] },
     ] as never);
 
@@ -171,7 +181,7 @@ describe("PipelineRiskNotificationService — pipeline.deal.at_risk consumer", (
       message: "irrelevant",
     });
 
-    expect(prisma.userRole.findMany).not.toHaveBeenCalled();
+    expect(idpPrisma.userRole.findMany).not.toHaveBeenCalled();
     expect(emitter.emit).not.toHaveBeenCalled();
   });
 });

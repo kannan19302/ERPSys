@@ -4,7 +4,8 @@ import '../../../../core/usecase/usecase.dart';
 import '../entities/people.dart';
 import '../repositories/people_repository.dart';
 
-class ListPeopleUseCase extends UseCase<Cacheable<Paginated<Person>>, ListQuery> {
+class ListPeopleUseCase
+    extends UseCase<Cacheable<Paginated<Person>>, ListQuery> {
   const ListPeopleUseCase(this._repository);
   final PeopleRepository _repository;
   @override
@@ -44,7 +45,8 @@ class DeletePersonUseCase extends UseCase<void, String> {
   Future<Result<void>> call(String id) => _repository.deletePerson(id);
 }
 
-class ListTeamsUseCase extends UseCase<Cacheable<Paginated<PeopleTeam>>, ListQuery> {
+class ListTeamsUseCase
+    extends UseCase<Cacheable<Paginated<PeopleTeam>>, ListQuery> {
   const ListTeamsUseCase(this._repository);
   final PeopleRepository _repository;
   @override
@@ -57,7 +59,8 @@ class ListOnboardingTasksUseCase
   const ListOnboardingTasksUseCase(this._repository);
   final PeopleRepository _repository;
   @override
-  Future<Result<Cacheable<Paginated<PeopleOnboardingTask>>>> call(ListQuery params) =>
+  Future<Result<Cacheable<Paginated<PeopleOnboardingTask>>>> call(
+          ListQuery params) =>
       _repository.listOnboardingTasks(params);
 }
 
@@ -66,6 +69,7 @@ class ListRecognitionEntriesUseCase
   const ListRecognitionEntriesUseCase(this._repository);
   final PeopleRepository _repository;
   @override
-  Future<Result<Cacheable<Paginated<PeopleRecognitionEntry>>>> call(ListQuery params) =>
+  Future<Result<Cacheable<Paginated<PeopleRecognitionEntry>>>> call(
+          ListQuery params) =>
       _repository.listRecognitionEntries(params);
 }

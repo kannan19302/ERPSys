@@ -1,4 +1,4 @@
-export type ResetFrequency = 'YEARLY' | 'MONTHLY' | 'NEVER';
+export type ResetFrequency = "YEARLY" | "MONTHLY" | "NEVER";
 
 export interface NumberingResponse {
   id: string;

@@ -1,13 +1,13 @@
 "use client";
 import { FolderOpen, Share2, HardDrive, FileText } from "lucide-react";
-import type { ModuleTab } from "@unerp/ui-layout";
+import type { ModuleTab } from "@unerp/ui/layout";
 export {
   ModuleTabLayout as StorageTabLayout,
   type ModuleTab as StorageTab,
   type ModuleTabLayoutProps as StorageTabLayoutProps,
   SubTabBar,
   type SubTab,
-} from "@unerp/ui-layout";
+} from "@unerp/ui/layout";
 
 export const STORAGE_TABS: ModuleTab[] = [
   {

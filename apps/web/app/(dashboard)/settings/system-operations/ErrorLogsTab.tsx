@@ -142,7 +142,10 @@ export default function ErrorLogsTab() {
               style={{
                 background:
                   levelFilter === lvl ? "var(--color-primary)" : "transparent",
-                color: levelFilter === lvl ? "#fff" : "var(--color-text)",
+                color:
+                  levelFilter === lvl
+                    ? "var(--color-text-inverse)"
+                    : "var(--color-text)",
               }}
             >
               {lvl}

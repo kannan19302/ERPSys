@@ -71,7 +71,11 @@ export default function FieldServiceReportsPage() {
             config={{
               xAxisKey: "name",
               series: [
-                { dataKey: "rate", name: "Fix Rate %", color: "#22c55e" },
+                {
+                  dataKey: "rate",
+                  name: "Fix Rate %",
+                  color: "var(--chart-2)",
+                },
               ],
             }}
             defaultChartType="area"
@@ -84,7 +88,9 @@ export default function FieldServiceReportsPage() {
             data={RESP_TIME}
             config={{
               xAxisKey: "name",
-              series: [{ dataKey: "hours", name: "Hours", color: "#6366f1" }],
+              series: [
+                { dataKey: "hours", name: "Hours", color: "var(--chart-10)" },
+              ],
             }}
             defaultChartType="bar"
             allowedChartTypes={["bar", "line"]}
@@ -98,7 +104,11 @@ export default function FieldServiceReportsPage() {
           config={{
             xAxisKey: "name",
             series: [
-              { dataKey: "value", name: "Utilization %", color: "#f59e0b" },
+              {
+                dataKey: "value",
+                name: "Utilization %",
+                color: "var(--chart-3)",
+              },
             ],
           }}
           defaultChartType="bar"

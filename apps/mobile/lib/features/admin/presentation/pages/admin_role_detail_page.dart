@@ -17,7 +17,8 @@ class AdminRoleDetailPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final AsyncValue<AdminRole> roleAsync = ref.watch(adminRoleDetailProvider(roleId));
+    final AsyncValue<AdminRole> roleAsync =
+        ref.watch(adminRoleDetailProvider(roleId));
     final Palette t = context.tokens;
 
     return Scaffold(
@@ -27,21 +28,26 @@ class AdminRoleDetailPage extends ConsumerWidget {
           PermissionGate(
             permission: Permissions.adminRoleUpdate,
             child: roleAsync.whenOrNull(
-              data: (AdminRole role) => role.isSystem
-                  ? const SizedBox.shrink()
-                  : IconButton(
-                      icon: const Icon(Icons.edit_outlined),
-                      onPressed: () => context.pushNamed('admin-role-edit',
-                          pathParameters: <String, String>{'id': role.id},),
-                    ),
-            ) ?? const SizedBox.shrink(),
+                  data: (AdminRole role) => role.isSystem
+                      ? const SizedBox.shrink()
+                      : IconButton(
+                          icon: const Icon(Icons.edit_outlined),
+                          onPressed: () => context.pushNamed(
+                            'admin-role-edit',
+                            pathParameters: <String, String>{'id': role.id},
+                          ),
+                        ),
+                ) ??
+                const SizedBox.shrink(),
           ),
         ],
       ),
       body: roleAsync.when(
         loading: () => const LoadingView(),
         error: (Object error, StackTrace _) => FailureView(
-          failure: error is Failure ? error : const ServerFailure('Could not load role.'),
+          failure: error is Failure
+              ? error
+              : const ServerFailure('Could not load role.'),
           onRetry: () => ref.invalidate(adminRoleDetailProvider(roleId)),
         ),
         data: (AdminRole role) => ListView(
@@ -53,18 +59,27 @@ class AdminRoleDetailPage extends ConsumerWidget {
                 children: <Widget>[
                   Row(
                     children: <Widget>[
-                      Expanded(child: Text(role.name, style: Theme.of(context).textTheme.titleLarge)),
+                      Expanded(
+                          child: Text(role.name,
+                              style: Theme.of(context).textTheme.titleLarge)),
                       if (role.isSystem)
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: Spacing.x2_5, vertical: Spacing.x1),
-                          decoration: BoxDecoration(color: t.infoLight, borderRadius: Radii.pill),
-                          child: Text('System', style: TextStyle(color: t.info, fontSize: TypeScale.xs, fontWeight: TypeScale.medium)),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: Spacing.x2_5, vertical: Spacing.x1),
+                          decoration: BoxDecoration(
+                              color: t.infoLight, borderRadius: Radii.pill),
+                          child: Text('System',
+                              style: TextStyle(
+                                  color: t.info,
+                                  fontSize: TypeScale.xs,
+                                  fontWeight: TypeScale.medium)),
                         ),
                     ],
                   ),
                   if (role.description != null) ...<Widget>[
                     const SizedBox(height: Spacing.x2),
-                    Text(role.description!, style: TextStyle(color: t.textSecondary)),
+                    Text(role.description!,
+                        style: TextStyle(color: t.textSecondary)),
                   ],
                 ],
               ),
@@ -87,15 +102,23 @@ class AdminRoleDetailPage extends ConsumerWidget {
                 children: <Widget>[
                   const _SectionTitle(title: 'Permissions'),
                   if (role.permissions.isEmpty)
-                    Text('No permissions assigned', style: TextStyle(color: t.textTertiary))
+                    Text('No permissions assigned',
+                        style: TextStyle(color: t.textTertiary))
                   else
-                    ...role.permissions.map((String p) => Container(
-                      width: double.infinity,
-                      margin: const EdgeInsets.only(bottom: Spacing.x1_5),
-                      padding: const EdgeInsets.symmetric(horizontal: Spacing.x2_5, vertical: Spacing.x1_5),
-                      decoration: BoxDecoration(color: t.bgSunken, borderRadius: Radii.control),
-                      child: Text(p, style: const TextStyle(fontSize: TypeScale.xs, fontFamily: 'monospace')),
-                    ),),
+                    ...role.permissions.map(
+                      (String p) => Container(
+                        width: double.infinity,
+                        margin: const EdgeInsets.only(bottom: Spacing.x1_5),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: Spacing.x2_5, vertical: Spacing.x1_5),
+                        decoration: BoxDecoration(
+                            color: t.bgSunken, borderRadius: Radii.control),
+                        child: Text(p,
+                            style: const TextStyle(
+                                fontSize: TypeScale.xs,
+                                fontFamily: 'monospace')),
+                      ),
+                    ),
                 ],
               ),
             ),
@@ -115,7 +138,10 @@ class _SectionCard extends StatelessWidget {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(Spacing.x4),
-      decoration: BoxDecoration(color: t.bgElevated, borderRadius: Radii.card, border: Border.all(color: t.border)),
+      decoration: BoxDecoration(
+          color: t.bgElevated,
+          borderRadius: Radii.card,
+          border: Border.all(color: t.border)),
       child: child,
     );
   }
@@ -144,7 +170,8 @@ class _FieldRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: Spacing.x1_5),
       child: Row(
         children: <Widget>[
-          Expanded(child: Text(label, style: TextStyle(color: t.textSecondary))),
+          Expanded(
+              child: Text(label, style: TextStyle(color: t.textSecondary))),
           Text(value, style: Theme.of(context).textTheme.labelLarge),
         ],
       ),

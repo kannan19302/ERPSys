@@ -14,10 +14,12 @@ class ReportTemplateListPage extends ConsumerStatefulWidget {
   static const String routeName = 'report-templates';
   static const String routePath = '/reporting/templates';
   @override
-  ConsumerState<ReportTemplateListPage> createState() => _ReportTemplateListPageState();
+  ConsumerState<ReportTemplateListPage> createState() =>
+      _ReportTemplateListPageState();
 }
 
-class _ReportTemplateListPageState extends ConsumerState<ReportTemplateListPage> {
+class _ReportTemplateListPageState
+    extends ConsumerState<ReportTemplateListPage> {
   final TextEditingController _search = TextEditingController();
 
   static const Map<String, String> _sortOptions = <String, String>{
@@ -48,8 +50,12 @@ class _ReportTemplateListPageState extends ConsumerState<ReportTemplateListPage>
             initialValue: state.query.sort,
             onSelected: controller.applySort,
             itemBuilder: (_) => _sortOptions.entries
-                .map((e) => PopupMenuItem<String>(
-                    value: e.key, child: Text(e.value),),)
+                .map(
+                  (e) => PopupMenuItem<String>(
+                    value: e.key,
+                    child: Text(e.value),
+                  ),
+                )
                 .toList(),
           ),
         ],
@@ -64,9 +70,11 @@ class _ReportTemplateListPageState extends ConsumerState<ReportTemplateListPage>
       ),
       body: Column(
         children: [
-          if (state.cachedAt != null) StaleDataBanner(cachedAt: state.cachedAt!),
+          if (state.cachedAt != null)
+            StaleDataBanner(cachedAt: state.cachedAt!),
           Padding(
-            padding: const EdgeInsets.fromLTRB(Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
+            padding: const EdgeInsets.fromLTRB(
+                Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
             child: TextField(
               controller: _search,
               onChanged: controller.search,
@@ -78,21 +86,27 @@ class _ReportTemplateListPageState extends ConsumerState<ReportTemplateListPage>
                     ? null
                     : IconButton(
                         icon: const Icon(Icons.close),
-                        onPressed: () { _search.clear(); controller.search(''); },
+                        onPressed: () {
+                          _search.clear();
+                          controller.search('');
+                        },
                       ),
               ),
             ),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: Spacing.x4),
-            child: Row(children: [
-              Text(
-                state.isLoading
-                    ? 'Loading...'
-                    : '${state.meta.total} template${state.meta.total == 1 ? '' : 's'}',
-                style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
-              ),
-            ],),
+            child: Row(
+              children: [
+                Text(
+                  state.isLoading
+                      ? 'Loading...'
+                      : '${state.meta.total} template${state.meta.total == 1 ? '' : 's'}',
+                  style:
+                      TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
+                ),
+              ],
+            ),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -100,7 +114,8 @@ class _ReportTemplateListPageState extends ConsumerState<ReportTemplateListPage>
     );
   }
 
-  Widget _body(ReportTemplateListState state, ReportTemplateListController controller) {
+  Widget _body(
+      ReportTemplateListState state, ReportTemplateListController controller) {
     if (state.isLoading && state.items.isEmpty) return const LoadingView();
     final failure = state.failure;
     if (failure != null && state.items.isEmpty) {
@@ -144,30 +159,44 @@ class _TemplateTile extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(children: [
-                Expanded(
-                  child: Text(template.name,
-                      style: Theme.of(context).textTheme.titleSmall,),
-                ),
-                UiStatusBadge(
-                  label: template.status,
-                  tone: _statusTone(template.status),
-                ),
-              ],),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      template.name,
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
+                  ),
+                  UiStatusBadge(
+                    label: template.status,
+                    tone: _statusTone(template.status),
+                  ),
+                ],
+              ),
               if (template.description != null) ...[
                 const SizedBox(height: Spacing.x1),
-                Text(template.description!,
-                    style: TextStyle(color: t.textSecondary),),
+                Text(
+                  template.description!,
+                  style: TextStyle(color: t.textSecondary),
+                ),
               ],
               if (template.reportType != null) ...[
                 const SizedBox(height: Spacing.x1),
-                Row(children: [
-                  Text(template.reportType!,
-                      style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),),
-                  const SizedBox(width: Spacing.x2),
-                  Text(template.format,
-                      style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),),
-                ],),
+                Row(
+                  children: [
+                    Text(
+                      template.reportType!,
+                      style: TextStyle(
+                          color: t.textSecondary, fontSize: TypeScale.xs),
+                    ),
+                    const SizedBox(width: Spacing.x2),
+                    Text(
+                      template.format,
+                      style: TextStyle(
+                          color: t.textSecondary, fontSize: TypeScale.xs),
+                    ),
+                  ],
+                ),
               ],
             ],
           ),

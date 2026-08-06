@@ -19,14 +19,18 @@ abstract class AiRepository {
   Future<Result<Cacheable<Paginated<AiPrompt>>>> listPrompts(ListQuery query);
   Future<Result<AiPrompt>> getPrompt(String id);
   Future<Result<AiPrompt>> createPrompt(Map<String, dynamic> payload);
-  Future<Result<AiPrompt>> updatePrompt(String id, Map<String, dynamic> payload);
+  Future<Result<AiPrompt>> updatePrompt(
+      String id, Map<String, dynamic> payload);
   Future<Result<void>> deletePrompt(String id);
 
-  Future<Result<Cacheable<Paginated<AiTrainingData>>>> listTrainingData(ListQuery query);
+  Future<Result<Cacheable<Paginated<AiTrainingData>>>> listTrainingData(
+      ListQuery query);
   Future<Result<AiTrainingData>> getTrainingData(String id);
-  Future<Result<AiTrainingData>> createTrainingData(Map<String, dynamic> payload);
+  Future<Result<AiTrainingData>> createTrainingData(
+      Map<String, dynamic> payload);
   Future<Result<void>> deleteTrainingData(String id);
 
-  Future<Result<Cacheable<Paginated<AiPrediction>>>> listPredictions(ListQuery query);
+  Future<Result<Cacheable<Paginated<AiPrediction>>>> listPredictions(
+      ListQuery query);
   Future<Result<AiPrediction>> createPrediction(Map<String, dynamic> payload);
 }

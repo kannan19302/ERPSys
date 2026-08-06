@@ -13,8 +13,8 @@ import '../../domain/entities/procurement.dart';
 import '../../domain/repositories/procurement_repository.dart';
 import '../../domain/usecases/procurement_usecases.dart';
 
-final Provider<ProcurementRemoteDataSource> procurementRemoteDataSourceProvider =
-    Provider<ProcurementRemoteDataSource>(
+final Provider<ProcurementRemoteDataSource>
+    procurementRemoteDataSourceProvider = Provider<ProcurementRemoteDataSource>(
   (Ref ref) => ProcurementRemoteDataSourceImpl(ref.watch(apiClientProvider)),
 );
 
@@ -30,7 +30,8 @@ final Provider<ProcurementRepository> procurementRepositoryProvider =
 class PurchaseOrderListState extends Equatable {
   const PurchaseOrderListState({
     this.items = const <PurchaseOrder>[],
-    this.meta = const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
+    this.meta =
+        const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
     this.query = const ListQuery(sort: '-createdAt'),
     this.isLoading = true,
     this.isLoadingMore = false,
@@ -67,13 +68,21 @@ class PurchaseOrderListState extends Equatable {
         isLoading: isLoading ?? this.isLoading,
         isLoadingMore: isLoadingMore ?? this.isLoadingMore,
         failure: clearFailures ? null : (failure ?? this.failure),
-        loadMoreFailure: clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
+        loadMoreFailure:
+            clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
         cachedAt: clearCachedAt ? null : (cachedAt ?? this.cachedAt),
       );
 
   @override
   List<Object?> get props => <Object?>[
-        items, meta, query.cacheKey, isLoading, isLoadingMore, failure, loadMoreFailure, cachedAt,
+        items,
+        meta,
+        query.cacheKey,
+        isLoading,
+        isLoadingMore,
+        failure,
+        loadMoreFailure,
+        cachedAt,
       ];
 }
 
@@ -115,8 +124,12 @@ class PurchaseOrderListController extends Notifier<PurchaseOrderListState> {
     state = result.fold(
       (f) => state.copyWith(isLoading: false, failure: f, items: const []),
       (page) => state.copyWith(
-        items: page.value.data, meta: page.value.meta, query: query,
-        isLoading: false, clearFailures: true, cachedAt: page.cachedAt,
+        items: page.value.data,
+        meta: page.value.meta,
+        query: query,
+        isLoading: false,
+        clearFailures: true,
+        cachedAt: page.cachedAt,
         clearCachedAt: !page.isFromCache,
       ),
     );
@@ -130,8 +143,11 @@ class PurchaseOrderListController extends Notifier<PurchaseOrderListState> {
     state = result.fold(
       (f) => state.copyWith(isLoadingMore: false, loadMoreFailure: f),
       (page) => state.copyWith(
-        items: [...state.items, ...page.value.data], meta: page.value.meta,
-        query: next, isLoadingMore: false, clearFailures: true,
+        items: [...state.items, ...page.value.data],
+        meta: page.value.meta,
+        query: next,
+        isLoadingMore: false,
+        clearFailures: true,
       ),
     );
   }
@@ -139,7 +155,8 @@ class PurchaseOrderListController extends Notifier<PurchaseOrderListState> {
   void search(String term) {
     _searchDebounce?.cancel();
     _searchDebounce = Timer(const Duration(milliseconds: 350), () {
-      state = state.copyWith(query: state.query.copyWith(search: term, page: 1));
+      state =
+          state.copyWith(query: state.query.copyWith(search: term, page: 1));
       refresh();
     });
   }
@@ -150,13 +167,15 @@ class PurchaseOrderListController extends Notifier<PurchaseOrderListState> {
   }
 
   void applyFilters(Map<String, String> filters) {
-    state = state.copyWith(query: state.query.copyWith(filters: filters, page: 1));
+    state =
+        state.copyWith(query: state.query.copyWith(filters: filters, page: 1));
     refresh();
   }
 
   Future<Result<void>> delete(String id) async {
     final result = await DeletePurchaseOrderUseCase(
-      ref.read(procurementRepositoryProvider),)(id);
+      ref.read(procurementRepositoryProvider),
+    )(id);
     if (result.isOk) await refresh();
     return result;
   }
@@ -165,14 +184,16 @@ class PurchaseOrderListController extends Notifier<PurchaseOrderListState> {
 final FutureProviderFamily<PurchaseOrder, String> purchaseOrderDetailProvider =
     FutureProvider.family<PurchaseOrder, String>((Ref ref, String id) async {
   final result = await GetPurchaseOrderUseCase(
-    ref.watch(procurementRepositoryProvider),)(id);
+    ref.watch(procurementRepositoryProvider),
+  )(id);
   return result.fold((f) => throw f, (po) => po);
 });
 
 class VendorListState extends Equatable {
   const VendorListState({
     this.items = const <Vendor>[],
-    this.meta = const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
+    this.meta =
+        const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
     this.query = const ListQuery(sort: '-createdAt'),
     this.isLoading = true,
     this.isLoadingMore = false,
@@ -189,20 +210,36 @@ class VendorListState extends Equatable {
   final Failure? loadMoreFailure;
 
   VendorListState copyWith({
-    List<Vendor>? items, PaginationMeta? meta, ListQuery? query,
-    bool? isLoading, bool? isLoadingMore, Failure? failure,
-    Failure? loadMoreFailure, bool clearFailures = false,
+    List<Vendor>? items,
+    PaginationMeta? meta,
+    ListQuery? query,
+    bool? isLoading,
+    bool? isLoadingMore,
+    Failure? failure,
+    Failure? loadMoreFailure,
+    bool clearFailures = false,
   }) =>
       VendorListState(
-        items: items ?? this.items, meta: meta ?? this.meta,
-        query: query ?? this.query, isLoading: isLoading ?? this.isLoading,
+        items: items ?? this.items,
+        meta: meta ?? this.meta,
+        query: query ?? this.query,
+        isLoading: isLoading ?? this.isLoading,
         isLoadingMore: isLoadingMore ?? this.isLoadingMore,
         failure: clearFailures ? null : (failure ?? this.failure),
-        loadMoreFailure: clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
+        loadMoreFailure:
+            clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
       );
 
   @override
-  List<Object?> get props => <Object?>[items, meta, query.cacheKey, isLoading, isLoadingMore, failure, loadMoreFailure];
+  List<Object?> get props => <Object?>[
+        items,
+        meta,
+        query.cacheKey,
+        isLoading,
+        isLoadingMore,
+        failure,
+        loadMoreFailure
+      ];
 }
 
 final NotifierProvider<VendorListController, VendorListState>
@@ -245,8 +282,11 @@ class VendorListController extends Notifier<VendorListState> {
     state = result.fold(
       (f) => state.copyWith(isLoading: false, failure: f, items: const []),
       (page) => state.copyWith(
-        items: page.value.data, meta: page.value.meta, query: query,
-        isLoading: false, clearFailures: true,
+        items: page.value.data,
+        meta: page.value.meta,
+        query: query,
+        isLoading: false,
+        clearFailures: true,
       ),
     );
   }
@@ -259,8 +299,11 @@ class VendorListController extends Notifier<VendorListState> {
     state = result.fold(
       (f) => state.copyWith(isLoadingMore: false, loadMoreFailure: f),
       (page) => state.copyWith(
-        items: [...state.items, ...page.value.data], meta: page.value.meta,
-        query: next, isLoadingMore: false, clearFailures: true,
+        items: [...state.items, ...page.value.data],
+        meta: page.value.meta,
+        query: next,
+        isLoadingMore: false,
+        clearFailures: true,
       ),
     );
   }
@@ -268,14 +311,16 @@ class VendorListController extends Notifier<VendorListState> {
   void search(String term) {
     _searchDebounce?.cancel();
     _searchDebounce = Timer(const Duration(milliseconds: 350), () {
-      state = state.copyWith(query: state.query.copyWith(search: term, page: 1));
+      state =
+          state.copyWith(query: state.query.copyWith(search: term, page: 1));
       refresh();
     });
   }
 
   Future<Result<void>> delete(String id) async {
     final result = await DeleteVendorUseCase(
-      ref.read(procurementRepositoryProvider),)(id);
+      ref.read(procurementRepositoryProvider),
+    )(id);
     if (result.isOk) await refresh();
     return result;
   }
@@ -284,16 +329,21 @@ class VendorListController extends Notifier<VendorListState> {
 final FutureProviderFamily<Vendor, String> vendorDetailProvider =
     FutureProvider.family<Vendor, String>((Ref ref, String id) async {
   final result = await GetVendorUseCase(
-    ref.watch(procurementRepositoryProvider),)(id);
+    ref.watch(procurementRepositoryProvider),
+  )(id);
   return result.fold((f) => throw f, (v) => v);
 });
 
-final NotifierProvider<PurchaseReceiptListController, PurchaseReceiptListState> purchaseReceiptListControllerProvider = NotifierProvider<PurchaseReceiptListController, PurchaseReceiptListState>(PurchaseReceiptListController.new);
+final NotifierProvider<PurchaseReceiptListController, PurchaseReceiptListState>
+    purchaseReceiptListControllerProvider =
+    NotifierProvider<PurchaseReceiptListController, PurchaseReceiptListState>(
+        PurchaseReceiptListController.new);
 
 class PurchaseReceiptListState extends Equatable {
   const PurchaseReceiptListState({
     this.items = const <PurchaseReceipt>[],
-    this.meta = const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
+    this.meta =
+        const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
     this.query = const ListQuery(sort: '-createdAt'),
     this.isLoading = true,
     this.isLoadingMore = false,
@@ -330,7 +380,8 @@ class PurchaseReceiptListState extends Equatable {
         isLoading: isLoading ?? this.isLoading,
         isLoadingMore: isLoadingMore ?? this.isLoadingMore,
         failure: clearFailures ? null : (failure ?? this.failure),
-        loadMoreFailure: clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
+        loadMoreFailure:
+            clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
         cachedAt: clearCachedAt ? null : (cachedAt ?? this.cachedAt),
       );
 
@@ -368,8 +419,12 @@ class PurchaseReceiptListController extends Notifier<PurchaseReceiptListState> {
     state = result.fold(
       (f) => state.copyWith(isLoading: false, failure: f, items: const []),
       (page) => state.copyWith(
-        items: page.value.data, meta: page.value.meta, query: query,
-        isLoading: false, clearFailures: true, cachedAt: page.cachedAt,
+        items: page.value.data,
+        meta: page.value.meta,
+        query: query,
+        isLoading: false,
+        clearFailures: true,
+        cachedAt: page.cachedAt,
         clearCachedAt: !page.isFromCache,
       ),
     );
@@ -383,8 +438,11 @@ class PurchaseReceiptListController extends Notifier<PurchaseReceiptListState> {
     state = result.fold(
       (f) => state.copyWith(isLoadingMore: false, loadMoreFailure: f),
       (page) => state.copyWith(
-        items: [...state.items, ...page.value.data], meta: page.value.meta,
-        query: next, isLoadingMore: false, clearFailures: true,
+        items: [...state.items, ...page.value.data],
+        meta: page.value.meta,
+        query: next,
+        isLoadingMore: false,
+        clearFailures: true,
       ),
     );
   }
@@ -392,7 +450,8 @@ class PurchaseReceiptListController extends Notifier<PurchaseReceiptListState> {
   void search(String term) {
     _searchDebounce?.cancel();
     _searchDebounce = Timer(const Duration(milliseconds: 350), () {
-      state = state.copyWith(query: state.query.copyWith(search: term, page: 1));
+      state =
+          state.copyWith(query: state.query.copyWith(search: term, page: 1));
       refresh();
     });
   }
@@ -403,7 +462,8 @@ class PurchaseReceiptListController extends Notifier<PurchaseReceiptListState> {
   }
 
   void applyFilters(Map<String, String> filters) {
-    state = state.copyWith(query: state.query.copyWith(filters: filters, page: 1));
+    state =
+        state.copyWith(query: state.query.copyWith(filters: filters, page: 1));
     refresh();
   }
 
@@ -424,13 +484,17 @@ class PurchaseReceiptListController extends Notifier<PurchaseReceiptListState> {
   Future<Result<void>> post(String id) async => throw UnimplementedError();
 }
 
-
-final NotifierProvider<PurchaseRequisitionListController, PurchaseRequisitionListState> purchaseRequisitionListControllerProvider = NotifierProvider<PurchaseRequisitionListController, PurchaseRequisitionListState>(PurchaseRequisitionListController.new);
+final NotifierProvider<PurchaseRequisitionListController,
+        PurchaseRequisitionListState>
+    purchaseRequisitionListControllerProvider = NotifierProvider<
+        PurchaseRequisitionListController,
+        PurchaseRequisitionListState>(PurchaseRequisitionListController.new);
 
 class PurchaseRequisitionListState extends Equatable {
   const PurchaseRequisitionListState({
     this.items = const <PurchaseRequisition>[],
-    this.meta = const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
+    this.meta =
+        const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
     this.query = const ListQuery(sort: '-createdAt'),
     this.isLoading = true,
     this.isLoadingMore = false,
@@ -467,7 +531,8 @@ class PurchaseRequisitionListState extends Equatable {
         isLoading: isLoading ?? this.isLoading,
         isLoadingMore: isLoadingMore ?? this.isLoadingMore,
         failure: clearFailures ? null : (failure ?? this.failure),
-        loadMoreFailure: clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
+        loadMoreFailure:
+            clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
         cachedAt: clearCachedAt ? null : (cachedAt ?? this.cachedAt),
       );
 
@@ -484,7 +549,8 @@ class PurchaseRequisitionListState extends Equatable {
       ];
 }
 
-class PurchaseRequisitionListController extends Notifier<PurchaseRequisitionListState> {
+class PurchaseRequisitionListController
+    extends Notifier<PurchaseRequisitionListState> {
   Timer? _searchDebounce;
 
   @override
@@ -505,8 +571,12 @@ class PurchaseRequisitionListController extends Notifier<PurchaseRequisitionList
     state = result.fold(
       (f) => state.copyWith(isLoading: false, failure: f, items: const []),
       (page) => state.copyWith(
-        items: page.value.data, meta: page.value.meta, query: query,
-        isLoading: false, clearFailures: true, cachedAt: page.cachedAt,
+        items: page.value.data,
+        meta: page.value.meta,
+        query: query,
+        isLoading: false,
+        clearFailures: true,
+        cachedAt: page.cachedAt,
         clearCachedAt: !page.isFromCache,
       ),
     );
@@ -520,8 +590,11 @@ class PurchaseRequisitionListController extends Notifier<PurchaseRequisitionList
     state = result.fold(
       (f) => state.copyWith(isLoadingMore: false, loadMoreFailure: f),
       (page) => state.copyWith(
-        items: [...state.items, ...page.value.data], meta: page.value.meta,
-        query: next, isLoadingMore: false, clearFailures: true,
+        items: [...state.items, ...page.value.data],
+        meta: page.value.meta,
+        query: next,
+        isLoadingMore: false,
+        clearFailures: true,
       ),
     );
   }
@@ -529,7 +602,8 @@ class PurchaseRequisitionListController extends Notifier<PurchaseRequisitionList
   void search(String term) {
     _searchDebounce?.cancel();
     _searchDebounce = Timer(const Duration(milliseconds: 350), () {
-      state = state.copyWith(query: state.query.copyWith(search: term, page: 1));
+      state =
+          state.copyWith(query: state.query.copyWith(search: term, page: 1));
       refresh();
     });
   }
@@ -540,7 +614,8 @@ class PurchaseRequisitionListController extends Notifier<PurchaseRequisitionList
   }
 
   void applyFilters(Map<String, String> filters) {
-    state = state.copyWith(query: state.query.copyWith(filters: filters, page: 1));
+    state =
+        state.copyWith(query: state.query.copyWith(filters: filters, page: 1));
     refresh();
   }
 
@@ -571,13 +646,15 @@ class PurchaseRequisitionListController extends Notifier<PurchaseRequisitionList
   Future<Result<void>> post(String id) async => throw UnimplementedError();
 }
 
-
-final NotifierProvider<RFQListController, RFQListState> rfqListControllerProvider = NotifierProvider<RFQListController, RFQListState>(RFQListController.new);
+final NotifierProvider<RFQListController, RFQListState>
+    rfqListControllerProvider =
+    NotifierProvider<RFQListController, RFQListState>(RFQListController.new);
 
 class RFQListState extends Equatable {
   const RFQListState({
     this.items = const <RFQ>[],
-    this.meta = const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
+    this.meta =
+        const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
     this.query = const ListQuery(sort: '-createdAt'),
     this.isLoading = true,
     this.isLoadingMore = false,
@@ -614,7 +691,8 @@ class RFQListState extends Equatable {
         isLoading: isLoading ?? this.isLoading,
         isLoadingMore: isLoadingMore ?? this.isLoadingMore,
         failure: clearFailures ? null : (failure ?? this.failure),
-        loadMoreFailure: clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
+        loadMoreFailure:
+            clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
         cachedAt: clearCachedAt ? null : (cachedAt ?? this.cachedAt),
       );
 
@@ -652,8 +730,12 @@ class RFQListController extends Notifier<RFQListState> {
     state = result.fold(
       (f) => state.copyWith(isLoading: false, failure: f, items: const []),
       (page) => state.copyWith(
-        items: page.value.data, meta: page.value.meta, query: query,
-        isLoading: false, clearFailures: true, cachedAt: page.cachedAt,
+        items: page.value.data,
+        meta: page.value.meta,
+        query: query,
+        isLoading: false,
+        clearFailures: true,
+        cachedAt: page.cachedAt,
         clearCachedAt: !page.isFromCache,
       ),
     );
@@ -667,8 +749,11 @@ class RFQListController extends Notifier<RFQListState> {
     state = result.fold(
       (f) => state.copyWith(isLoadingMore: false, loadMoreFailure: f),
       (page) => state.copyWith(
-        items: [...state.items, ...page.value.data], meta: page.value.meta,
-        query: next, isLoadingMore: false, clearFailures: true,
+        items: [...state.items, ...page.value.data],
+        meta: page.value.meta,
+        query: next,
+        isLoadingMore: false,
+        clearFailures: true,
       ),
     );
   }
@@ -676,7 +761,8 @@ class RFQListController extends Notifier<RFQListState> {
   void search(String term) {
     _searchDebounce?.cancel();
     _searchDebounce = Timer(const Duration(milliseconds: 350), () {
-      state = state.copyWith(query: state.query.copyWith(search: term, page: 1));
+      state =
+          state.copyWith(query: state.query.copyWith(search: term, page: 1));
       refresh();
     });
   }
@@ -687,7 +773,8 @@ class RFQListController extends Notifier<RFQListState> {
   }
 
   void applyFilters(Map<String, String> filters) {
-    state = state.copyWith(query: state.query.copyWith(filters: filters, page: 1));
+    state =
+        state.copyWith(query: state.query.copyWith(filters: filters, page: 1));
     refresh();
   }
 
@@ -718,13 +805,16 @@ class RFQListController extends Notifier<RFQListState> {
   Future<Result<void>> post(String id) async => throw UnimplementedError();
 }
 
-
-final NotifierProvider<SupplierContractListController, SupplierContractListState> supplierContractListControllerProvider = NotifierProvider<SupplierContractListController, SupplierContractListState>(SupplierContractListController.new);
+final NotifierProvider<SupplierContractListController,
+        SupplierContractListState> supplierContractListControllerProvider =
+    NotifierProvider<SupplierContractListController, SupplierContractListState>(
+        SupplierContractListController.new);
 
 class SupplierContractListState extends Equatable {
   const SupplierContractListState({
     this.items = const <SupplierContract>[],
-    this.meta = const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
+    this.meta =
+        const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
     this.query = const ListQuery(sort: '-createdAt'),
     this.isLoading = true,
     this.isLoadingMore = false,
@@ -761,7 +851,8 @@ class SupplierContractListState extends Equatable {
         isLoading: isLoading ?? this.isLoading,
         isLoadingMore: isLoadingMore ?? this.isLoadingMore,
         failure: clearFailures ? null : (failure ?? this.failure),
-        loadMoreFailure: clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
+        loadMoreFailure:
+            clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
         cachedAt: clearCachedAt ? null : (cachedAt ?? this.cachedAt),
       );
 
@@ -778,7 +869,8 @@ class SupplierContractListState extends Equatable {
       ];
 }
 
-class SupplierContractListController extends Notifier<SupplierContractListState> {
+class SupplierContractListController
+    extends Notifier<SupplierContractListState> {
   Timer? _searchDebounce;
 
   @override
@@ -799,8 +891,12 @@ class SupplierContractListController extends Notifier<SupplierContractListState>
     state = result.fold(
       (f) => state.copyWith(isLoading: false, failure: f, items: const []),
       (page) => state.copyWith(
-        items: page.value.data, meta: page.value.meta, query: query,
-        isLoading: false, clearFailures: true, cachedAt: page.cachedAt,
+        items: page.value.data,
+        meta: page.value.meta,
+        query: query,
+        isLoading: false,
+        clearFailures: true,
+        cachedAt: page.cachedAt,
         clearCachedAt: !page.isFromCache,
       ),
     );
@@ -814,8 +910,11 @@ class SupplierContractListController extends Notifier<SupplierContractListState>
     state = result.fold(
       (f) => state.copyWith(isLoadingMore: false, loadMoreFailure: f),
       (page) => state.copyWith(
-        items: [...state.items, ...page.value.data], meta: page.value.meta,
-        query: next, isLoadingMore: false, clearFailures: true,
+        items: [...state.items, ...page.value.data],
+        meta: page.value.meta,
+        query: next,
+        isLoadingMore: false,
+        clearFailures: true,
       ),
     );
   }
@@ -823,7 +922,8 @@ class SupplierContractListController extends Notifier<SupplierContractListState>
   void search(String term) {
     _searchDebounce?.cancel();
     _searchDebounce = Timer(const Duration(milliseconds: 350), () {
-      state = state.copyWith(query: state.query.copyWith(search: term, page: 1));
+      state =
+          state.copyWith(query: state.query.copyWith(search: term, page: 1));
       refresh();
     });
   }
@@ -834,7 +934,8 @@ class SupplierContractListController extends Notifier<SupplierContractListState>
   }
 
   void applyFilters(Map<String, String> filters) {
-    state = state.copyWith(query: state.query.copyWith(filters: filters, page: 1));
+    state =
+        state.copyWith(query: state.query.copyWith(filters: filters, page: 1));
     refresh();
   }
 
@@ -862,13 +963,16 @@ class SupplierContractListController extends Notifier<SupplierContractListState>
   Future<Result<void>> post(String id) async => throw UnimplementedError();
 }
 
-
-final NotifierProvider<SupplierQuotationListController, SupplierQuotationListState> supplierQuotationListControllerProvider = NotifierProvider<SupplierQuotationListController, SupplierQuotationListState>(SupplierQuotationListController.new);
+final NotifierProvider<SupplierQuotationListController,
+        SupplierQuotationListState> supplierQuotationListControllerProvider =
+    NotifierProvider<SupplierQuotationListController,
+        SupplierQuotationListState>(SupplierQuotationListController.new);
 
 class SupplierQuotationListState extends Equatable {
   const SupplierQuotationListState({
     this.items = const <SupplierQuotation>[],
-    this.meta = const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
+    this.meta =
+        const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
     this.query = const ListQuery(sort: '-createdAt'),
     this.isLoading = true,
     this.isLoadingMore = false,
@@ -905,7 +1009,8 @@ class SupplierQuotationListState extends Equatable {
         isLoading: isLoading ?? this.isLoading,
         isLoadingMore: isLoadingMore ?? this.isLoadingMore,
         failure: clearFailures ? null : (failure ?? this.failure),
-        loadMoreFailure: clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
+        loadMoreFailure:
+            clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
         cachedAt: clearCachedAt ? null : (cachedAt ?? this.cachedAt),
       );
 
@@ -922,7 +1027,8 @@ class SupplierQuotationListState extends Equatable {
       ];
 }
 
-class SupplierQuotationListController extends Notifier<SupplierQuotationListState> {
+class SupplierQuotationListController
+    extends Notifier<SupplierQuotationListState> {
   Timer? _searchDebounce;
 
   @override
@@ -943,8 +1049,12 @@ class SupplierQuotationListController extends Notifier<SupplierQuotationListStat
     state = result.fold(
       (f) => state.copyWith(isLoading: false, failure: f, items: const []),
       (page) => state.copyWith(
-        items: page.value.data, meta: page.value.meta, query: query,
-        isLoading: false, clearFailures: true, cachedAt: page.cachedAt,
+        items: page.value.data,
+        meta: page.value.meta,
+        query: query,
+        isLoading: false,
+        clearFailures: true,
+        cachedAt: page.cachedAt,
         clearCachedAt: !page.isFromCache,
       ),
     );
@@ -958,8 +1068,11 @@ class SupplierQuotationListController extends Notifier<SupplierQuotationListStat
     state = result.fold(
       (f) => state.copyWith(isLoadingMore: false, loadMoreFailure: f),
       (page) => state.copyWith(
-        items: [...state.items, ...page.value.data], meta: page.value.meta,
-        query: next, isLoadingMore: false, clearFailures: true,
+        items: [...state.items, ...page.value.data],
+        meta: page.value.meta,
+        query: next,
+        isLoadingMore: false,
+        clearFailures: true,
       ),
     );
   }
@@ -967,7 +1080,8 @@ class SupplierQuotationListController extends Notifier<SupplierQuotationListStat
   void search(String term) {
     _searchDebounce?.cancel();
     _searchDebounce = Timer(const Duration(milliseconds: 350), () {
-      state = state.copyWith(query: state.query.copyWith(search: term, page: 1));
+      state =
+          state.copyWith(query: state.query.copyWith(search: term, page: 1));
       refresh();
     });
   }
@@ -978,7 +1092,8 @@ class SupplierQuotationListController extends Notifier<SupplierQuotationListStat
   }
 
   void applyFilters(Map<String, String> filters) {
-    state = state.copyWith(query: state.query.copyWith(filters: filters, page: 1));
+    state =
+        state.copyWith(query: state.query.copyWith(filters: filters, page: 1));
     refresh();
   }
 
@@ -1008,9 +1123,20 @@ class SupplierQuotationListController extends Notifier<SupplierQuotationListStat
   Future<Result<void>> submit(String id) async => throw UnimplementedError();
   Future<Result<void>> post(String id) async => throw UnimplementedError();
 }
-final FutureProvider<ProcurementDashboardStats> procurementDashboardProvider = FutureProvider((ref) async => throw UnimplementedError());
-final FutureProviderFamily<RFQ, String> rfqDetailProvider = FutureProvider.family((ref, id) async => throw UnimplementedError());
-final FutureProviderFamily<PurchaseReceipt, String> purchaseReceiptDetailProvider = FutureProvider.family((ref, id) async => throw UnimplementedError());
-final FutureProviderFamily<PurchaseRequisition, String> purchaseRequisitionDetailProvider = FutureProvider.family((ref, id) async => throw UnimplementedError());
-final FutureProviderFamily<SupplierContract, String> supplierContractDetailProvider = FutureProvider.family((ref, id) async => throw UnimplementedError());
-final FutureProviderFamily<SupplierQuotation, String> supplierQuotationDetailProvider = FutureProvider.family((ref, id) async => throw UnimplementedError());
+
+final FutureProvider<ProcurementDashboardStats> procurementDashboardProvider =
+    FutureProvider((ref) async => throw UnimplementedError());
+final FutureProviderFamily<RFQ, String> rfqDetailProvider =
+    FutureProvider.family((ref, id) async => throw UnimplementedError());
+final FutureProviderFamily<PurchaseReceipt, String>
+    purchaseReceiptDetailProvider =
+    FutureProvider.family((ref, id) async => throw UnimplementedError());
+final FutureProviderFamily<PurchaseRequisition, String>
+    purchaseRequisitionDetailProvider =
+    FutureProvider.family((ref, id) async => throw UnimplementedError());
+final FutureProviderFamily<SupplierContract, String>
+    supplierContractDetailProvider =
+    FutureProvider.family((ref, id) async => throw UnimplementedError());
+final FutureProviderFamily<SupplierQuotation, String>
+    supplierQuotationDetailProvider =
+    FutureProvider.family((ref, id) async => throw UnimplementedError());

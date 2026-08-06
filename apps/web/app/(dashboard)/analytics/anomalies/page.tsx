@@ -65,7 +65,11 @@ export default function AnalyticsAnomaliesPage() {
         </h3>
         {anomalies.length === 0 ? (
           <p
-            style={{ color: "#64748b", textAlign: "center", padding: "32px 0" }}
+            style={{
+              color: "var(--color-text-secondary)",
+              textAlign: "center",
+              padding: "32px 0",
+            }}
           >
             No active metric anomalies detected.
           </p>
@@ -98,7 +102,7 @@ export default function AnalyticsAnomaliesPage() {
                   <td
                     style={{
                       padding: "12px",
-                      color: "#ef4444",
+                      color: "var(--chart-4)",
                       fontWeight: "bold",
                     }}
                   >
@@ -107,7 +111,7 @@ export default function AnalyticsAnomaliesPage() {
                   <td
                     style={{
                       padding: "12px",
-                      color: "#64748b",
+                      color: "var(--color-text-secondary)",
                       fontSize: "13px",
                     }}
                   >

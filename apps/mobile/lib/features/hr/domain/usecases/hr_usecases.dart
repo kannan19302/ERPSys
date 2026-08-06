@@ -150,8 +150,7 @@ class ApproveLeaveUseCase extends UseCase<LeaveRequest, String> {
   final HrRepository _repository;
 
   @override
-  Future<Result<LeaveRequest>> call(String id) =>
-      _repository.approveLeave(id);
+  Future<Result<LeaveRequest>> call(String id) => _repository.approveLeave(id);
 }
 
 class RejectLeaveUseCase extends UseCase<LeaveRequest, String> {
@@ -216,8 +215,7 @@ class SaveAttendanceParams {
   final Map<String, dynamic> payload;
 }
 
-class SaveAttendanceUseCase
-    extends UseCase<Attendance, SaveAttendanceParams> {
+class SaveAttendanceUseCase extends UseCase<Attendance, SaveAttendanceParams> {
   const SaveAttendanceUseCase(this._repository);
 
   final HrRepository _repository;
@@ -280,8 +278,7 @@ class SubmitTimesheetUseCase extends UseCase<Timesheet, String> {
   final HrRepository _repository;
 
   @override
-  Future<Result<Timesheet>> call(String id) =>
-      _repository.submitTimesheet(id);
+  Future<Result<Timesheet>> call(String id) => _repository.submitTimesheet(id);
 }
 
 class ApproveTimesheetUseCase extends UseCase<Timesheet, String> {
@@ -290,8 +287,7 @@ class ApproveTimesheetUseCase extends UseCase<Timesheet, String> {
   final HrRepository _repository;
 
   @override
-  Future<Result<Timesheet>> call(String id) =>
-      _repository.approveTimesheet(id);
+  Future<Result<Timesheet>> call(String id) => _repository.approveTimesheet(id);
 }
 
 // ── Payroll ────────────────────────────────────────────────────────────────

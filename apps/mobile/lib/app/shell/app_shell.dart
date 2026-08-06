@@ -153,9 +153,9 @@ class AppShell extends ConsumerWidget {
   ];
 
   void _onSelect(int index) => navigationShell.goBranch(
-    index,
-    initialLocation: index == navigationShell.currentIndex,
-  );
+        index,
+        initialLocation: index == navigationShell.currentIndex,
+      );
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

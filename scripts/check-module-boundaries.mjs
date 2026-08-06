@@ -51,7 +51,14 @@ for (const file of filesIn(modulesRoot)) {
     if (!target || !normalize(target).startsWith(normalize(modulesRoot))) continue;
     const targetModule = moduleName(target);
     if (sourceModule && targetModule && sourceModule !== targetModule) {
-      violations.push(`${file.replace(process.cwd(), '.')} -> ${match[1]} (${sourceModule} -> ${targetModule})`);
+      // Normalise to POSIX separators before building the key. Without this the
+      // violation strings differ between Windows (`.\src\...`) and Linux
+      // (`./src/...`), so the committed baseline matches on CI and misses on a
+      // developer's machine — the gate then fails locally for seven violations
+      // it was explicitly told to tolerate. Native Windows is a supported
+      // development target (TRD ADR-010), so gate output must be identical on both.
+      const relativeFile = file.replace(process.cwd(), '.').split('\\').join('/');
+      violations.push(`${relativeFile} -> ${match[1]} (${sourceModule} -> ${targetModule})`);
     }
   }
 }

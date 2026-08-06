@@ -48,7 +48,9 @@ class CustomerModel extends Customer {
       totalRevenue: asDouble(json['totalRevenue']),
       totalOrders: asInt(json['totalOrders']),
       portalAccess: json['portalAccess'] as bool? ?? false,
-      tags: json['tags'] is List ? (json['tags'] as List).cast<String>() : const <String>[],
+      tags: json['tags'] is List
+          ? (json['tags'] as List).cast<String>()
+          : const <String>[],
       createdAt: DateTime.tryParse('${json['createdAt']}'),
       updatedAt: DateTime.tryParse('${json['updatedAt']}'),
     );

@@ -18,8 +18,7 @@ final Provider<PwaRemoteDataSource> pwaRemoteDataSourceProvider =
   (Ref ref) => PwaRemoteDataSourceImpl(ref.watch(apiClientProvider)),
 );
 
-final Provider<PwaRepository> pwaRepositoryProvider =
-    Provider<PwaRepository>(
+final Provider<PwaRepository> pwaRepositoryProvider = Provider<PwaRepository>(
   (Ref ref) => PwaRepositoryImpl(
     remote: ref.watch(pwaRemoteDataSourceProvider),
     cache: ref.watch(responseCacheProvider),
@@ -30,7 +29,8 @@ final Provider<PwaRepository> pwaRepositoryProvider =
 class PushSubscriptionListState extends Equatable {
   const PushSubscriptionListState({
     this.items = const <PwaPushSubscription>[],
-    this.meta = const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
+    this.meta =
+        const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
     this.query = const ListQuery(sort: '-createdAt'),
     this.isLoading = true,
     this.isLoadingMore = false,
@@ -47,29 +47,46 @@ class PushSubscriptionListState extends Equatable {
   final Failure? loadMoreFailure;
 
   PushSubscriptionListState copyWith({
-    List<PwaPushSubscription>? items, PaginationMeta? meta, ListQuery? query,
-    bool? isLoading, bool? isLoadingMore, Failure? failure,
-    Failure? loadMoreFailure, bool clearFailures = false,
+    List<PwaPushSubscription>? items,
+    PaginationMeta? meta,
+    ListQuery? query,
+    bool? isLoading,
+    bool? isLoadingMore,
+    Failure? failure,
+    Failure? loadMoreFailure,
+    bool clearFailures = false,
   }) =>
       PushSubscriptionListState(
-        items: items ?? this.items, meta: meta ?? this.meta,
-        query: query ?? this.query, isLoading: isLoading ?? this.isLoading,
+        items: items ?? this.items,
+        meta: meta ?? this.meta,
+        query: query ?? this.query,
+        isLoading: isLoading ?? this.isLoading,
         isLoadingMore: isLoadingMore ?? this.isLoadingMore,
         failure: clearFailures ? null : (failure ?? this.failure),
-        loadMoreFailure: clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
+        loadMoreFailure:
+            clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
       );
 
   @override
-  List<Object?> get props => <Object?>[items, meta, query.cacheKey, isLoading, isLoadingMore, failure, loadMoreFailure];
+  List<Object?> get props => <Object?>[
+        items,
+        meta,
+        query.cacheKey,
+        isLoading,
+        isLoadingMore,
+        failure,
+        loadMoreFailure
+      ];
 }
 
-final NotifierProvider<PushSubscriptionListController, PushSubscriptionListState>
-    pushSubscriptionListControllerProvider =
+final NotifierProvider<PushSubscriptionListController,
+        PushSubscriptionListState> pushSubscriptionListControllerProvider =
     NotifierProvider<PushSubscriptionListController, PushSubscriptionListState>(
   PushSubscriptionListController.new,
 );
 
-class PushSubscriptionListController extends Notifier<PushSubscriptionListState> {
+class PushSubscriptionListController
+    extends Notifier<PushSubscriptionListState> {
   @override
   PushSubscriptionListState build() {
     ref.watch(activeTenantIdProvider);
@@ -87,8 +104,11 @@ class PushSubscriptionListController extends Notifier<PushSubscriptionListState>
     state = result.fold(
       (f) => state.copyWith(isLoading: false, failure: f, items: const []),
       (page) => state.copyWith(
-        items: page.value.data, meta: page.value.meta, query: query,
-        isLoading: false, clearFailures: true,
+        items: page.value.data,
+        meta: page.value.meta,
+        query: query,
+        isLoading: false,
+        clearFailures: true,
       ),
     );
   }
@@ -101,15 +121,19 @@ class PushSubscriptionListController extends Notifier<PushSubscriptionListState>
     state = result.fold(
       (f) => state.copyWith(isLoadingMore: false, loadMoreFailure: f),
       (page) => state.copyWith(
-        items: [...state.items, ...page.value.data], meta: page.value.meta,
-        query: next, isLoadingMore: false, clearFailures: true,
+        items: [...state.items, ...page.value.data],
+        meta: page.value.meta,
+        query: next,
+        isLoadingMore: false,
+        clearFailures: true,
       ),
     );
   }
 
   Future<Result<void>> delete(String id) async {
     final result = await DeletePushSubscriptionUseCase(
-      ref.read(pwaRepositoryProvider),)(id);
+      ref.read(pwaRepositoryProvider),
+    )(id);
     if (result.isOk) await refresh();
     return result;
   }
@@ -118,7 +142,8 @@ class PushSubscriptionListController extends Notifier<PushSubscriptionListState>
 class OfflineQueueListState extends Equatable {
   const OfflineQueueListState({
     this.items = const <PwaOfflineQueueItem>[],
-    this.meta = const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
+    this.meta =
+        const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
     this.query = const ListQuery(sort: '-createdAt'),
     this.isLoading = true,
     this.isLoadingMore = false,
@@ -135,20 +160,36 @@ class OfflineQueueListState extends Equatable {
   final Failure? loadMoreFailure;
 
   OfflineQueueListState copyWith({
-    List<PwaOfflineQueueItem>? items, PaginationMeta? meta, ListQuery? query,
-    bool? isLoading, bool? isLoadingMore, Failure? failure,
-    Failure? loadMoreFailure, bool clearFailures = false,
+    List<PwaOfflineQueueItem>? items,
+    PaginationMeta? meta,
+    ListQuery? query,
+    bool? isLoading,
+    bool? isLoadingMore,
+    Failure? failure,
+    Failure? loadMoreFailure,
+    bool clearFailures = false,
   }) =>
       OfflineQueueListState(
-        items: items ?? this.items, meta: meta ?? this.meta,
-        query: query ?? this.query, isLoading: isLoading ?? this.isLoading,
+        items: items ?? this.items,
+        meta: meta ?? this.meta,
+        query: query ?? this.query,
+        isLoading: isLoading ?? this.isLoading,
         isLoadingMore: isLoadingMore ?? this.isLoadingMore,
         failure: clearFailures ? null : (failure ?? this.failure),
-        loadMoreFailure: clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
+        loadMoreFailure:
+            clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
       );
 
   @override
-  List<Object?> get props => <Object?>[items, meta, query.cacheKey, isLoading, isLoadingMore, failure, loadMoreFailure];
+  List<Object?> get props => <Object?>[
+        items,
+        meta,
+        query.cacheKey,
+        isLoading,
+        isLoadingMore,
+        failure,
+        loadMoreFailure
+      ];
 }
 
 final NotifierProvider<OfflineQueueListController, OfflineQueueListState>
@@ -175,8 +216,11 @@ class OfflineQueueListController extends Notifier<OfflineQueueListState> {
     state = result.fold(
       (f) => state.copyWith(isLoading: false, failure: f, items: const []),
       (page) => state.copyWith(
-        items: page.value.data, meta: page.value.meta, query: query,
-        isLoading: false, clearFailures: true,
+        items: page.value.data,
+        meta: page.value.meta,
+        query: query,
+        isLoading: false,
+        clearFailures: true,
       ),
     );
   }
@@ -189,8 +233,11 @@ class OfflineQueueListController extends Notifier<OfflineQueueListState> {
     state = result.fold(
       (f) => state.copyWith(isLoadingMore: false, loadMoreFailure: f),
       (page) => state.copyWith(
-        items: [...state.items, ...page.value.data], meta: page.value.meta,
-        query: next, isLoadingMore: false, clearFailures: true,
+        items: [...state.items, ...page.value.data],
+        meta: page.value.meta,
+        query: next,
+        isLoadingMore: false,
+        clearFailures: true,
       ),
     );
   }
@@ -199,8 +246,12 @@ class OfflineQueueListController extends Notifier<OfflineQueueListState> {
 final FutureProviderFamily<PwaManifestConfig, void> pwaManifestConfigProvider =
     FutureProvider.family<PwaManifestConfig, void>((Ref ref, _) async {
   final result = await GetManifestConfigUseCase(
-    ref.watch(pwaRepositoryProvider),)(const NoParams());
+    ref.watch(pwaRepositoryProvider),
+  )(const NoParams());
   return result.fold((f) => throw f, (v) => v);
 });
 
-extension SaveManifest on PushSubscriptionListController { Future<Result<void>> saveManifest(Map<String, dynamic> payload) async => throw UnimplementedError(); }
+extension SaveManifest on PushSubscriptionListController {
+  Future<Result<void>> saveManifest(Map<String, dynamic> payload) async =>
+      throw UnimplementedError();
+}

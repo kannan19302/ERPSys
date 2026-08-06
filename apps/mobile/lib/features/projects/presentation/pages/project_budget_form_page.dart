@@ -13,7 +13,8 @@ class ProjectBudgetFormPage extends ConsumerStatefulWidget {
   final String? budgetId;
 
   @override
-  ConsumerState<ProjectBudgetFormPage> createState() => _ProjectBudgetFormPageState();
+  ConsumerState<ProjectBudgetFormPage> createState() =>
+      _ProjectBudgetFormPageState();
 }
 
 class _ProjectBudgetFormPageState extends ConsumerState<ProjectBudgetFormPage> {
@@ -32,7 +33,8 @@ class _ProjectBudgetFormPageState extends ConsumerState<ProjectBudgetFormPage> {
   }
 
   Future<void> _load() async {
-    final b = ref.read(projectBudgetDetailProvider(widget.budgetId!)).valueOrNull;
+    final b =
+        ref.read(projectBudgetDetailProvider(widget.budgetId!)).valueOrNull;
     if (b != null) {
       _projectIdCtrl.text = b.projectId;
       _categoryCtrl.text = b.category;
@@ -58,13 +60,17 @@ class _ProjectBudgetFormPageState extends ConsumerState<ProjectBudgetFormPage> {
       'budgetedAmount': double.tryParse(_estimatedCtrl.text) ?? 0,
     };
 
-    final result = await ref.read(projectBudgetListControllerProvider.notifier).save(
-      payload, id: widget.budgetId,);
+    final result =
+        await ref.read(projectBudgetListControllerProvider.notifier).save(
+              payload,
+              id: widget.budgetId,
+            );
 
     if (!context.mounted) return;
     setState(() => _saving = false);
     result.fold(
-      (f) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(f.message))),
+      (f) => ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(f.message))),
       (_) => Navigator.of(context).pop(),
     );
   }
@@ -78,7 +84,10 @@ class _ProjectBudgetFormPageState extends ConsumerState<ProjectBudgetFormPage> {
           TextButton(
             onPressed: _saving ? null : _save,
             child: _saving
-                ? const SizedBox(height: Spacing.x5, width: Spacing.x5, child: CircularProgressIndicator(strokeWidth: 2))
+                ? const SizedBox(
+                    height: Spacing.x5,
+                    width: Spacing.x5,
+                    child: CircularProgressIndicator(strokeWidth: 2))
                 : const Text('Save'),
           ),
         ],
@@ -91,19 +100,23 @@ class _ProjectBudgetFormPageState extends ConsumerState<ProjectBudgetFormPage> {
             TextFormField(
               controller: _projectIdCtrl,
               decoration: const InputDecoration(labelText: 'Project ID *'),
-              validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,
+              validator: (v) =>
+                  v == null || v.trim().isEmpty ? 'Required' : null,
             ),
             const SizedBox(height: Spacing.x4),
             TextFormField(
               controller: _categoryCtrl,
               decoration: const InputDecoration(labelText: 'Category *'),
-              validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,
+              validator: (v) =>
+                  v == null || v.trim().isEmpty ? 'Required' : null,
             ),
             const SizedBox(height: Spacing.x4),
             TextFormField(
               controller: _estimatedCtrl,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
-              decoration: const InputDecoration(labelText: 'Estimated Amount *'),
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
+              decoration:
+                  const InputDecoration(labelText: 'Estimated Amount *'),
               validator: (v) {
                 if (v == null || v.trim().isEmpty) return 'Required';
                 if (double.tryParse(v) == null) return 'Enter a valid number';

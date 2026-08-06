@@ -12,21 +12,27 @@
  * Chaincode name: procurement-lifecycle
  */
 
-import { Context, Contract, Info, Returns, Transaction } from 'fabric-contract-api';
+import {
+  Context,
+  Contract,
+  Info,
+  Returns,
+  Transaction,
+} from "fabric-contract-api";
 
 type PurchaseOrderStatus =
-  | 'DRAFT'
-  | 'VENDOR_ACCEPTED'
-  | 'GOODS_RECEIVED'
-  | 'INVOICE_RECEIVED'
-  | 'MATCH_PASSED'
-  | 'MATCH_FAILED'
-  | 'PAYMENT_AUTHORIZED'
-  | 'PAID'
-  | 'DISPUTED';
+  | "DRAFT"
+  | "VENDOR_ACCEPTED"
+  | "GOODS_RECEIVED"
+  | "INVOICE_RECEIVED"
+  | "MATCH_PASSED"
+  | "MATCH_FAILED"
+  | "PAYMENT_AUTHORIZED"
+  | "PAID"
+  | "DISPUTED";
 
 export interface PurchaseOrderRecord {
-  docType: 'PurchaseOrder';
+  docType: "PurchaseOrder";
   poId: string;
   tenantId: string;
   vendorId: string;
@@ -71,7 +77,7 @@ export interface PurchaseOrderRecord {
   };
   matchResult?: {
     matched: boolean;
-    matchResult: 'FULL_MATCH' | 'PARTIAL_MATCH' | 'MISMATCH';
+    matchResult: "FULL_MATCH" | "PARTIAL_MATCH" | "MISMATCH";
     details: string;
     paymentAuthorized: boolean;
     matchedAt: string;
@@ -85,13 +91,13 @@ export interface PurchaseOrderRecord {
 const MATCH_TOLERANCE = 0.02; // 2% tolerance for quantity/amount matching
 
 @Info({
-  title: 'ProcurementLifecycleContract',
+  title: "ProcurementLifecycleContract",
   description:
-    'UniERP Procurement Smart Contract — automated 3-way PO/Receipt/Invoice matching with payment authorization.',
+    "UniERP Procurement Smart Contract — automated 3-way PO/Receipt/Invoice matching with payment authorization.",
 })
 export class ProcurementLifecycleContract extends Contract {
   constructor() {
-    super('ProcurementLifecycleContract');
+    super("ProcurementLifecycleContract");
   }
 
   @Transaction()
@@ -101,14 +107,14 @@ export class ProcurementLifecycleContract extends Contract {
    * CreatePurchaseOrder — record a new PO on the blockchain.
    */
   @Transaction()
-  @Returns('string')
+  @Returns("string")
   async CreatePurchaseOrder(ctx: Context, argsJson: string): Promise<string> {
     const args = JSON.parse(argsJson) as {
       tenantId: string;
       poId: string;
       vendorId: string;
       buyerOrgId: string;
-      lines: PurchaseOrderRecord['lines'];
+      lines: PurchaseOrderRecord["lines"];
       totalAmount: string;
       currency: string;
       deliveryDate: string;
@@ -120,12 +126,12 @@ export class ProcurementLifecycleContract extends Contract {
     const key = `PO~${args.tenantId}~${args.poId}`;
     const existing = await ctx.stub.getState(key);
     if (existing && existing.length > 0) {
-      return existing.toString('utf8');
+      return existing.toString("utf8");
     }
 
     const txId = ctx.stub.getTxID();
     const record: PurchaseOrderRecord = {
-      docType: 'PurchaseOrder',
+      docType: "PurchaseOrder",
       poId: args.poId,
       tenantId: args.tenantId,
       vendorId: args.vendorId,
@@ -135,16 +141,23 @@ export class ProcurementLifecycleContract extends Contract {
       currency: args.currency,
       deliveryDate: args.deliveryDate,
       terms: args.terms,
-      status: 'DRAFT',
+      status: "DRAFT",
       createdBy: args.createdBy,
       createdAt: args.createdAt,
       txId,
     };
 
     await ctx.stub.putState(key, Buffer.from(JSON.stringify(record)));
-    await ctx.stub.setEvent('PurchaseOrderCreated', Buffer.from(JSON.stringify({
-      tenantId: args.tenantId, poId: args.poId, txId,
-    })));
+    await ctx.stub.setEvent(
+      "PurchaseOrderCreated",
+      Buffer.from(
+        JSON.stringify({
+          tenantId: args.tenantId,
+          poId: args.poId,
+          txId,
+        }),
+      ),
+    );
 
     return JSON.stringify(record);
   }
@@ -153,7 +166,7 @@ export class ProcurementLifecycleContract extends Contract {
    * AcceptPurchaseOrder — vendor acknowledges and accepts the PO.
    */
   @Transaction()
-  @Returns('string')
+  @Returns("string")
   async AcceptPurchaseOrder(ctx: Context, argsJson: string): Promise<string> {
     const args = JSON.parse(argsJson) as {
       tenantId: string;
@@ -173,12 +186,19 @@ export class ProcurementLifecycleContract extends Contract {
       notes: args.notes,
       txId,
     };
-    record.status = 'VENDOR_ACCEPTED';
+    record.status = "VENDOR_ACCEPTED";
 
     await this.savePoRecord(ctx, record);
-    await ctx.stub.setEvent('PurchaseOrderAccepted', Buffer.from(JSON.stringify({
-      tenantId: args.tenantId, poId: args.poId, txId,
-    })));
+    await ctx.stub.setEvent(
+      "PurchaseOrderAccepted",
+      Buffer.from(
+        JSON.stringify({
+          tenantId: args.tenantId,
+          poId: args.poId,
+          txId,
+        }),
+      ),
+    );
 
     return JSON.stringify(record);
   }
@@ -187,13 +207,17 @@ export class ProcurementLifecycleContract extends Contract {
    * ConfirmGoodsReceipt — record that goods have been received.
    */
   @Transaction()
-  @Returns('string')
+  @Returns("string")
   async ConfirmGoodsReceipt(ctx: Context, argsJson: string): Promise<string> {
     const args = JSON.parse(argsJson) as {
       tenantId: string;
       poId: string;
       receiptId: string;
-      receivedLines: Array<{ lineId: string; receivedQuantity: number; conditionNotes?: string }>;
+      receivedLines: Array<{
+        lineId: string;
+        receivedQuantity: number;
+        conditionNotes?: string;
+      }>;
       receivedAt: string;
       receivedBy: string;
     };
@@ -208,12 +232,20 @@ export class ProcurementLifecycleContract extends Contract {
       receivedBy: args.receivedBy,
       txId,
     };
-    record.status = 'GOODS_RECEIVED';
+    record.status = "GOODS_RECEIVED";
 
     await this.savePoRecord(ctx, record);
-    await ctx.stub.setEvent('GoodsReceiptConfirmed', Buffer.from(JSON.stringify({
-      tenantId: args.tenantId, poId: args.poId, receiptId: args.receiptId, txId,
-    })));
+    await ctx.stub.setEvent(
+      "GoodsReceiptConfirmed",
+      Buffer.from(
+        JSON.stringify({
+          tenantId: args.tenantId,
+          poId: args.poId,
+          receiptId: args.receiptId,
+          txId,
+        }),
+      ),
+    );
 
     return JSON.stringify(record);
   }
@@ -222,7 +254,7 @@ export class ProcurementLifecycleContract extends Contract {
    * SubmitInvoice — vendor submits an invoice against the PO.
    */
   @Transaction()
-  @Returns('string')
+  @Returns("string")
   async SubmitInvoice(ctx: Context, argsJson: string): Promise<string> {
     const args = JSON.parse(argsJson) as {
       tenantId: string;
@@ -248,12 +280,20 @@ export class ProcurementLifecycleContract extends Contract {
       submittedBy: args.submittedBy,
       txId,
     };
-    record.status = 'INVOICE_RECEIVED';
+    record.status = "INVOICE_RECEIVED";
 
     await this.savePoRecord(ctx, record);
-    await ctx.stub.setEvent('InvoiceSubmitted', Buffer.from(JSON.stringify({
-      tenantId: args.tenantId, poId: args.poId, invoiceId: args.invoiceId, txId,
-    })));
+    await ctx.stub.setEvent(
+      "InvoiceSubmitted",
+      Buffer.from(
+        JSON.stringify({
+          tenantId: args.tenantId,
+          poId: args.poId,
+          invoiceId: args.invoiceId,
+          txId,
+        }),
+      ),
+    );
 
     return JSON.stringify(record);
   }
@@ -265,7 +305,7 @@ export class ProcurementLifecycleContract extends Contract {
    * This is the core smart contract value — automated, tamper-proof matching.
    */
   @Transaction()
-  @Returns('string')
+  @Returns("string")
   async ExecuteThreeWayMatch(
     ctx: Context,
     tenantId: string,
@@ -276,7 +316,7 @@ export class ProcurementLifecycleContract extends Contract {
 
     if (!record.goodsReceipt || !record.invoice) {
       throw new Error(
-        'Cannot execute 3-way match: both goods receipt and invoice must be submitted first.',
+        "Cannot execute 3-way match: both goods receipt and invoice must be submitted first.",
       );
     }
 
@@ -298,7 +338,9 @@ export class ProcurementLifecycleContract extends Contract {
         continue;
       }
 
-      const qtyDiff = Math.abs(poLine.quantity - receivedLine.receivedQuantity) / poLine.quantity;
+      const qtyDiff =
+        Math.abs(poLine.quantity - receivedLine.receivedQuantity) /
+        poLine.quantity;
       if (qtyDiff > MATCH_TOLERANCE) {
         quantityMismatch = true;
         mismatchDetails.push(
@@ -310,24 +352,25 @@ export class ProcurementLifecycleContract extends Contract {
     const amountMatched = amountDiff <= MATCH_TOLERANCE;
     const quantityMatched = !quantityMismatch;
 
-    let matchResult: 'FULL_MATCH' | 'PARTIAL_MATCH' | 'MISMATCH';
+    let matchResult: "FULL_MATCH" | "PARTIAL_MATCH" | "MISMATCH";
     let paymentAuthorized: boolean;
     let details: string;
 
     if (amountMatched && quantityMatched) {
-      matchResult = 'FULL_MATCH';
+      matchResult = "FULL_MATCH";
       paymentAuthorized = true;
-      details = 'All quantities and amounts match within tolerance';
+      details = "All quantities and amounts match within tolerance";
     } else if (!amountMatched && !quantityMatched) {
-      matchResult = 'MISMATCH';
+      matchResult = "MISMATCH";
       paymentAuthorized = false;
-      details = `Amount diff: ${(amountDiff * 100).toFixed(2)}%. Quantity issues: ${mismatchDetails.join('; ')}`;
+      details = `Amount diff: ${(amountDiff * 100).toFixed(2)}%. Quantity issues: ${mismatchDetails.join("; ")}`;
     } else {
-      matchResult = 'PARTIAL_MATCH';
+      matchResult = "PARTIAL_MATCH";
       paymentAuthorized = false;
-      details = mismatchDetails.length > 0
-        ? `Quantity issues: ${mismatchDetails.join('; ')}`
-        : `Amount diff: ${(amountDiff * 100).toFixed(2)}%`;
+      details =
+        mismatchDetails.length > 0
+          ? `Quantity issues: ${mismatchDetails.join("; ")}`
+          : `Amount diff: ${(amountDiff * 100).toFixed(2)}%`;
     }
 
     record.matchResult = {
@@ -339,15 +382,29 @@ export class ProcurementLifecycleContract extends Contract {
       txId,
     };
 
-    record.status = paymentAuthorized ? 'PAYMENT_AUTHORIZED' : 'MATCH_FAILED';
+    record.status = paymentAuthorized ? "PAYMENT_AUTHORIZED" : "MATCH_FAILED";
 
     await this.savePoRecord(ctx, record);
 
-    const result = { matched: paymentAuthorized, matchResult, details, paymentAuthorized };
+    const result = {
+      matched: paymentAuthorized,
+      matchResult,
+      details,
+      paymentAuthorized,
+    };
 
-    await ctx.stub.setEvent('ThreeWayMatchExecuted', Buffer.from(JSON.stringify({
-      tenantId, poId, matchResult, paymentAuthorized, txId,
-    })));
+    await ctx.stub.setEvent(
+      "ThreeWayMatchExecuted",
+      Buffer.from(
+        JSON.stringify({
+          tenantId,
+          poId,
+          matchResult,
+          paymentAuthorized,
+          txId,
+        }),
+      ),
+    );
 
     return JSON.stringify(result);
   }
@@ -356,7 +413,7 @@ export class ProcurementLifecycleContract extends Contract {
    * GetPurchaseOrderHistory — retrieve the full PO on-chain record.
    */
   @Transaction(false)
-  @Returns('string')
+  @Returns("string")
   async GetPurchaseOrderHistory(
     ctx: Context,
     tenantId: string,
@@ -364,20 +421,27 @@ export class ProcurementLifecycleContract extends Contract {
   ): Promise<string> {
     const key = `PO~${tenantId}~${poId}`;
     const data = await ctx.stub.getState(key);
-    if (!data || data.length === 0) return '[]';
-    return `[${data.toString('utf8')}]`;
+    if (!data || data.length === 0) return "[]";
+    return `[${data.toString("utf8")}]`;
   }
 
-  private async getPoRecord(ctx: Context, tenantId: string, poId: string): Promise<PurchaseOrderRecord> {
+  private async getPoRecord(
+    ctx: Context,
+    tenantId: string,
+    poId: string,
+  ): Promise<PurchaseOrderRecord> {
     const key = `PO~${tenantId}~${poId}`;
     const data = await ctx.stub.getState(key);
     if (!data || data.length === 0) {
       throw new Error(`Purchase Order ${poId} not found on ledger`);
     }
-    return JSON.parse(data.toString('utf8')) as PurchaseOrderRecord;
+    return JSON.parse(data.toString("utf8")) as PurchaseOrderRecord;
   }
 
-  private async savePoRecord(ctx: Context, record: PurchaseOrderRecord): Promise<void> {
+  private async savePoRecord(
+    ctx: Context,
+    record: PurchaseOrderRecord,
+  ): Promise<void> {
     const key = `PO~${record.tenantId}~${record.poId}`;
     await ctx.stub.putState(key, Buffer.from(JSON.stringify(record)));
   }

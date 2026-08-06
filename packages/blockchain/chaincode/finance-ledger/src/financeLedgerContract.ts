@@ -12,11 +12,17 @@
  * Chaincode name: finance-ledger
  */
 
-import { Context, Contract, Info, Returns, Transaction } from 'fabric-contract-api';
+import {
+  Context,
+  Contract,
+  Info,
+  Returns,
+  Transaction,
+} from "fabric-contract-api";
 
 // Ledger record shapes
 export interface JournalHashRecord {
-  docType: 'JournalHash';
+  docType: "JournalHash";
   journalId: string;
   tenantId: string;
   periodId: string;
@@ -33,7 +39,7 @@ export interface JournalHashRecord {
 }
 
 export interface PeriodCloseRecord {
-  docType: 'PeriodClose';
+  docType: "PeriodClose";
   periodId: string;
   tenantId: string;
   closedBy: string;
@@ -46,7 +52,7 @@ export interface PeriodCloseRecord {
 }
 
 export interface NettingRecord {
-  docType: 'NettingRecord';
+  docType: "NettingRecord";
   nettingId: string;
   tenantId: string;
   parties: string[];
@@ -58,13 +64,13 @@ export interface NettingRecord {
 }
 
 @Info({
-  title: 'FinanceLedgerContract',
+  title: "FinanceLedgerContract",
   description:
-    'UniERP Immutable Financial Ledger — records SHA-256 hashes of GL journal entries and period-close attestations.',
+    "UniERP Immutable Financial Ledger — records SHA-256 hashes of GL journal entries and period-close attestations.",
 })
 export class FinanceLedgerContract extends Contract {
   constructor() {
-    super('FinanceLedgerContract');
+    super("FinanceLedgerContract");
   }
 
   @Transaction()
@@ -79,7 +85,7 @@ export class FinanceLedgerContract extends Contract {
    * Returns the on-chain record.
    */
   @Transaction()
-  @Returns('string')
+  @Returns("string")
   async RecordJournalEntry(ctx: Context, argsJson: string): Promise<string> {
     const args = JSON.parse(argsJson) as {
       tenantId: string;
@@ -95,7 +101,7 @@ export class FinanceLedgerContract extends Contract {
     };
 
     if (!args.tenantId || !args.journalId || !args.dataHash) {
-      throw new Error('tenantId, journalId, and dataHash are required');
+      throw new Error("tenantId, journalId, and dataHash are required");
     }
 
     const key = `JRN~${args.tenantId}~${args.journalId}`;
@@ -103,7 +109,9 @@ export class FinanceLedgerContract extends Contract {
     // Idempotency check
     const existing = await ctx.stub.getState(key);
     if (existing && existing.length > 0) {
-      const existingRecord: JournalHashRecord = JSON.parse(existing.toString('utf8'));
+      const existingRecord: JournalHashRecord = JSON.parse(
+        existing.toString("utf8"),
+      );
       if (existingRecord.dataHash === args.dataHash) {
         return JSON.stringify(existingRecord);
       }
@@ -117,7 +125,7 @@ export class FinanceLedgerContract extends Contract {
     const now = new Date().toISOString();
 
     const record: JournalHashRecord = {
-      docType: 'JournalHash',
+      docType: "JournalHash",
       journalId: args.journalId,
       tenantId: args.tenantId,
       periodId: args.periodId,
@@ -129,15 +137,21 @@ export class FinanceLedgerContract extends Contract {
       postedAt: args.postedAt,
       description: args.description,
       txId,
-      blockNumber: '0',
+      blockNumber: "0",
       recordedAt: now,
     };
 
     await ctx.stub.putState(key, Buffer.from(JSON.stringify(record)));
 
     await ctx.stub.setEvent(
-      'JournalEntryRecorded',
-      Buffer.from(JSON.stringify({ tenantId: args.tenantId, journalId: args.journalId, txId })),
+      "JournalEntryRecorded",
+      Buffer.from(
+        JSON.stringify({
+          tenantId: args.tenantId,
+          journalId: args.journalId,
+          txId,
+        }),
+      ),
     );
 
     return JSON.stringify(record);
@@ -148,7 +162,7 @@ export class FinanceLedgerContract extends Contract {
    * Returns "null" if not found (not yet anchored).
    */
   @Transaction(false)
-  @Returns('string')
+  @Returns("string")
   async VerifyJournalEntry(
     ctx: Context,
     tenantId: string,
@@ -156,8 +170,8 @@ export class FinanceLedgerContract extends Contract {
   ): Promise<string> {
     const key = `JRN~${tenantId}~${journalId}`;
     const data = await ctx.stub.getState(key);
-    if (!data || data.length === 0) return 'null';
-    return data.toString('utf8');
+    if (!data || data.length === 0) return "null";
+    return data.toString("utf8");
   }
 
   /**
@@ -166,7 +180,7 @@ export class FinanceLedgerContract extends Contract {
    * added (enforced by checking this record in RecordJournalEntry if desired).
    */
   @Transaction()
-  @Returns('string')
+  @Returns("string")
   async AttestPeriodClose(ctx: Context, argsJson: string): Promise<string> {
     const args = JSON.parse(argsJson) as {
       tenantId: string;
@@ -183,14 +197,14 @@ export class FinanceLedgerContract extends Contract {
     // Period close is idempotent but not updatable
     const existing = await ctx.stub.getState(key);
     if (existing && existing.length > 0) {
-      return existing.toString('utf8'); // Return existing attestation
+      return existing.toString("utf8"); // Return existing attestation
     }
 
     const txId = ctx.stub.getTxID();
     const now = new Date().toISOString();
 
     const record: PeriodCloseRecord = {
-      docType: 'PeriodClose',
+      docType: "PeriodClose",
       periodId: args.periodId,
       tenantId: args.tenantId,
       closedBy: args.closedBy,
@@ -205,8 +219,14 @@ export class FinanceLedgerContract extends Contract {
     await ctx.stub.putState(key, Buffer.from(JSON.stringify(record)));
 
     await ctx.stub.setEvent(
-      'PeriodClosed',
-      Buffer.from(JSON.stringify({ tenantId: args.tenantId, periodId: args.periodId, txId })),
+      "PeriodClosed",
+      Buffer.from(
+        JSON.stringify({
+          tenantId: args.tenantId,
+          periodId: args.periodId,
+          txId,
+        }),
+      ),
     );
 
     return JSON.stringify(record);
@@ -216,7 +236,7 @@ export class FinanceLedgerContract extends Contract {
    * GetPeriodAttestation — retrieve the close attestation for a period.
    */
   @Transaction(false)
-  @Returns('string')
+  @Returns("string")
   async GetPeriodAttestation(
     ctx: Context,
     tenantId: string,
@@ -224,16 +244,19 @@ export class FinanceLedgerContract extends Contract {
   ): Promise<string> {
     const key = `PCLOSE~${tenantId}~${periodId}`;
     const data = await ctx.stub.getState(key);
-    if (!data || data.length === 0) return 'null';
-    return data.toString('utf8');
+    if (!data || data.length === 0) return "null";
+    return data.toString("utf8");
   }
 
   /**
    * RecordIntercompanyNetting — record proof of inter-company netting settlement.
    */
   @Transaction()
-  @Returns('string')
-  async RecordIntercompanyNetting(ctx: Context, argsJson: string): Promise<string> {
+  @Returns("string")
+  async RecordIntercompanyNetting(
+    ctx: Context,
+    argsJson: string,
+  ): Promise<string> {
     const args = JSON.parse(argsJson) as {
       tenantId: string;
       nettingId: string;
@@ -247,14 +270,14 @@ export class FinanceLedgerContract extends Contract {
 
     const existing = await ctx.stub.getState(key);
     if (existing && existing.length > 0) {
-      return existing.toString('utf8');
+      return existing.toString("utf8");
     }
 
     const txId = ctx.stub.getTxID();
     const now = new Date().toISOString();
 
     const record: NettingRecord = {
-      docType: 'NettingRecord',
+      docType: "NettingRecord",
       nettingId: args.nettingId,
       tenantId: args.tenantId,
       parties: args.parties,
@@ -268,8 +291,14 @@ export class FinanceLedgerContract extends Contract {
     await ctx.stub.putState(key, Buffer.from(JSON.stringify(record)));
 
     await ctx.stub.setEvent(
-      'NettingRecorded',
-      Buffer.from(JSON.stringify({ tenantId: args.tenantId, nettingId: args.nettingId, txId })),
+      "NettingRecorded",
+      Buffer.from(
+        JSON.stringify({
+          tenantId: args.tenantId,
+          nettingId: args.nettingId,
+          txId,
+        }),
+      ),
     );
 
     return JSON.stringify(record);

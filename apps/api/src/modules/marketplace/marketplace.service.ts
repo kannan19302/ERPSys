@@ -8,6 +8,7 @@ import {
 } from "@nestjs/common";
 import { OnEvent } from "@nestjs/event-emitter";
 import { prisma, runWithTenantSession } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 import { BundleStoreService } from "./bundle-store.service";
 import { AppProvisioningService } from "./app-provisioning.service";
 import { VendorService } from "./vendor.service";

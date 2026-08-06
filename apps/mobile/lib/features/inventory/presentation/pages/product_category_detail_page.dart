@@ -58,8 +58,7 @@ class ProductCategoryDetailPage extends ConsumerWidget {
           onRetry: () =>
               ref.invalidate(productCategoryDetailProvider(categoryId)),
         ),
-        data: (ProductCategory category) =>
-            _CategoryDetail(category: category),
+        data: (ProductCategory category) => _CategoryDetail(category: category),
       ),
     );
   }

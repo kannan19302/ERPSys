@@ -36,7 +36,8 @@ class SearchRepositoryImpl implements SearchRepository {
       final List<Map<String, dynamic>> jsonItems = page.data
           .map((dynamic e) => (e as dynamic).toJson() as Map<String, dynamic>)
           .toList(growable: false);
-      await _cache.write(_tenantId, namespace, query.cacheKey, <String, Object?>{
+      await _cache
+          .write(_tenantId, namespace, query.cacheKey, <String, Object?>{
         'data': jsonItems,
         'meta': page.meta.toJson(),
       });
@@ -44,9 +45,11 @@ class SearchRepositoryImpl implements SearchRepository {
         Cacheable<Paginated<T>>(value: page),
       );
     } on NetworkException catch (error) {
-      final cached = _cache.read<Map<String, dynamic>>(_tenantId, namespace, query.cacheKey);
+      final cached = _cache.read<Map<String, dynamic>>(
+          _tenantId, namespace, query.cacheKey);
       if (cached == null) {
-        return Result<Cacheable<Paginated<T>>>.err(mapExceptionToFailure(error));
+        return Result<Cacheable<Paginated<T>>>.err(
+            mapExceptionToFailure(error));
       }
       return Result<Cacheable<Paginated<T>>>.ok(
         Cacheable<Paginated<T>>(
@@ -81,26 +84,34 @@ class SearchRepositoryImpl implements SearchRepository {
 
   @override
   Future<Result<Cacheable<Paginated<SearchResult>>>> search(ListQuery query) =>
-      _paginated(_resultNamespace, query, () => _remote.search(query), SearchResultModel.fromJson);
+      _paginated(_resultNamespace, query, () => _remote.search(query),
+          SearchResultModel.fromJson);
 
   @override
-  Future<Result<Cacheable<Paginated<SearchIndexConfig>>>> listIndexConfigs(ListQuery query) =>
-      _paginated(_configNamespace, query, () => _remote.listIndexConfigs(query), SearchIndexConfigModel.fromJson);
+  Future<Result<Cacheable<Paginated<SearchIndexConfig>>>> listIndexConfigs(
+          ListQuery query) =>
+      _paginated(_configNamespace, query, () => _remote.listIndexConfigs(query),
+          SearchIndexConfigModel.fromJson);
 
   @override
-  Future<Result<SearchIndexConfig>> updateIndexConfig(String id, Map<String, dynamic> payload) =>
+  Future<Result<SearchIndexConfig>> updateIndexConfig(
+          String id, Map<String, dynamic> payload) =>
       _write(() => _remote.updateIndexConfig(id, payload));
 
   @override
-  Future<Result<Cacheable<Paginated<SearchSynonymGroup>>>> listSynonyms(ListQuery query) =>
-      _paginated(_synonymNamespace, query, () => _remote.listSynonyms(query), SearchSynonymGroupModel.fromJson);
+  Future<Result<Cacheable<Paginated<SearchSynonymGroup>>>> listSynonyms(
+          ListQuery query) =>
+      _paginated(_synonymNamespace, query, () => _remote.listSynonyms(query),
+          SearchSynonymGroupModel.fromJson);
 
   @override
-  Future<Result<SearchSynonymGroup>> createSynonym(Map<String, dynamic> payload) =>
+  Future<Result<SearchSynonymGroup>> createSynonym(
+          Map<String, dynamic> payload) =>
       _write(() => _remote.createSynonym(payload));
 
   @override
-  Future<Result<SearchSynonymGroup>> updateSynonym(String id, Map<String, dynamic> payload) =>
+  Future<Result<SearchSynonymGroup>> updateSynonym(
+          String id, Map<String, dynamic> payload) =>
       _write(() => _remote.updateSynonym(id, payload));
 
   @override

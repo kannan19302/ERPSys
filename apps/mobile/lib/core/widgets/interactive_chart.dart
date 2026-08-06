@@ -113,8 +113,8 @@ class _BarChartPainter extends CustomPainter {
 
     if (chartHeight <= 0) return;
 
-    final double totalBarWidth = data.length * barWidth +
-        (data.length - 1) * barSpacing;
+    final double totalBarWidth =
+        data.length * barWidth + (data.length - 1) * barSpacing;
     final double startX = (size.width - totalBarWidth) / 2;
 
     // Grid line
@@ -130,13 +130,13 @@ class _BarChartPainter extends CustomPainter {
 
     for (int i = 0; i < data.length; i++) {
       final BarChartItem item = data[i];
-      final double barHeight =
-          (item.value / maxValue) * chartHeight;
+      final double barHeight = (item.value / maxValue) * chartHeight;
       final double x = startX + i * (barWidth + barSpacing);
       final double y = bottom - barHeight;
       final Color barColor = item.color ?? color;
 
-      final RRect bar = RRect.fromRectAndRadius(Rect.fromLTWH(x, y, barWidth, barHeight), const Radius.circular(4));
+      final RRect bar = RRect.fromRectAndRadius(
+          Rect.fromLTWH(x, y, barWidth, barHeight), const Radius.circular(4));
 
       final Paint barPaint = Paint()..color = barColor;
       canvas.drawRRect(bar, barPaint);
@@ -189,9 +189,7 @@ class _BarChartPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_BarChartPainter old) =>
-      old.data != data ||
-      old.maxValue != maxValue ||
-      old.color != color;
+      old.data != data || old.maxValue != maxValue || old.color != color;
 }
 
 // ── Pie chart ──────────────────────────────────────────────────────────────
@@ -369,7 +367,8 @@ class _PieChartPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final double radius = size.width < size.height ? size.width / 2 : size.height / 2;
+    final double radius =
+        size.width < size.height ? size.width / 2 : size.height / 2;
     final Offset center = Offset(size.width / 2, size.height / 2);
     final double innerRadius = radius * innerRadiusRatio;
 
@@ -459,8 +458,7 @@ class SimpleLineChart extends StatelessWidget {
     final double adjustedMax = maxValue == minValue
         ? maxValue + 10
         : maxValue + (maxValue - minValue) * 0.1;
-    final double adjustedMin =
-        minValue - (maxValue - minValue) * 0.1;
+    final double adjustedMin = minValue - (maxValue - minValue) * 0.1;
 
     return SizedBox(
       height: height,
@@ -550,8 +548,7 @@ class _LineChartPainter extends CustomPainter {
     // Build points
     final List<Offset> points = <Offset>[];
     for (int i = 0; i < data.length; i++) {
-      final double x = leftPadding +
-          (i / (data.length - 1)) * chartWidth;
+      final double x = leftPadding + (i / (data.length - 1)) * chartWidth;
       final double y = topPadding +
           chartHeight -
           ((data[i].value - minValue) / range) * chartHeight;
@@ -581,8 +578,7 @@ class _LineChartPainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;
 
-    final Path linePath = Path()
-      ..moveTo(points.first.dx, points.first.dy);
+    final Path linePath = Path()..moveTo(points.first.dx, points.first.dy);
     for (int i = 1; i < points.length; i++) {
       linePath.lineTo(points[i].dx, points[i].dy);
     }
@@ -797,9 +793,8 @@ class _SparklinePainter extends CustomPainter {
     final Path path = Path();
     for (int i = 0; i < data.length; i++) {
       final double x = i * stepX;
-      final double y = size.height -
-          ((data[i] - min) / range) * (size.height - 2) -
-          1;
+      final double y =
+          size.height - ((data[i] - min) / range) * (size.height - 2) - 1;
       if (i == 0) {
         path.moveTo(x, y);
       } else {

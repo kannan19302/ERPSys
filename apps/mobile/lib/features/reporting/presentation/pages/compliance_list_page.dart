@@ -13,10 +13,12 @@ class ReportComplianceListPage extends ConsumerStatefulWidget {
   static const String routeName = 'report-compliance';
   static const String routePath = '/reporting/compliance';
   @override
-  ConsumerState<ReportComplianceListPage> createState() => _ReportComplianceListPageState();
+  ConsumerState<ReportComplianceListPage> createState() =>
+      _ReportComplianceListPageState();
 }
 
-class _ReportComplianceListPageState extends ConsumerState<ReportComplianceListPage> {
+class _ReportComplianceListPageState
+    extends ConsumerState<ReportComplianceListPage> {
   final TextEditingController _search = TextEditingController();
 
   static const Map<String, String> _sortOptions = <String, String>{
@@ -34,7 +36,8 @@ class _ReportComplianceListPageState extends ConsumerState<ReportComplianceListP
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(reportComplianceListControllerProvider);
-    final controller = ref.read(reportComplianceListControllerProvider.notifier);
+    final controller =
+        ref.read(reportComplianceListControllerProvider.notifier);
     final t = context.tokens;
 
     return Scaffold(
@@ -47,8 +50,12 @@ class _ReportComplianceListPageState extends ConsumerState<ReportComplianceListP
             initialValue: state.query.sort,
             onSelected: controller.applySort,
             itemBuilder: (_) => _sortOptions.entries
-                .map((e) => PopupMenuItem<String>(
-                    value: e.key, child: Text(e.value),),)
+                .map(
+                  (e) => PopupMenuItem<String>(
+                    value: e.key,
+                    child: Text(e.value),
+                  ),
+                )
                 .toList(),
           ),
         ],
@@ -56,7 +63,8 @@ class _ReportComplianceListPageState extends ConsumerState<ReportComplianceListP
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
+            padding: const EdgeInsets.fromLTRB(
+                Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
             child: TextField(
               controller: _search,
               onChanged: controller.search,
@@ -68,21 +76,27 @@ class _ReportComplianceListPageState extends ConsumerState<ReportComplianceListP
                     ? null
                     : IconButton(
                         icon: const Icon(Icons.close),
-                        onPressed: () { _search.clear(); controller.search(''); },
+                        onPressed: () {
+                          _search.clear();
+                          controller.search('');
+                        },
                       ),
               ),
             ),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: Spacing.x4),
-            child: Row(children: [
-              Text(
-                state.isLoading
-                    ? 'Loading...'
-                    : '${state.meta.total} record${state.meta.total == 1 ? '' : 's'}',
-                style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
-              ),
-            ],),
+            child: Row(
+              children: [
+                Text(
+                  state.isLoading
+                      ? 'Loading...'
+                      : '${state.meta.total} record${state.meta.total == 1 ? '' : 's'}',
+                  style:
+                      TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
+                ),
+              ],
+            ),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -90,7 +104,8 @@ class _ReportComplianceListPageState extends ConsumerState<ReportComplianceListP
     );
   }
 
-  Widget _body(ReportComplianceListState state, ReportComplianceListController controller) {
+  Widget _body(ReportComplianceListState state,
+      ReportComplianceListController controller) {
     if (state.isLoading && state.items.isEmpty) return const LoadingView();
     final failure = state.failure;
     if (failure != null && state.items.isEmpty) {
@@ -134,34 +149,49 @@ class _ComplianceTile extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(children: [
-                Expanded(
-                  child: Text(compliance.name,
-                      style: Theme.of(context).textTheme.titleSmall,),
-                ),
-                UiStatusBadge(
-                  label: compliance.status,
-                  tone: _statusTone(compliance.status),
-                ),
-              ],),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      compliance.name,
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
+                  ),
+                  UiStatusBadge(
+                    label: compliance.status,
+                    tone: _statusTone(compliance.status),
+                  ),
+                ],
+              ),
               if (compliance.regulation != null) ...[
                 const SizedBox(height: Spacing.x1),
-                Text(compliance.regulation!,
-                    style: TextStyle(color: t.textSecondary, fontSize: TypeScale.sm),),
+                Text(
+                  compliance.regulation!,
+                  style:
+                      TextStyle(color: t.textSecondary, fontSize: TypeScale.sm),
+                ),
               ],
               const SizedBox(height: Spacing.x1),
-              Row(children: [
-                if (compliance.findings > 0)
-                  Text('${compliance.findings} finding${compliance.findings == 1 ? '' : 's'}',
-                      style: TextStyle(color: t.danger, fontSize: TypeScale.xs),),
-                const Spacer(),
-                if (compliance.lastRunAt != null)
-                  Text('Last: ${DateFormat.yMMMd().format(compliance.lastRunAt!.toLocal())}',
-                      style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),),
-              ],),
+              Row(
+                children: [
+                  if (compliance.findings > 0)
+                    Text(
+                      '${compliance.findings} finding${compliance.findings == 1 ? '' : 's'}',
+                      style: TextStyle(color: t.danger, fontSize: TypeScale.xs),
+                    ),
+                  const Spacer(),
+                  if (compliance.lastRunAt != null)
+                    Text(
+                      'Last: ${DateFormat.yMMMd().format(compliance.lastRunAt!.toLocal())}',
+                      style: TextStyle(
+                          color: t.textSecondary, fontSize: TypeScale.xs),
+                    ),
+                ],
+              ),
               if (compliance.isOverdue) ...[
                 const SizedBox(height: Spacing.x1),
-                Text('Overdue', style: TextStyle(color: t.danger, fontSize: TypeScale.xs)),
+                Text('Overdue',
+                    style: TextStyle(color: t.danger, fontSize: TypeScale.xs)),
               ],
             ],
           ),

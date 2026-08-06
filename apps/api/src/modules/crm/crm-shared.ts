@@ -1,5 +1,6 @@
 import { BadRequestException } from "@nestjs/common";
 import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 
 /**
  * Resolve a usable orgId for a tenant. Callers may pass the sentinel

@@ -35,13 +35,17 @@ class _CreditNoteFormPageState extends ConsumerState<CreditNoteFormPage> {
                   children: <Widget>[
                     const UiSectionHeader(title: 'Credit Note Details'),
                     TextFormField(
-                      decoration: const InputDecoration(labelText: 'Customer ID'),
-                      validator: (v) => v == null || v.isEmpty ? 'Required' : null,
+                      decoration:
+                          const InputDecoration(labelText: 'Customer ID'),
+                      validator: (v) =>
+                          v == null || v.isEmpty ? 'Required' : null,
                     ),
                     const SizedBox(height: Spacing.x3),
                     TextFormField(
-                      decoration: const InputDecoration(labelText: 'Invoice ID'),
-                      validator: (v) => v == null || v.isEmpty ? 'Required' : null,
+                      decoration:
+                          const InputDecoration(labelText: 'Invoice ID'),
+                      validator: (v) =>
+                          v == null || v.isEmpty ? 'Required' : null,
                     ),
                     const SizedBox(height: Spacing.x3),
                     TextFormField(
@@ -50,7 +54,8 @@ class _CreditNoteFormPageState extends ConsumerState<CreditNoteFormPage> {
                     ),
                     const SizedBox(height: Spacing.x3),
                     TextFormField(
-                      decoration: const InputDecoration(labelText: 'Total Amount'),
+                      decoration:
+                          const InputDecoration(labelText: 'Total Amount'),
                       keyboardType: TextInputType.number,
                     ),
                     const SizedBox(height: Spacing.x4),

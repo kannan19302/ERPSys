@@ -33,7 +33,7 @@
   background: none;
   cursor: pointer;
   color: var(--color-text-tertiary);
-  padding: 4px;
+  padding: var(--space-1);
 }
 
 .s6 {
@@ -41,7 +41,7 @@
   background: none;
   cursor: pointer;
   color: var(--color-text-tertiary);
-  padding: 4px;
+  padding: var(--space-1);
 }
 
 .s7 {
@@ -76,7 +76,7 @@
   padding-left: var(--space-4);
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 2px;
+  gap: var(--space-half);
 }
 
 .s12 {
@@ -91,4 +91,3 @@
 .s13 {
   accent-color: var(--color-primary);
 }
-

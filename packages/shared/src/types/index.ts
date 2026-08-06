@@ -2,7 +2,7 @@
 // Core Types — Universal ERP System
 // ─────────────────────────────────────────────────
 
-import { CustomerType, ProductType } from '../constants';
+import { CustomerType, ProductType } from "../constants";
 
 // ── Tenant ──
 export interface Tenant {
@@ -16,8 +16,8 @@ export interface Tenant {
   updatedAt: Date;
 }
 
-export type TenantPlan = 'free' | 'starter' | 'professional' | 'enterprise';
-export type TenantStatus = 'ACTIVE' | 'SUSPENDED' | 'CANCELLED';
+export type TenantPlan = "free" | "starter" | "professional" | "enterprise";
+export type TenantStatus = "ACTIVE" | "SUSPENDED" | "CANCELLED";
 
 // ── User ──
 export interface User {
@@ -33,7 +33,7 @@ export interface User {
   updatedAt: Date;
 }
 
-export type UserStatus = 'ACTIVE' | 'INACTIVE' | 'INVITED' | 'LOCKED';
+export type UserStatus = "ACTIVE" | "INACTIVE" | "INVITED" | "LOCKED";
 
 export interface UserWithRoles extends User {
   roles: Role[];
@@ -158,7 +158,7 @@ export interface Product {
 }
 
 // ── Common Types ──
-export type EntityStatus = 'ACTIVE' | 'INACTIVE' | 'ARCHIVED';
+export type EntityStatus = "ACTIVE" | "INACTIVE" | "ARCHIVED";
 
 export interface PaginatedResponse<T> {
   data: T[];
@@ -201,7 +201,13 @@ export interface AuditLog {
   createdAt: Date;
 }
 
-export type AuditAction = 'CREATE' | 'UPDATE' | 'DELETE' | 'LOGIN' | 'LOGOUT' | 'EXPORT';
+export type AuditAction =
+  | "CREATE"
+  | "UPDATE"
+  | "DELETE"
+  | "LOGIN"
+  | "LOGOUT"
+  | "EXPORT";
 
 // ── Change History (Field-Level Audit Trail) ──
 export interface FieldChange {
@@ -211,7 +217,7 @@ export interface FieldChange {
   newValue: unknown;
 }
 
-export type ChangeAction = 'CREATE' | 'UPDATE' | 'DELETE' | 'STATUS_CHANGE';
+export type ChangeAction = "CREATE" | "UPDATE" | "DELETE" | "STATUS_CHANGE";
 
 export interface ChangeHistoryEntry {
   id: string;
@@ -227,7 +233,12 @@ export interface ChangeHistoryEntry {
 }
 
 // ── Permission Registry ──
-export type PermissionLevel = 'endpoint' | 'page' | 'component' | 'field' | 'record';
+export type PermissionLevel =
+  | "endpoint"
+  | "page"
+  | "component"
+  | "field"
+  | "record";
 
 export interface PermissionDefinition {
   code: string;
@@ -255,7 +266,7 @@ export interface PermissionDefinition {
   platformOnly?: boolean;
 }
 
-export type FieldAccessLevel = 'hidden' | 'readonly' | 'editable';
+export type FieldAccessLevel = "hidden" | "readonly" | "editable";
 
 export interface AccessPackageData {
   id: string;
@@ -368,7 +379,7 @@ export interface SupplierScorecard {
 export interface ThreeWayMatchResult {
   purchaseOrderId: string;
   poNumber: string;
-  status: 'MATCHED' | 'DISCREPANCY' | 'PENDING';
+  status: "MATCHED" | "DISCREPANCY" | "PENDING";
   overallMatch: boolean;
   items: ThreeWayMatchItem[];
 }
@@ -392,7 +403,7 @@ export interface FixedAssetCategory {
   tenantId: string;
   name: string;
   description: string | null;
-  depreciationMethod: 'SLM' | 'WDV';
+  depreciationMethod: "SLM" | "WDV";
   expectedLifeMonths: number;
   depreciationRate: number | null;
   assetAccountId: string | null;
@@ -441,7 +452,7 @@ export interface AssetDepreciation {
   periodName: string | null;
   accumulatedDepreciation: number;
   bookValue: number;
-  status: 'PENDING' | 'POSTED';
+  status: "PENDING" | "POSTED";
   journalId: string | null;
   createdAt: string;
 }
@@ -465,7 +476,7 @@ export interface AssetMaintenanceLog {
   tenantId: string;
   assetId: string;
   maintenanceDate: string;
-  type: 'PREVENTIVE' | 'CORRECTIVE' | 'CALIBRATION';
+  type: "PREVENTIVE" | "CORRECTIVE" | "CALIBRATION";
   description: string;
   cost: number;
   performedBy: string;
@@ -800,4 +811,3 @@ export interface CalculateCommissionsInput {
   periodStart: string;
   periodEnd: string;
 }
-

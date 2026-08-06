@@ -36,16 +36,20 @@ class _BudgetFormPageState extends ConsumerState<BudgetFormPage> {
                     const UiSectionHeader(title: 'Budget Details'),
                     TextFormField(
                       decoration: const InputDecoration(labelText: 'Name'),
-                      validator: (v) => v == null || v.isEmpty ? 'Required' : null,
+                      validator: (v) =>
+                          v == null || v.isEmpty ? 'Required' : null,
                     ),
                     const SizedBox(height: Spacing.x3),
                     TextFormField(
-                      decoration: const InputDecoration(labelText: 'Fiscal Year'),
-                      validator: (v) => v == null || v.isEmpty ? 'Required' : null,
+                      decoration:
+                          const InputDecoration(labelText: 'Fiscal Year'),
+                      validator: (v) =>
+                          v == null || v.isEmpty ? 'Required' : null,
                     ),
                     const SizedBox(height: Spacing.x3),
                     TextFormField(
-                      decoration: const InputDecoration(labelText: 'Total Amount'),
+                      decoration:
+                          const InputDecoration(labelText: 'Total Amount'),
                       keyboardType: TextInputType.number,
                     ),
                     const SizedBox(height: Spacing.x4),

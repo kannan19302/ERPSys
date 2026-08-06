@@ -89,12 +89,14 @@ export class CrmQuoteSignaturePublicController {
   constructor(private readonly svc: CrmQuoteSignatureService) {}
 
   @ApiOperation({ summary: "Look up a pending signature request by token" })
+  @Permissions("crm.signature-by-token.read")
   @Get(":token")
   async getByToken(@Param("token") token: string) {
     return this.svc.getSignatureByToken(token);
   }
 
   @ApiOperation({ summary: "Sign the quotation via the emailed token" })
+  @Permissions("crm.quotation.sign")
   @Post("sign")
   async sign(
     @ZodBody(signQuotationSchema) dto: SignQuotationInput,
@@ -111,6 +113,7 @@ export class CrmQuoteSignaturePublicController {
     summary:
       "Public: fetch the issued certificate document for a signed quotation",
   })
+  @Permissions("crm.certificate-document-public.render")
   @Get("certificates/:signatureId/document")
   async certificateDocument(@Param("signatureId") signatureId: string) {
     return this.svc.renderCertificateDocumentPublic(signatureId);

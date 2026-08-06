@@ -19,7 +19,8 @@ class DepartmentDetailPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final AsyncValue<List<Department>> asyncDepts = ref.watch(departmentsProvider);
+    final AsyncValue<List<Department>> asyncDepts =
+        ref.watch(departmentsProvider);
     final Palette t = context.tokens;
 
     return asyncDepts.when(
@@ -37,9 +38,11 @@ class DepartmentDetailPage extends ConsumerWidget {
         ),
       ),
       data: (List<Department> departments) {
-        final Department? dept = departments.where(
-          (Department d) => d.id == departmentId,
-        ).firstOrNull;
+        final Department? dept = departments
+            .where(
+              (Department d) => d.id == departmentId,
+            )
+            .firstOrNull;
 
         if (dept == null) {
           return Scaffold(
@@ -51,9 +54,11 @@ class DepartmentDetailPage extends ConsumerWidget {
         }
 
         final Department? parent = dept.parentDepartmentId != null
-            ? departments.where(
-                (Department d) => d.id == dept.parentDepartmentId,
-              ).firstOrNull
+            ? departments
+                .where(
+                  (Department d) => d.id == dept.parentDepartmentId,
+                )
+                .firstOrNull
             : null;
 
         final List<Department> children = departments
@@ -73,7 +78,8 @@ class DepartmentDetailPage extends ConsumerWidget {
                     _Row('Name', dept.name),
                     _Row('Head', dept.headName ?? '—'),
                     _Row('Parent', parent?.name ?? 'None'),
-                    if (dept.description != null && dept.description!.isNotEmpty)
+                    if (dept.description != null &&
+                        dept.description!.isNotEmpty)
                       Padding(
                         padding: const EdgeInsets.only(top: Spacing.x2),
                         child: Text(
@@ -93,7 +99,8 @@ class DepartmentDetailPage extends ConsumerWidget {
                       const UiSectionHeader(title: 'Sub-departments'),
                       ...children.map(
                         (Department child) => Padding(
-                          padding: const EdgeInsets.symmetric(vertical: Spacing.x1),
+                          padding:
+                              const EdgeInsets.symmetric(vertical: Spacing.x1),
                           child: Text(child.name),
                         ),
                       ),

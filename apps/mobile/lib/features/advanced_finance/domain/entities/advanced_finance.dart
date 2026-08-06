@@ -21,7 +21,13 @@ class MultiCurrencyRate extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, fromCurrency, toCurrency, rate, rateDate, source, createdAt,
+        id,
+        fromCurrency,
+        toCurrency,
+        rate,
+        rateDate,
+        source,
+        createdAt,
       ];
 }
 
@@ -52,8 +58,16 @@ class ConsolidationReport extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, title, period, status, totalRevenue, totalExpenses,
-        netIncome, currency, notes, createdAt,
+        id,
+        title,
+        period,
+        status,
+        totalRevenue,
+        totalExpenses,
+        netIncome,
+        currency,
+        notes,
+        createdAt,
       ];
 }
 
@@ -88,8 +102,18 @@ class IntercompanyAgreement extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, agreementNumber, title, status, fromEntity, toEntity,
-        totalAmount, currency, startDate, endDate, notes, createdAt,
+        id,
+        agreementNumber,
+        title,
+        status,
+        fromEntity,
+        toEntity,
+        totalAmount,
+        currency,
+        startDate,
+        endDate,
+        notes,
+        createdAt,
       ];
 }
 
@@ -120,8 +144,16 @@ class CostAllocation extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, description, status, totalAmount, fromCostCenter,
-        toCostCenters, method, allocationDate, notes, createdAt,
+        id,
+        description,
+        status,
+        totalAmount,
+        fromCostCenter,
+        toCostCenters,
+        method,
+        allocationDate,
+        notes,
+        createdAt,
       ];
 }
 
@@ -154,9 +186,17 @@ class RevenueRecognitionEntry extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, sourceType, sourceId, status, totalAmount,
-        recognizedAmount, deferredAmount, scheduleDate,
-        recognitionDate, notes, createdAt,
+        id,
+        sourceType,
+        sourceId,
+        status,
+        totalAmount,
+        recognizedAmount,
+        deferredAmount,
+        scheduleDate,
+        recognitionDate,
+        notes,
+        createdAt,
       ];
 }
 
@@ -185,8 +225,15 @@ class BudgetVersion extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, name, fiscalYear, status, version,
-        plannedRevenue, plannedExpenses, notes, createdAt,
+        id,
+        name,
+        fiscalYear,
+        status,
+        version,
+        plannedRevenue,
+        plannedExpenses,
+        notes,
+        createdAt,
       ];
 }
 
@@ -217,8 +264,16 @@ class FinancialCloseTask extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, title, period, status, assignedTo, priority,
-        dueDate, completedAt, notes, createdAt,
+        id,
+        title,
+        period,
+        status,
+        assignedTo,
+        priority,
+        dueDate,
+        completedAt,
+        notes,
+        createdAt,
       ];
 }
 
@@ -247,7 +302,14 @@ class AuditTrailEntry extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, entityType, entityId, action, userId,
-        userName, changes, ipAddress, createdAt,
+        id,
+        entityType,
+        entityId,
+        action,
+        userId,
+        userName,
+        changes,
+        ipAddress,
+        createdAt,
       ];
 }

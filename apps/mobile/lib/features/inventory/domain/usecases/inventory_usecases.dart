@@ -180,8 +180,7 @@ class DeleteProductCategoryUseCase extends UseCase<void, String> {
   final InventoryRepository _repository;
 
   @override
-  Future<Result<void>> call(String id) =>
-      _repository.deleteProductCategory(id);
+  Future<Result<void>> call(String id) => _repository.deleteProductCategory(id);
 }
 
 // ── Stock Levels ───────────────────────────────────────────────────────────
@@ -261,8 +260,7 @@ class GetReorderRuleUseCase extends UseCase<ReorderRule, String> {
   final InventoryRepository _repository;
 
   @override
-  Future<Result<ReorderRule>> call(String id) =>
-      _repository.getReorderRule(id);
+  Future<Result<ReorderRule>> call(String id) => _repository.getReorderRule(id);
 }
 
 class SaveReorderRuleParams {

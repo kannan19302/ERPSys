@@ -40,7 +40,9 @@ class ActivityDetailPage extends ConsumerWidget {
       body: activityAsync.when(
         loading: () => const LoadingView(),
         error: (Object error, StackTrace _) => FailureView(
-          failure: error is Failure ? error : const ServerFailure('Could not load activity.'),
+          failure: error is Failure
+              ? error
+              : const ServerFailure('Could not load activity.'),
           onRetry: () => ref.invalidate(activityDetailProvider(activityId)),
         ),
         data: (Activity activity) => _ActivityDetail(activity: activity),
@@ -68,9 +70,8 @@ class ActivityDetailPage extends ConsumerWidget {
     );
     if (confirmed != true || !context.mounted) return;
 
-    final result = await ref
-        .read(activitiesProvider.notifier)
-        .delete(activityId);
+    final result =
+        await ref.read(activitiesProvider.notifier).delete(activityId);
 
     if (!context.mounted) return;
     result.fold(
@@ -112,13 +113,17 @@ class _ActivityDetail extends StatelessWidget {
                         vertical: Spacing.x1,
                       ),
                       decoration: BoxDecoration(
-                        color: activity.status == 'COMPLETED' ? t.successLight : t.bgSunken,
+                        color: activity.status == 'COMPLETED'
+                            ? t.successLight
+                            : t.bgSunken,
                         borderRadius: Radii.pill,
                       ),
                       child: Text(
                         activity.status!,
                         style: TextStyle(
-                          color: activity.status == 'COMPLETED' ? t.success : t.textSecondary,
+                          color: activity.status == 'COMPLETED'
+                              ? t.success
+                              : t.textSecondary,
                           fontSize: TypeScale.xs,
                           fontWeight: TypeScale.medium,
                         ),
@@ -140,11 +145,13 @@ class _ActivityDetail extends StatelessWidget {
               _FieldRow('Type', activity.type),
               if (activity.dueDate != null)
                 _FieldRow('Due Date', Formatters.date(activity.dueDate!)),
-              _FieldRow('Created', Formatters.dateTime(activity.createdAt ?? DateTime.now())),
+              _FieldRow('Created',
+                  Formatters.dateTime(activity.createdAt ?? DateTime.now())),
             ],
           ),
         ),
-        if (activity.description != null && activity.description!.isNotEmpty) ...<Widget>[
+        if (activity.description != null &&
+            activity.description!.isNotEmpty) ...<Widget>[
           const SizedBox(height: Spacing.x4),
           _SectionCard(
             child: Column(

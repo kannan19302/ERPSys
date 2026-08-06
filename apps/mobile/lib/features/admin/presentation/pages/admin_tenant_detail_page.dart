@@ -14,7 +14,8 @@ class AdminTenantDetailPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final AsyncValue<AdminTenant> tenantAsync = ref.watch(adminTenantDetailProvider(tenantId));
+    final AsyncValue<AdminTenant> tenantAsync =
+        ref.watch(adminTenantDetailProvider(tenantId));
     final Palette t = context.tokens;
 
     return Scaffold(
@@ -22,7 +23,9 @@ class AdminTenantDetailPage extends ConsumerWidget {
       body: tenantAsync.when(
         loading: () => const LoadingView(),
         error: (Object error, StackTrace _) => FailureView(
-          failure: error is Failure ? error : const ServerFailure('Could not load tenant.'),
+          failure: error is Failure
+              ? error
+              : const ServerFailure('Could not load tenant.'),
           onRetry: () => ref.invalidate(adminTenantDetailProvider(tenantId)),
         ),
         data: (AdminTenant tenant) => ListView(
@@ -32,21 +35,37 @@ class AdminTenantDetailPage extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  Row(children: <Widget>[
-                    Expanded(child: Text(tenant.name, style: Theme.of(context).textTheme.titleLarge)),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: Spacing.x2_5, vertical: Spacing.x1),
-                      decoration: BoxDecoration(
-                        color: tenant.status == 'ACTIVE' ? t.successLight : (tenant.status == 'SUSPENDED' ? t.warningLight : t.bgSunken),
-                        borderRadius: Radii.pill,
-                      ),
-                      child: Text(tenant.status,
+                  Row(
+                    children: <Widget>[
+                      Expanded(
+                          child: Text(tenant.name,
+                              style: Theme.of(context).textTheme.titleLarge)),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: Spacing.x2_5, vertical: Spacing.x1),
+                        decoration: BoxDecoration(
+                          color: tenant.status == 'ACTIVE'
+                              ? t.successLight
+                              : (tenant.status == 'SUSPENDED'
+                                  ? t.warningLight
+                                  : t.bgSunken),
+                          borderRadius: Radii.pill,
+                        ),
+                        child: Text(
+                          tenant.status,
                           style: TextStyle(
-                            color: tenant.status == 'ACTIVE' ? t.success : (tenant.status == 'SUSPENDED' ? t.warning : t.textSecondary),
-                            fontSize: TypeScale.xs, fontWeight: TypeScale.medium,
-                          ),),
-                    ),
-                  ],),
+                            color: tenant.status == 'ACTIVE'
+                                ? t.success
+                                : (tenant.status == 'SUSPENDED'
+                                    ? t.warning
+                                    : t.textSecondary),
+                            fontSize: TypeScale.xs,
+                            fontWeight: TypeScale.medium,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ],
               ),
             ),
@@ -72,7 +91,8 @@ class AdminTenantDetailPage extends ConsumerWidget {
                   const _SectionTitle(title: 'Usage'),
                   _FieldRow('Users', '${tenant.userCount}'),
                   if (tenant.createdAt != null)
-                    _FieldRow('Created', '${tenant.createdAt!.year}-${tenant.createdAt!.month.toString().padLeft(2, '0')}-${tenant.createdAt!.day.toString().padLeft(2, '0')}'),
+                    _FieldRow('Created',
+                        '${tenant.createdAt!.year}-${tenant.createdAt!.month.toString().padLeft(2, '0')}-${tenant.createdAt!.day.toString().padLeft(2, '0')}'),
                 ],
               ),
             ),
@@ -90,8 +110,12 @@ class _SectionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final Palette t = context.tokens;
     return Container(
-      width: double.infinity, padding: const EdgeInsets.all(Spacing.x4),
-      decoration: BoxDecoration(color: t.bgElevated, borderRadius: Radii.card, border: Border.all(color: t.border)),
+      width: double.infinity,
+      padding: const EdgeInsets.all(Spacing.x4),
+      decoration: BoxDecoration(
+          color: t.bgElevated,
+          borderRadius: Radii.card,
+          border: Border.all(color: t.border)),
       child: child,
     );
   }
@@ -102,9 +126,9 @@ class _SectionTitle extends StatelessWidget {
   final String title;
   @override
   Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.only(bottom: Spacing.x3),
-    child: Text(title, style: Theme.of(context).textTheme.titleMedium),
-  );
+        padding: const EdgeInsets.only(bottom: Spacing.x3),
+        child: Text(title, style: Theme.of(context).textTheme.titleMedium),
+      );
 }
 
 class _FieldRow extends StatelessWidget {
@@ -116,10 +140,13 @@ class _FieldRow extends StatelessWidget {
     final Palette t = context.tokens;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: Spacing.x1_5),
-      child: Row(children: <Widget>[
-        Expanded(child: Text(label, style: TextStyle(color: t.textSecondary))),
-        Text(value, style: Theme.of(context).textTheme.labelLarge),
-      ],),
+      child: Row(
+        children: <Widget>[
+          Expanded(
+              child: Text(label, style: TextStyle(color: t.textSecondary))),
+          Text(value, style: Theme.of(context).textTheme.labelLarge),
+        ],
+      ),
     );
   }
 }

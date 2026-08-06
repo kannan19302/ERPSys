@@ -4,7 +4,8 @@ import '../../../../core/usecase/usecase.dart';
 import '../entities/communication.dart';
 import '../repositories/communication_repository.dart';
 
-class ListChannelsUseCase extends UseCase<Cacheable<Paginated<Channel>>, ListQuery> {
+class ListChannelsUseCase
+    extends UseCase<Cacheable<Paginated<Channel>>, ListQuery> {
   const ListChannelsUseCase(this._repository);
   final CommunicationRepository _repository;
   @override
@@ -58,16 +59,19 @@ class LeaveChannelUseCase extends UseCase<Channel, String> {
   Future<Result<Channel>> call(String id) => _repository.leaveChannel(id);
 }
 
-class ListChannelMessagesUseCase extends UseCase<Cacheable<Paginated<Message>>, ListChannelMessagesParams> {
+class ListChannelMessagesUseCase
+    extends UseCase<Cacheable<Paginated<Message>>, ListChannelMessagesParams> {
   const ListChannelMessagesUseCase(this._repository);
   final CommunicationRepository _repository;
   @override
-  Future<Result<Cacheable<Paginated<Message>>>> call(ListChannelMessagesParams params) =>
+  Future<Result<Cacheable<Paginated<Message>>>> call(
+          ListChannelMessagesParams params) =>
       _repository.listChannelMessages(params.channelId, params.query);
 }
 
 class ListChannelMessagesParams {
-  const ListChannelMessagesParams({required this.channelId, required this.query});
+  const ListChannelMessagesParams(
+      {required this.channelId, required this.query});
   final String channelId;
   final ListQuery query;
 }
@@ -101,7 +105,8 @@ class ReactToMessageParams {
   final Map<String, dynamic> payload;
 }
 
-class ListDirectMessagesUseCase extends UseCase<Cacheable<Paginated<DirectMessage>>, ListQuery> {
+class ListDirectMessagesUseCase
+    extends UseCase<Cacheable<Paginated<DirectMessage>>, ListQuery> {
   const ListDirectMessagesUseCase(this._repository);
   final CommunicationRepository _repository;
   @override
@@ -109,7 +114,8 @@ class ListDirectMessagesUseCase extends UseCase<Cacheable<Paginated<DirectMessag
       _repository.listDirectMessages(params);
 }
 
-class SendDirectMessageUseCase extends UseCase<DirectMessage, Map<String, dynamic>> {
+class SendDirectMessageUseCase
+    extends UseCase<DirectMessage, Map<String, dynamic>> {
   const SendDirectMessageUseCase(this._repository);
   final CommunicationRepository _repository;
   @override
@@ -117,7 +123,8 @@ class SendDirectMessageUseCase extends UseCase<DirectMessage, Map<String, dynami
       _repository.sendDirectMessage(payload);
 }
 
-class ListMeetingsUseCase extends UseCase<Cacheable<Paginated<Meeting>>, ListQuery> {
+class ListMeetingsUseCase
+    extends UseCase<Cacheable<Paginated<Meeting>>, ListQuery> {
   const ListMeetingsUseCase(this._repository);
   final CommunicationRepository _repository;
   @override

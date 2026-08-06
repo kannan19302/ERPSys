@@ -194,6 +194,7 @@ export class CrmDealRoomPublicController {
   constructor(private readonly svc: CrmDealRoomService) {}
 
   @ApiOperation({ summary: "Buyer: view the deal room via their access token" })
+  @Permissions("crm.by-buyer-token.read")
   @Get(":token")
   async getByToken(@Param("token") token: string) {
     return this.svc.getByBuyerToken(token);
@@ -202,6 +203,7 @@ export class CrmDealRoomPublicController {
   @ApiOperation({
     summary: "Buyer: mark a buyer/mutual-owned milestone complete",
   })
+  @Permissions("crm.complete-milestone.buyer")
   @Post(":token/milestones/:milestoneId/complete")
   async completeMilestone(
     @Param("token") token: string,
@@ -211,6 +213,7 @@ export class CrmDealRoomPublicController {
   }
 
   @ApiOperation({ summary: "Buyer: record that a shared document was viewed" })
+  @Permissions("crm.view-document.buyer")
   @Post(":token/documents/:documentId/view")
   async viewDocument(
     @Param("token") token: string,

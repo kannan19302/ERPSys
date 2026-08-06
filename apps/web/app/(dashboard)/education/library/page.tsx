@@ -17,7 +17,7 @@ import {
   KPICard,
 } from "@unerp/ui";
 import { RouteGuard, useApiClient } from "@unerp/framework";
-import { SubTabBar, type SubTab } from "@unerp/ui-layout";
+import { SubTabBar, type SubTab } from "@unerp/ui/layout";
 import {
   BookOpen,
   Plus,

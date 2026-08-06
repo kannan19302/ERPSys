@@ -47,7 +47,8 @@ class _VendorListPageState extends ConsumerState<VendorListPage> {
             initialValue: state.query.sort,
             onSelected: controller.applySort,
             itemBuilder: (_) => _sortOptions.entries
-                .map((e) => PopupMenuItem<String>(value: e.key, child: Text(e.value)))
+                .map((e) =>
+                    PopupMenuItem<String>(value: e.key, child: Text(e.value)))
                 .toList(),
           ),
         ],
@@ -60,7 +61,8 @@ class _VendorListPageState extends ConsumerState<VendorListPage> {
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
+            padding: const EdgeInsets.fromLTRB(
+                Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
             child: TextField(
               controller: _search,
               onChanged: controller.search,
@@ -72,21 +74,28 @@ class _VendorListPageState extends ConsumerState<VendorListPage> {
                     ? null
                     : IconButton(
                         icon: const Icon(Icons.close),
-                        onPressed: () { _search.clear(); controller.search(''); },
+                        onPressed: () {
+                          _search.clear();
+                          controller.search('');
+                        },
                       ),
               ),
             ),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: Spacing.x4),
-            child: Row(children: [
-              Text(
-                state.isLoading
-                    ? 'Loading...'
-                    : '${state.meta.total} vendor${state.meta.total == 1 ? '' : 's'}',
-                style: TextStyle(color: context.tokens.textSecondary, fontSize: TypeScale.xs),
-              ),
-            ],),
+            child: Row(
+              children: [
+                Text(
+                  state.isLoading
+                      ? 'Loading...'
+                      : '${state.meta.total} vendor${state.meta.total == 1 ? '' : 's'}',
+                  style: TextStyle(
+                      color: context.tokens.textSecondary,
+                      fontSize: TypeScale.xs),
+                ),
+              ],
+            ),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -112,29 +121,49 @@ class _VendorListPageState extends ConsumerState<VendorListPage> {
           ? 'Nothing matches "${state.query.search}".'
           : 'Vendors created in UniERP will appear here.',
       itemBuilder: (_, Vendor v, __) => UiCard(
-        onTap: () => context.pushNamed('vendor-detail', pathParameters: <String, String>{'id': v.id}),
+        onTap: () => context.pushNamed('vendor-detail',
+            pathParameters: <String, String>{'id': v.id}),
         padding: const EdgeInsets.all(Spacing.x3),
-        child: Row(children: [
-          Container(
-            height: Spacing.x10, width: Spacing.x10,
-            decoration: BoxDecoration(color: context.tokens.bgSunken, borderRadius: Radii.control),
-            alignment: Alignment.center,
-            child: Icon(Icons.business_outlined, size: TypeScale.xl, color: context.tokens.textSecondary),
-          ),
-          const SizedBox(width: Spacing.x3),
-          Expanded(child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(v.name, maxLines: 1, overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).textTheme.labelLarge,),
-              if (v.email != null)
-                Text(v.email!, maxLines: 1, overflow: TextOverflow.ellipsis,
-                    style: TextStyle(color: context.tokens.textTertiary, fontSize: TypeScale.xs),),
-            ],
-          ),),
-          const SizedBox(width: Spacing.x2),
-          UiStatusBadge(label: v.status, tone: v.status == 'ACTIVE' ? UiTone.success : UiTone.neutral),
-        ],),
+        child: Row(
+          children: [
+            Container(
+              height: Spacing.x10,
+              width: Spacing.x10,
+              decoration: BoxDecoration(
+                  color: context.tokens.bgSunken, borderRadius: Radii.control),
+              alignment: Alignment.center,
+              child: Icon(Icons.business_outlined,
+                  size: TypeScale.xl, color: context.tokens.textSecondary),
+            ),
+            const SizedBox(width: Spacing.x3),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    v.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.labelLarge,
+                  ),
+                  if (v.email != null)
+                    Text(
+                      v.email!,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                          color: context.tokens.textTertiary,
+                          fontSize: TypeScale.xs),
+                    ),
+                ],
+              ),
+            ),
+            const SizedBox(width: Spacing.x2),
+            UiStatusBadge(
+                label: v.status,
+                tone: v.status == 'ACTIVE' ? UiTone.success : UiTone.neutral),
+          ],
+        ),
       ),
     );
   }

@@ -1,5 +1,6 @@
 import { Injectable, BadRequestException } from "@nestjs/common";
 import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 
 /** Shape returned by getMlModels (derived — no unmanaged raw table) */
 export interface MlModelRecord {

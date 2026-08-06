@@ -4,6 +4,8 @@ import {
   BadRequestException,
 } from "@nestjs/common";
 import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
+import { Prisma } from "@prisma/client";
 
 @Injectable()
 export class ManufacturingJobCostService {
@@ -111,36 +113,42 @@ export class ManufacturingJobCostService {
       where: { costSheetId, tenantId },
     });
 
-    const actualMaterialCost = entries
-      .filter((e) => e.costType === "MATERIAL")
-      .reduce((sum, e) => sum + Number(e.amount), 0);
-    const actualLaborCost = entries
-      .filter((e) => e.costType === "LABOR")
-      .reduce((sum, e) => sum + Number(e.amount), 0);
-    const actualOverheadCost = entries
-      .filter((e) => e.costType === "OVERHEAD")
-      .reduce((sum, e) => sum + Number(e.amount), 0);
-    const scrapCost = entries
-      .filter((e) => e.costType === "SCRAP")
-      .reduce((sum, e) => sum + Number(e.amount), 0);
-    const reworkCost = entries
-      .filter((e) => e.costType === "REWORK")
-      .reduce((sum, e) => sum + Number(e.amount), 0);
-    const totalActualCost =
-      actualMaterialCost +
-      actualLaborCost +
-      actualOverheadCost +
-      scrapCost +
-      reworkCost;
+    // Every total below used to be summed with `sum + Number(e.amount)`.
+    // `amount` is Decimal(19,4) and the columns written further down are
+    // Decimal(19,4) too, but the arithmetic in between ran in binary floating
+    // point — so the money was exact in storage and drifted the moment it was
+    // recalculated. Cost sheets recalculate on every entry added and again on
+    // close, so the error compounds over the life of a job. Summing as Decimal
+    // keeps the whole path exact.
+    const sumByType = (costType: string) =>
+      entries
+        .filter((e) => e.costType === costType)
+        .reduce((sum, e) => sum.add(e.amount ?? 0), new Prisma.Decimal(0));
+
+    const actualMaterialCost = sumByType("MATERIAL");
+    const actualLaborCost = sumByType("LABOR");
+    const actualOverheadCost = sumByType("OVERHEAD");
+    const scrapCost = sumByType("SCRAP");
+    const reworkCost = sumByType("REWORK");
+    const totalActualCost = actualMaterialCost
+      .add(actualLaborCost)
+      .add(actualOverheadCost)
+      .add(scrapCost)
+      .add(reworkCost);
 
     const sheet = await prisma.jobCostSheet.findFirst({
       where: { id: costSheetId, tenantId },
     });
-    const totalPlanned = Number(sheet?.totalPlannedCost || 0);
-    const variancePct =
-      totalPlanned > 0
-        ? ((totalActualCost - totalPlanned) / totalPlanned) * 100
-        : 0;
+    const totalPlanned = new Prisma.Decimal(sheet?.totalPlannedCost ?? 0);
+    // variancePct is a percentage, not money: its column is Float and stays
+    // one. It is derived from Decimal inputs and converted only at the end.
+    const variancePct = totalPlanned.greaterThan(0)
+      ? totalActualCost
+          .minus(totalPlanned)
+          .dividedBy(totalPlanned)
+          .times(100)
+          .toNumber()
+      : 0;
 
     await prisma.jobCostSheet.update({
       where: { id: costSheetId },
@@ -220,20 +228,28 @@ export class ManufacturingJobCostService {
       include: { costEntries: true },
     });
 
+    // Both columns are Decimal(19,4); rolling them up through Number() drifted
+    // the analytics totals away from the sheets they summarise.
     const totalPlanned = sheets.reduce(
-      (sum, s) => sum + Number(s.totalPlannedCost || 0),
-      0,
+      (sum, s) => sum.add(s.totalPlannedCost ?? 0),
+      new Prisma.Decimal(0),
     );
     const totalActual = sheets.reduce(
-      (sum, s) => sum + Number(s.totalActualCost || 0),
-      0,
+      (sum, s) => sum.add(s.totalActualCost ?? 0),
+      new Prisma.Decimal(0),
     );
     const openSheets = sheets.filter((s) => !s.closedAt).length;
     const closedSheets = sheets.filter((s) => s.closedAt).length;
-    const totalVariance =
-      totalPlanned > 0
-        ? ((totalActual - totalPlanned) / totalPlanned) * 100
-        : 0;
+    // A percentage, not money — derived from the Decimal totals and converted
+    // only at the end. (`totalPlanned > 0` on a Decimal compared against a
+    // number is not a valid comparison; use the Decimal predicate.)
+    const totalVariance = totalPlanned.greaterThan(0)
+      ? totalActual
+          .minus(totalPlanned)
+          .dividedBy(totalPlanned)
+          .times(100)
+          .toNumber()
+      : 0;
 
     return {
       totalSheets: sheets.length,

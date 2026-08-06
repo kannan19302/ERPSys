@@ -39,24 +39,31 @@ class PrescriptionDetailPage extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       _DetailRow(label: 'Patient', value: rx.patientName),
-                      _DetailRow(label: 'Date', value: Formatters.dateTime(rx.prescriptionDate)),
+                      _DetailRow(
+                          label: 'Date',
+                          value: Formatters.dateTime(rx.prescriptionDate)),
                       _DetailRow(label: 'Doctor', value: rx.doctorName ?? '-'),
-                      _DetailRow(label: 'Refills', value: rx.refillCount.toString()),
+                      _DetailRow(
+                          label: 'Refills', value: rx.refillCount.toString()),
                       if (rx.diagnosis != null && rx.diagnosis!.isNotEmpty) ...[
                         const SizedBox(height: 12),
-                        const Text('Diagnosis', style: TextStyle(fontWeight: FontWeight.w600)),
+                        const Text('Diagnosis',
+                            style: TextStyle(fontWeight: FontWeight.w600)),
                         const SizedBox(height: 4),
                         Text(rx.diagnosis!),
                       ],
-                      if (rx.medications != null && rx.medications!.isNotEmpty) ...[
+                      if (rx.medications != null &&
+                          rx.medications!.isNotEmpty) ...[
                         const SizedBox(height: 12),
-                        const Text('Medications', style: TextStyle(fontWeight: FontWeight.w600)),
+                        const Text('Medications',
+                            style: TextStyle(fontWeight: FontWeight.w600)),
                         const SizedBox(height: 4),
                         Text(rx.medications!),
                       ],
                       if (rx.notes != null && rx.notes!.isNotEmpty) ...[
                         const SizedBox(height: 12),
-                        const Text('Notes', style: TextStyle(fontWeight: FontWeight.w600)),
+                        const Text('Notes',
+                            style: TextStyle(fontWeight: FontWeight.w600)),
                         const SizedBox(height: 4),
                         Text(rx.notes!),
                       ],
@@ -92,7 +99,8 @@ class _StatusBadge extends StatelessWidget {
       ),
       child: Text(
         status,
-        style: TextStyle(color: color, fontWeight: FontWeight.w600, fontSize: 13),
+        style:
+            TextStyle(color: color, fontWeight: FontWeight.w600, fontSize: 13),
       ),
     );
   }
@@ -105,16 +113,18 @@ class _DetailRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.symmetric(vertical: 6),
-    child: Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        SizedBox(
-          width: 100,
-          child: Text(label, style: const TextStyle(color: Colors.grey, fontWeight: FontWeight.w500)),
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(
+              width: 100,
+              child: Text(label,
+                  style: const TextStyle(
+                      color: Colors.grey, fontWeight: FontWeight.w500)),
+            ),
+            Expanded(child: Text(value)),
+          ],
         ),
-        Expanded(child: Text(value)),
-      ],
-    ),
-  );
+      );
 }

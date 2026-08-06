@@ -1,29 +1,42 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { CrmGamificationService } from "../crm-gamification.service";
 
-vi.mock("@unerp/database", () => ({
-  prisma: {
-    organization: { findFirst: vi.fn() },
-    opportunity: { findMany: vi.fn() },
-    activity: { findMany: vi.fn(), groupBy: vi.fn() },
-    user: { findMany: vi.fn() },
-    leaderboardSnapshot: {
-      deleteMany: vi.fn(),
-      createMany: vi.fn(),
-      findMany: vi.fn(),
-      findUnique: vi.fn(),
+vi.mock("@unerp/database", () => {
+  // Identity models (user, role, userSession, ...) are read through
+  // `idpPrisma`, not `prisma` — this spec predates that split and stubs
+  // them under `prisma`. Exporting the same stub object under both names
+  // keeps every `vi.mocked(prisma.user.*)` setup pointing at exactly the
+  // function the service calls.
+  const mocked = {
+    prisma: {
+      organization: { findFirst: vi.fn() },
+      opportunity: { findMany: vi.fn() },
+      activity: { findMany: vi.fn(), groupBy: vi.fn() },
+      user: { findMany: vi.fn() },
+      leaderboardSnapshot: {
+        deleteMany: vi.fn(),
+        createMany: vi.fn(),
+        findMany: vi.fn(),
+        findUnique: vi.fn(),
+      },
+      salesStreak: { upsert: vi.fn(), findMany: vi.fn() },
+      gamificationBadge: {
+        findMany: vi.fn(),
+        create: vi.fn(),
+        update: vi.fn(),
+      },
+      gamificationBadgeAward: {
+        findUnique: vi.fn(),
+        create: vi.fn(),
+        findMany: vi.fn(),
+      },
     },
-    salesStreak: { upsert: vi.fn(), findMany: vi.fn() },
-    gamificationBadge: { findMany: vi.fn(), create: vi.fn(), update: vi.fn() },
-    gamificationBadgeAward: {
-      findUnique: vi.fn(),
-      create: vi.fn(),
-      findMany: vi.fn(),
-    },
-  },
-}));
+  };
+  return { ...mocked, idpPrisma: mocked.prisma };
+});
 
 import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 
 const TENANT = "tenant-1";
 const emit = vi.fn();
@@ -72,7 +85,7 @@ describe("CrmGamificationService", () => {
         activityCount: 0,
       },
     ]);
-    (prisma.user.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([
+    (idpPrisma.user.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([
       { id: "user-a", firstName: "Ann", lastName: "A" },
       { id: "user-b", firstName: "Bob", lastName: "B" },
     ]);

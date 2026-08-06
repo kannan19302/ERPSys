@@ -178,25 +178,25 @@ export default function CommunicationUnifiedHub() {
             title="Shared Inboxes Active"
             value="18 Mailboxes"
             change={12.0}
-            icon={<Mail color="#10B981" />}
+            icon={<Mail color="var(--chart-9)" />}
           />
           <KPICard
             title="Video HD Rooms"
             value="124 Meetings/Day"
             change={22.0}
-            icon={<Video color="#3B82F6" />}
+            icon={<Video color="var(--color-primary)" />}
           />
           <KPICard
             title="Internal Wiki Pages"
             value="1,420 Articles"
             change={15.0}
-            icon={<BookOpen color="#8B5CF6" />}
+            icon={<BookOpen color="var(--chart-5)" />}
           />
           <KPICard
             title="Intranet Daily Engagement"
             value="94.2%"
             change={4.1}
-            icon={<Users color="#F59E0B" />}
+            icon={<Users color="var(--chart-3)" />}
           />
         </div>
 

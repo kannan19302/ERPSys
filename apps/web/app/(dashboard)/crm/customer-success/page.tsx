@@ -80,7 +80,8 @@ export default function CrmCustomerSuccessPage() {
             style={{
               background:
                 activeTab === tab.id ? "var(--color-primary)" : "transparent",
-              color: activeTab === tab.id ? "#fff" : "inherit",
+              color:
+                activeTab === tab.id ? "var(--color-text-inverse)" : "inherit",
               border: "none",
               padding: "var(--space-1) var(--space-3)",
               cursor: "pointer",

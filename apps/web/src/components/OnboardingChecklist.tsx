@@ -306,10 +306,7 @@ export function OnboardingChecklist({
       <div className={`${styles.widget} ui-animate-in ${className || ""}`}>
         <div className={styles.header} onClick={() => setExpanded(!expanded)}>
           <div className={styles.titleArea}>
-            <Sparkles
-              size={16}
-              style={{ color: "var(--color-warning, #f59e0b)" }}
-            />
+            <Sparkles size={16} style={{ color: "var(--color-warning)" }} />
             <span className={styles.title}>Get Started with UniERP</span>
             <span className={`${styles.badge} ${styles.badgePulse}`}>
               {progress} / {total} completed

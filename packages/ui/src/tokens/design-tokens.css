@@ -1,5 +1,7 @@
 /* ─────────────────────────────────────────────────
-   DEPRECATED SHIM — tokens moved to @unerp/ui-tokens.
-   Kept so existing '@unerp/ui/tokens' imports keep working.
+   Compatibility entry — '@unerp/ui/tokens' resolves here.
+   The tokens themselves live in ./index.css, which moved into this
+   package when the 13 @unerp/ui-* packages were collapsed
+   (PLATFORM_ARCHITECTURE.md § 7.2).
    ───────────────────────────────────────────────── */
-@import '../../../ui-tokens/src/index.css';
+@import "./index.css";

@@ -14,10 +14,12 @@ class AnalyticsReportListPage extends ConsumerStatefulWidget {
   static const String routeName = 'analytics-reports';
   static const String routePath = '/analytics/reports';
   @override
-  ConsumerState<AnalyticsReportListPage> createState() => _AnalyticsReportListPageState();
+  ConsumerState<AnalyticsReportListPage> createState() =>
+      _AnalyticsReportListPageState();
 }
 
-class _AnalyticsReportListPageState extends ConsumerState<AnalyticsReportListPage> {
+class _AnalyticsReportListPageState
+    extends ConsumerState<AnalyticsReportListPage> {
   final TextEditingController _search = TextEditingController();
 
   static const Map<String, String> _sortOptions = <String, String>{
@@ -48,8 +50,12 @@ class _AnalyticsReportListPageState extends ConsumerState<AnalyticsReportListPag
             initialValue: state.query.sort,
             onSelected: controller.applySort,
             itemBuilder: (_) => _sortOptions.entries
-                .map((e) => PopupMenuItem<String>(
-                    value: e.key, child: Text(e.value),),)
+                .map(
+                  (e) => PopupMenuItem<String>(
+                    value: e.key,
+                    child: Text(e.value),
+                  ),
+                )
                 .toList(),
           ),
         ],
@@ -65,7 +71,8 @@ class _AnalyticsReportListPageState extends ConsumerState<AnalyticsReportListPag
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
+            padding: const EdgeInsets.fromLTRB(
+                Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
             child: TextField(
               controller: _search,
               onChanged: controller.search,
@@ -77,21 +84,27 @@ class _AnalyticsReportListPageState extends ConsumerState<AnalyticsReportListPag
                     ? null
                     : IconButton(
                         icon: const Icon(Icons.close),
-                        onPressed: () { _search.clear(); controller.search(''); },
+                        onPressed: () {
+                          _search.clear();
+                          controller.search('');
+                        },
                       ),
               ),
             ),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: Spacing.x4),
-            child: Row(children: [
-              Text(
-                state.isLoading
-                    ? 'Loading...'
-                    : '${state.meta.total} report${state.meta.total == 1 ? '' : 's'}',
-                style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
-              ),
-            ],),
+            child: Row(
+              children: [
+                Text(
+                  state.isLoading
+                      ? 'Loading...'
+                      : '${state.meta.total} report${state.meta.total == 1 ? '' : 's'}',
+                  style:
+                      TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
+                ),
+              ],
+            ),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -143,25 +156,34 @@ class _ReportTile extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(children: [
-                Expanded(
-                  child: Text(report.title,
-                      style: Theme.of(context).textTheme.titleSmall,),
-                ),
-                UiStatusBadge(
-                  label: report.status,
-                  tone: _statusTone(report.status),
-                ),
-              ],),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      report.title,
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
+                  ),
+                  UiStatusBadge(
+                    label: report.status,
+                    tone: _statusTone(report.status),
+                  ),
+                ],
+              ),
               if (report.description != null) ...[
                 const SizedBox(height: Spacing.x1),
-                Text(report.description!,
-                    style: TextStyle(color: t.textSecondary),),
+                Text(
+                  report.description!,
+                  style: TextStyle(color: t.textSecondary),
+                ),
               ],
               if (report.reportType != null) ...[
                 const SizedBox(height: Spacing.x1),
-                Text(report.reportType!,
-                    style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),),
+                Text(
+                  report.reportType!,
+                  style:
+                      TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
+                ),
               ],
             ],
           ),

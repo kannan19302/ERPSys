@@ -69,14 +69,14 @@ const PRESENCE_LABELS: Record<string, string> = {
 };
 
 const PRESENCE_COLORS: Record<string, string> = {
-  ACTIVE: "#10b981",
-  IN_MEETING: "#10b981",
-  FOCUSING: "#10b981",
-  AWAY: "#f59e0b",
-  BRB: "#f59e0b",
-  DND: "#ef4444",
-  OOO: "#94a3b8",
-  INACTIVE: "#94a3b8",
+  ACTIVE: "var(--chart-9)",
+  IN_MEETING: "var(--chart-9)",
+  FOCUSING: "var(--chart-9)",
+  AWAY: "var(--chart-3)",
+  BRB: "var(--chart-3)",
+  DND: "var(--chart-4)",
+  OOO: "var(--color-text-tertiary)",
+  INACTIVE: "var(--color-text-tertiary)",
 };
 
 function currentTimeInZone(tz: string | null): string | null {

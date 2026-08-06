@@ -19,20 +19,29 @@ abstract class PeopleRepository {
   Future<Result<Cacheable<Paginated<PeopleTeam>>>> listTeams(ListQuery query);
   Future<Result<PeopleTeam>> getTeam(String id);
   Future<Result<PeopleTeam>> createTeam(Map<String, dynamic> payload);
-  Future<Result<PeopleTeam>> updateTeam(String id, Map<String, dynamic> payload);
+  Future<Result<PeopleTeam>> updateTeam(
+      String id, Map<String, dynamic> payload);
   Future<Result<void>> deleteTeam(String id);
 
-  Future<Result<Cacheable<Paginated<PeopleOnboardingTask>>>> listOnboardingTasks(
-    ListQuery query,);
+  Future<Result<Cacheable<Paginated<PeopleOnboardingTask>>>>
+      listOnboardingTasks(
+    ListQuery query,
+  );
   Future<Result<PeopleOnboardingTask>> getOnboardingTask(String id);
-  Future<Result<PeopleOnboardingTask>> createOnboardingTask(Map<String, dynamic> payload);
+  Future<Result<PeopleOnboardingTask>> createOnboardingTask(
+      Map<String, dynamic> payload);
   Future<Result<PeopleOnboardingTask>> updateOnboardingTask(
-    String id, Map<String, dynamic> payload,);
+    String id,
+    Map<String, dynamic> payload,
+  );
   Future<Result<void>> deleteOnboardingTask(String id);
   Future<Result<PeopleOnboardingTask>> completeOnboardingTask(String id);
 
-  Future<Result<Cacheable<Paginated<PeopleRecognitionEntry>>>> listRecognitionEntries(
-    ListQuery query,);
-  Future<Result<PeopleRecognitionEntry>> createRecognitionEntry(Map<String, dynamic> payload);
+  Future<Result<Cacheable<Paginated<PeopleRecognitionEntry>>>>
+      listRecognitionEntries(
+    ListQuery query,
+  );
+  Future<Result<PeopleRecognitionEntry>> createRecognitionEntry(
+      Map<String, dynamic> payload);
   Future<Result<void>> deleteRecognitionEntry(String id);
 }

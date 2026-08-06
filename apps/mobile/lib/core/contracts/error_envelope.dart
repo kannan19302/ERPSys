@@ -19,7 +19,8 @@ class ErrorEnvelope {
 
   /// Tolerant parse: some legacy handlers return `{ message }` only, and a few
   /// return `message` as a string array (Nest's default validation shape).
-  factory ErrorEnvelope.fromJson(Map<String, dynamic> json, int fallbackStatus) {
+  factory ErrorEnvelope.fromJson(
+      Map<String, dynamic> json, int fallbackStatus) {
     final dynamic rawMessage = json['message'];
     final String message = switch (rawMessage) {
       final String value => value,

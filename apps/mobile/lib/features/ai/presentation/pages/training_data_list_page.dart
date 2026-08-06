@@ -13,10 +13,12 @@ class AiTrainingDataListPage extends ConsumerStatefulWidget {
   static const String routeName = 'ai-training-data';
   static const String routePath = '/ai/training';
   @override
-  ConsumerState<AiTrainingDataListPage> createState() => _AiTrainingDataListPageState();
+  ConsumerState<AiTrainingDataListPage> createState() =>
+      _AiTrainingDataListPageState();
 }
 
-class _AiTrainingDataListPageState extends ConsumerState<AiTrainingDataListPage> {
+class _AiTrainingDataListPageState
+    extends ConsumerState<AiTrainingDataListPage> {
   final TextEditingController _search = TextEditingController();
 
   static const Map<String, String> _sortOptions = <String, String>{
@@ -47,8 +49,12 @@ class _AiTrainingDataListPageState extends ConsumerState<AiTrainingDataListPage>
             initialValue: state.query.sort,
             onSelected: controller.applySort,
             itemBuilder: (_) => _sortOptions.entries
-                .map((e) => PopupMenuItem<String>(
-                    value: e.key, child: Text(e.value),),)
+                .map(
+                  (e) => PopupMenuItem<String>(
+                    value: e.key,
+                    child: Text(e.value),
+                  ),
+                )
                 .toList(),
           ),
         ],
@@ -56,7 +62,8 @@ class _AiTrainingDataListPageState extends ConsumerState<AiTrainingDataListPage>
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
+            padding: const EdgeInsets.fromLTRB(
+                Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
             child: TextField(
               controller: _search,
               onChanged: controller.search,
@@ -68,21 +75,27 @@ class _AiTrainingDataListPageState extends ConsumerState<AiTrainingDataListPage>
                     ? null
                     : IconButton(
                         icon: const Icon(Icons.close),
-                        onPressed: () { _search.clear(); controller.search(''); },
+                        onPressed: () {
+                          _search.clear();
+                          controller.search('');
+                        },
                       ),
               ),
             ),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: Spacing.x4),
-            child: Row(children: [
-              Text(
-                state.isLoading
-                    ? 'Loading...'
-                    : '${state.meta.total} dataset${state.meta.total == 1 ? '' : 's'}',
-                style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
-              ),
-            ],),
+            child: Row(
+              children: [
+                Text(
+                  state.isLoading
+                      ? 'Loading...'
+                      : '${state.meta.total} dataset${state.meta.total == 1 ? '' : 's'}',
+                  style:
+                      TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
+                ),
+              ],
+            ),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -90,7 +103,8 @@ class _AiTrainingDataListPageState extends ConsumerState<AiTrainingDataListPage>
     );
   }
 
-  Widget _body(AiTrainingDataListState state, AiTrainingDataListController controller) {
+  Widget _body(
+      AiTrainingDataListState state, AiTrainingDataListController controller) {
     if (state.isLoading && state.items.isEmpty) return const LoadingView();
     final failure = state.failure;
     if (failure != null && state.items.isEmpty) {
@@ -134,29 +148,44 @@ class _TrainingDataTile extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(children: [
-                Expanded(
-                  child: Text(data.name,
-                      style: Theme.of(context).textTheme.titleSmall,),
-                ),
-                UiStatusBadge(
-                  label: data.status,
-                  tone: _statusTone(data.status),
-                ),
-              ],),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      data.name,
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
+                  ),
+                  UiStatusBadge(
+                    label: data.status,
+                    tone: _statusTone(data.status),
+                  ),
+                ],
+              ),
               const SizedBox(height: Spacing.x1),
-              Row(children: [
-                if (data.dataType != null)
-                  Text(data.dataType!,
-                      style: TextStyle(color: t.textSecondary, fontSize: TypeScale.sm),),
-                const SizedBox(width: Spacing.x2),
-                Text('${data.recordsCount} records',
-                    style: TextStyle(color: t.textSecondary, fontSize: TypeScale.sm),),
-              ],),
+              Row(
+                children: [
+                  if (data.dataType != null)
+                    Text(
+                      data.dataType!,
+                      style: TextStyle(
+                          color: t.textSecondary, fontSize: TypeScale.sm),
+                    ),
+                  const SizedBox(width: Spacing.x2),
+                  Text(
+                    '${data.recordsCount} records',
+                    style: TextStyle(
+                        color: t.textSecondary, fontSize: TypeScale.sm),
+                  ),
+                ],
+              ),
               if (data.createdAt != null) ...[
                 const SizedBox(height: Spacing.x1),
-                Text(DateFormat.yMMMd().format(data.createdAt!.toLocal()),
-                    style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),),
+                Text(
+                  DateFormat.yMMMd().format(data.createdAt!.toLocal()),
+                  style:
+                      TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
+                ),
               ],
             ],
           ),

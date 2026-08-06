@@ -67,7 +67,10 @@ class _TaxRateListPageState extends ConsumerState<TaxRateListPage> {
         children: <Widget>[
           Padding(
             padding: const EdgeInsets.fromLTRB(
-              Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2,
+              Spacing.x4,
+              Spacing.x3,
+              Spacing.x4,
+              Spacing.x2,
             ),
             child: TextField(
               controller: _search,
@@ -131,8 +134,7 @@ class _TaxRateListPageState extends ConsumerState<TaxRateListPage> {
       emptyMessage: state.query.search?.isNotEmpty ?? false
           ? 'Nothing matches "${state.query.search}".'
           : 'Tax rates configured in UniERP will appear here.',
-      itemBuilder: (BuildContext context, TaxRate tax, _) =>
-          _TaxRateTile(
+      itemBuilder: (BuildContext context, TaxRate tax, _) => _TaxRateTile(
         taxRate: tax,
         onTap: () => context.pushNamed(
           'tax-rate-detail',

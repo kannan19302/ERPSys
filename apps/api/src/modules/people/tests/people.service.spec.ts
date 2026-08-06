@@ -1,34 +1,43 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-vi.mock("@unerp/database", () => ({
-  prisma: {
-    userProfile: {
-      findUnique: vi.fn(),
-      create: vi.fn(),
-      update: vi.fn(),
-      count: vi.fn(),
-      findMany: vi.fn(),
+vi.mock("@unerp/database", () => {
+  // Identity models (user, role, userSession, ...) are read through
+  // `idpPrisma`, not `prisma` — this spec predates that split and stubs
+  // them under `prisma`. Exporting the same stub object under both names
+  // keeps every `vi.mocked(prisma.user.*)` setup pointing at exactly the
+  // function the service calls.
+  const mocked = {
+    prisma: {
+      userProfile: {
+        findUnique: vi.fn(),
+        create: vi.fn(),
+        update: vi.fn(),
+        count: vi.fn(),
+        findMany: vi.fn(),
+      },
+      user: {
+        findFirst: vi.fn(),
+        findUnique: vi.fn(),
+        findMany: vi.fn(),
+      },
+      department: {
+        findUnique: vi.fn(),
+        findFirst: vi.fn(),
+      },
+      userPresence: {
+        findUnique: vi.fn(),
+        findMany: vi.fn(),
+      },
+      loginHistory: {
+        findMany: vi.fn(),
+      },
     },
-    user: {
-      findFirst: vi.fn(),
-      findUnique: vi.fn(),
-      findMany: vi.fn(),
-    },
-    department: {
-      findUnique: vi.fn(),
-      findFirst: vi.fn(),
-    },
-    userPresence: {
-      findUnique: vi.fn(),
-      findMany: vi.fn(),
-    },
-    loginHistory: {
-      findMany: vi.fn(),
-    },
-  },
-}));
+  };
+  return { ...mocked, idpPrisma: mocked.prisma };
+});
 
 import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 import { PeopleService } from "../people.service";
 
 describe("PeopleService", () => {
@@ -41,9 +50,9 @@ describe("PeopleService", () => {
 
   describe("getOrCreateProfile", () => {
     it("auto-provisions a profile with a 6-digit employee id on first access", async () => {
-      vi.mocked(prisma.userProfile.findUnique).mockResolvedValueOnce(null); // getOrCreateProfile lookup
-      vi.mocked(prisma.userProfile.findUnique).mockResolvedValueOnce(null); // employeeId collision check
-      vi.mocked(prisma.userProfile.create).mockResolvedValue({
+      vi.mocked(idpPrisma.userProfile.findUnique).mockResolvedValueOnce(null); // getOrCreateProfile lookup
+      vi.mocked(idpPrisma.userProfile.findUnique).mockResolvedValueOnce(null); // employeeId collision check
+      vi.mocked(idpPrisma.userProfile.create).mockResolvedValue({
         id: "p1",
         tenantId: "t1",
         userId: "u1",
@@ -52,11 +61,11 @@ describe("PeopleService", () => {
 
       const profile = await service.getOrCreateProfile("t1", "u1");
       expect(profile.employeeId).toMatch(/^\d{6}$/);
-      expect(prisma.userProfile.create).toHaveBeenCalledTimes(1);
+      expect(idpPrisma.userProfile.create).toHaveBeenCalledTimes(1);
     });
 
     it("returns the existing profile without creating a new one", async () => {
-      vi.mocked(prisma.userProfile.findUnique).mockResolvedValueOnce({
+      vi.mocked(idpPrisma.userProfile.findUnique).mockResolvedValueOnce({
         id: "p1",
         userId: "u1",
         employeeId: "111222",
@@ -64,13 +73,13 @@ describe("PeopleService", () => {
 
       const profile = await service.getOrCreateProfile("t1", "u1");
       expect(profile.employeeId).toBe("111222");
-      expect(prisma.userProfile.create).not.toHaveBeenCalled();
+      expect(idpPrisma.userProfile.create).not.toHaveBeenCalled();
     });
   });
 
   describe("updateMyProfile — manager assignment", () => {
     it("rejects setting yourself as your own manager", async () => {
-      vi.mocked(prisma.userProfile.findUnique).mockResolvedValue({
+      vi.mocked(idpPrisma.userProfile.findUnique).mockResolvedValue({
         id: "p1",
         userId: "u1",
         employeeId: "111222",
@@ -82,12 +91,12 @@ describe("PeopleService", () => {
     });
 
     it("rejects a manager that does not exist in the tenant", async () => {
-      vi.mocked(prisma.userProfile.findUnique).mockResolvedValue({
+      vi.mocked(idpPrisma.userProfile.findUnique).mockResolvedValue({
         id: "p1",
         userId: "u1",
         employeeId: "111222",
       } as never);
-      vi.mocked(prisma.user.findFirst).mockResolvedValue(null);
+      vi.mocked(idpPrisma.user.findFirst).mockResolvedValue(null);
 
       await expect(
         service.updateMyProfile("t1", "u1", { managerId: "ghost" }),
@@ -96,7 +105,7 @@ describe("PeopleService", () => {
 
     it("rejects a manager assignment that would create a reporting cycle", async () => {
       // u1 -> getOrCreateProfile (self)
-      vi.mocked(prisma.userProfile.findUnique).mockImplementation(
+      vi.mocked(idpPrisma.userProfile.findUnique).mockImplementation(
         (args: any) => {
           const where = args.where;
           if (where.userId === "u1") {
@@ -113,7 +122,9 @@ describe("PeopleService", () => {
           return Promise.resolve(null);
         },
       );
-      vi.mocked(prisma.user.findFirst).mockResolvedValue({ id: "u2" } as never);
+      vi.mocked(idpPrisma.user.findFirst).mockResolvedValue({
+        id: "u2",
+      } as never);
 
       await expect(
         service.updateMyProfile("t1", "u1", { managerId: "u2" }),
@@ -121,7 +132,7 @@ describe("PeopleService", () => {
     });
 
     it("accepts a valid manager assignment with no cycle", async () => {
-      vi.mocked(prisma.userProfile.findUnique).mockImplementation(
+      vi.mocked(idpPrisma.userProfile.findUnique).mockImplementation(
         (args: any) => {
           const where = args.where;
           if (where.userId === "u1") {
@@ -137,8 +148,10 @@ describe("PeopleService", () => {
           return Promise.resolve(null);
         },
       );
-      vi.mocked(prisma.user.findFirst).mockResolvedValue({ id: "u2" } as never);
-      vi.mocked(prisma.userProfile.update).mockResolvedValue({
+      vi.mocked(idpPrisma.user.findFirst).mockResolvedValue({
+        id: "u2",
+      } as never);
+      vi.mocked(idpPrisma.userProfile.update).mockResolvedValue({
         id: "p1",
         managerId: "u2",
       } as never);

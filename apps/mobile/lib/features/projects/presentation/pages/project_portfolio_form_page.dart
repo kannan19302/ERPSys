@@ -13,10 +13,12 @@ class ProjectPortfolioFormPage extends ConsumerStatefulWidget {
   final String? portfolioId;
 
   @override
-  ConsumerState<ProjectPortfolioFormPage> createState() => _ProjectPortfolioFormPageState();
+  ConsumerState<ProjectPortfolioFormPage> createState() =>
+      _ProjectPortfolioFormPageState();
 }
 
-class _ProjectPortfolioFormPageState extends ConsumerState<ProjectPortfolioFormPage> {
+class _ProjectPortfolioFormPageState
+    extends ConsumerState<ProjectPortfolioFormPage> {
   final _formKey = GlobalKey<FormState>();
   final _nameCtrl = TextEditingController();
   final _descriptionCtrl = TextEditingController();
@@ -31,7 +33,9 @@ class _ProjectPortfolioFormPageState extends ConsumerState<ProjectPortfolioFormP
   }
 
   Future<void> _load() async {
-    final p = ref.read(projectPortfolioDetailProvider(widget.portfolioId!)).valueOrNull;
+    final p = ref
+        .read(projectPortfolioDetailProvider(widget.portfolioId!))
+        .valueOrNull;
     if (p != null) {
       _nameCtrl.text = p.name;
       _descriptionCtrl.text = p.description ?? '';
@@ -51,16 +55,22 @@ class _ProjectPortfolioFormPageState extends ConsumerState<ProjectPortfolioFormP
 
     final payload = <String, dynamic>{
       'name': _nameCtrl.text.trim(),
-      'description': _descriptionCtrl.text.trim().isEmpty ? null : _descriptionCtrl.text.trim(),
+      'description': _descriptionCtrl.text.trim().isEmpty
+          ? null
+          : _descriptionCtrl.text.trim(),
     };
 
-    final result = await ref.read(projectPortfolioListControllerProvider.notifier).save(
-      payload, id: widget.portfolioId,);
+    final result =
+        await ref.read(projectPortfolioListControllerProvider.notifier).save(
+              payload,
+              id: widget.portfolioId,
+            );
 
     if (!context.mounted) return;
     setState(() => _saving = false);
     result.fold(
-      (f) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(f.message))),
+      (f) => ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(f.message))),
       (_) => Navigator.of(context).pop(),
     );
   }
@@ -74,7 +84,10 @@ class _ProjectPortfolioFormPageState extends ConsumerState<ProjectPortfolioFormP
           TextButton(
             onPressed: _saving ? null : _save,
             child: _saving
-                ? const SizedBox(height: Spacing.x5, width: Spacing.x5, child: CircularProgressIndicator(strokeWidth: 2))
+                ? const SizedBox(
+                    height: Spacing.x5,
+                    width: Spacing.x5,
+                    child: CircularProgressIndicator(strokeWidth: 2))
                 : const Text('Save'),
           ),
         ],
@@ -87,13 +100,15 @@ class _ProjectPortfolioFormPageState extends ConsumerState<ProjectPortfolioFormP
             TextFormField(
               controller: _nameCtrl,
               decoration: const InputDecoration(labelText: 'Name *'),
-              validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,
+              validator: (v) =>
+                  v == null || v.trim().isEmpty ? 'Required' : null,
             ),
             const SizedBox(height: Spacing.x4),
             TextFormField(
               controller: _descriptionCtrl,
               maxLines: 3,
-              decoration: const InputDecoration(labelText: 'Description', alignLabelWithHint: true),
+              decoration: const InputDecoration(
+                  labelText: 'Description', alignLabelWithHint: true),
             ),
           ],
         ),

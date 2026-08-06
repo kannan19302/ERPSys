@@ -1,0 +1,19 @@
+{
+  "extends": "@unerp/config/typescript/nextjs.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+    // Matches apps/web, which sets both to false. This app is the builder UI
+    // relocated from apps/web/src/components/builder, so holding the same files
+    // to a stricter setting at their new path would report ~170 "errors" in
+    // code that compiled yesterday and that nobody has changed.
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "noEmit": true,
+    "jsx": "preserve"
+  },
+  "include": ["**/*.ts", "**/*.tsx", "next-env.d.ts", ".next/types/**/*.ts"],
+  "exclude": ["node_modules"]
+}

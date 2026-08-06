@@ -1,9 +1,25 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { Injectable, NotFoundException, Optional } from "@nestjs/common";
 import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 
 @Injectable()
 export class PeopleOperationsService {
-  private readonly prisma = prisma;
+  private readonly prisma: typeof prisma;
+
+  /**
+   * The client is injectable so this service can be unit-tested.
+   *
+   * It previously read `private readonly prisma = prisma`, hardcoding the real
+   * client. Its spec constructs the service as `new PeopleOperationsService(
+   * mockPrisma)`, so the mock was silently discarded and every test hit the real
+   * database — failing on RLS because no tenant session exists in a unit test.
+   *
+   * `@Optional()` keeps Nest happy: nothing is registered for this token, so DI
+   * leaves it undefined in production and the real client is used.
+   */
+  constructor(@Optional() client?: typeof prisma) {
+    this.prisma = client ?? prisma;
+  }
   // ── ONBOARDING TASKS ──
   async getOnboardingTasks(
     tenantId: string,

@@ -17,8 +17,7 @@ class StockLevelListPage extends ConsumerStatefulWidget {
   static const String routePath = '/inventory/stock-levels';
 
   @override
-  ConsumerState<StockLevelListPage> createState() =>
-      _StockLevelListPageState();
+  ConsumerState<StockLevelListPage> createState() => _StockLevelListPageState();
 }
 
 class _StockLevelListPageState extends ConsumerState<StockLevelListPage> {
@@ -44,10 +43,14 @@ class _StockLevelListPageState extends ConsumerState<StockLevelListPage> {
       ),
       body: Column(
         children: <Widget>[
-          if (state.cachedAt != null) StaleDataBanner(cachedAt: state.cachedAt!),
+          if (state.cachedAt != null)
+            StaleDataBanner(cachedAt: state.cachedAt!),
           Padding(
             padding: const EdgeInsets.fromLTRB(
-              Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2,
+              Spacing.x4,
+              Spacing.x3,
+              Spacing.x4,
+              Spacing.x2,
             ),
             child: TextField(
               controller: _search,

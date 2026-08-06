@@ -37,7 +37,8 @@ class PortalBillingInfoModel extends PortalBillingInfo {
 
   factory PortalBillingInfoModel.fromJson(Map<String, dynamic> json) {
     final Object? id = json['id'];
-    if (id is! String) throw const ParseException('PortalBillingInfo missing id');
+    if (id is! String)
+      throw const ParseException('PortalBillingInfo missing id');
     return PortalBillingInfoModel(
       id: id,
       tenantId: json['tenantId'] as String? ?? '',
@@ -137,7 +138,8 @@ class PortalSupportTicketModel extends PortalSupportTicket {
 
   factory PortalSupportTicketModel.fromJson(Map<String, dynamic> json) {
     final Object? id = json['id'];
-    if (id is! String) throw const ParseException('PortalSupportTicket missing id');
+    if (id is! String)
+      throw const ParseException('PortalSupportTicket missing id');
     return PortalSupportTicketModel(
       id: id,
       subject: json['subject'] as String? ?? '',

@@ -13,7 +13,8 @@ class AdminSettingEditPage extends ConsumerStatefulWidget {
   final String settingKey;
 
   @override
-  ConsumerState<AdminSettingEditPage> createState() => _AdminSettingEditPageState();
+  ConsumerState<AdminSettingEditPage> createState() =>
+      _AdminSettingEditPageState();
 }
 
 class _AdminSettingEditPageState extends ConsumerState<AdminSettingEditPage> {
@@ -25,8 +26,11 @@ class _AdminSettingEditPageState extends ConsumerState<AdminSettingEditPage> {
   @override
   void initState() {
     super.initState();
-    final AdminSettingListState state = ref.read(adminSettingListControllerProvider);
-    final AdminSetting? setting = state.items.where((AdminSetting s) => s.key == widget.settingKey).firstOrNull;
+    final AdminSettingListState state =
+        ref.read(adminSettingListControllerProvider);
+    final AdminSetting? setting = state.items
+        .where((AdminSetting s) => s.key == widget.settingKey)
+        .firstOrNull;
     if (setting != null) {
       _settingType = setting.type;
       if (setting.type == 'boolean') {
@@ -83,7 +87,10 @@ class _AdminSettingEditPageState extends ConsumerState<AdminSettingEditPage> {
           TextButton(
             onPressed: _saving ? null : _save,
             child: _saving
-                ? const SizedBox(height: Spacing.x5, width: Spacing.x5, child: CircularProgressIndicator(strokeWidth: 2))
+                ? const SizedBox(
+                    height: Spacing.x5,
+                    width: Spacing.x5,
+                    child: CircularProgressIndicator(strokeWidth: 2))
                 : const Text('Save'),
           ),
         ],
@@ -91,7 +98,8 @@ class _AdminSettingEditPageState extends ConsumerState<AdminSettingEditPage> {
       body: ListView(
         padding: const EdgeInsets.all(Spacing.x4),
         children: <Widget>[
-          Text(widget.settingKey, style: Theme.of(context).textTheme.titleMedium),
+          Text(widget.settingKey,
+              style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: Spacing.x4),
           if (_settingType == 'boolean')
             SwitchListTile(
@@ -110,7 +118,8 @@ class _AdminSettingEditPageState extends ConsumerState<AdminSettingEditPage> {
             TextFormField(
               controller: _valueCtrl,
               maxLines: 6,
-              decoration: const InputDecoration(labelText: 'Value (JSON)', alignLabelWithHint: true),
+              decoration: const InputDecoration(
+                  labelText: 'Value (JSON)', alignLabelWithHint: true),
             )
           else
             TextFormField(
@@ -119,8 +128,10 @@ class _AdminSettingEditPageState extends ConsumerState<AdminSettingEditPage> {
               decoration: const InputDecoration(labelText: 'Value'),
             ),
           const SizedBox(height: Spacing.x2),
-          Text('Type: ${_settingType ?? 'string'}',
-              style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs),),
+          Text(
+            'Type: ${_settingType ?? 'string'}',
+            style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs),
+          ),
         ],
       ),
     );

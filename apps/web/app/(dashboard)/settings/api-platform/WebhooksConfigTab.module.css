@@ -1,2 +1,9 @@
-.s1 { color: var(--color-primary); font-size: var(--text-xs); }
-.s2 { display: flex; flex-wrap: wrap; gap: 4px; }
+.s1 {
+  color: var(--color-primary);
+  font-size: var(--text-xs);
+}
+.s2 {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}

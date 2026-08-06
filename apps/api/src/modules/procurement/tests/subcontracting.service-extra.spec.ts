@@ -23,6 +23,7 @@ vi.mock("@unerp/database", () => ({
 }));
 
 import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 
 describe("SubcontractingService (extra)", () => {
   let service: SubcontractingService;

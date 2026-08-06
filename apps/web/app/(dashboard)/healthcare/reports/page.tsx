@@ -97,8 +97,12 @@ export default function HealthcareReportsPage() {
           config={{
             xAxisKey: "name",
             series: [
-              { dataKey: "new", name: "New Patients", color: "#6366f1" },
-              { dataKey: "total", name: "Total", color: "#22c55e" },
+              {
+                dataKey: "new",
+                name: "New Patients",
+                color: "var(--chart-10)",
+              },
+              { dataKey: "total", name: "Total", color: "var(--chart-2)" },
             ],
           }}
           defaultChartType="composed"
@@ -112,8 +116,16 @@ export default function HealthcareReportsPage() {
           config={{
             xAxisKey: "name",
             series: [
-              { dataKey: "scheduled", name: "Scheduled", color: "#6366f1" },
-              { dataKey: "completed", name: "Completed", color: "#22c55e" },
+              {
+                dataKey: "scheduled",
+                name: "Scheduled",
+                color: "var(--chart-10)",
+              },
+              {
+                dataKey: "completed",
+                name: "Completed",
+                color: "var(--chart-2)",
+              },
             ],
           }}
           defaultChartType="bar"
@@ -130,7 +142,11 @@ export default function HealthcareReportsPage() {
           config={{
             xAxisKey: "name",
             series: [
-              { dataKey: "count", name: "Prescriptions", color: "#f59e0b" },
+              {
+                dataKey: "count",
+                name: "Prescriptions",
+                color: "var(--chart-3)",
+              },
             ],
           }}
           defaultChartType="bar"
@@ -144,7 +160,11 @@ export default function HealthcareReportsPage() {
           config={{
             xAxisKey: "name",
             series: [
-              { dataKey: "revenue", name: "Revenue ($)", color: "#22c55e" },
+              {
+                dataKey: "revenue",
+                name: "Revenue ($)",
+                color: "var(--chart-2)",
+              },
             ],
           }}
           defaultChartType="area"

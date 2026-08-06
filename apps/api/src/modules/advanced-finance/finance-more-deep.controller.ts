@@ -7,14 +7,24 @@ import {
   Body,
   Param,
   Query,
+  UseGuards,
 } from "@nestjs/common";
 import { ApiTags, ApiOperation, ApiBearerAuth } from "@nestjs/swagger";
 import { Permissions } from "../../common/decorators/permissions.decorator";
 import { FinanceExpansionDeepService } from "./services/finance-expansion-deep.service";
+import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard";
+import { RbacGuard } from "../../common/guards/rbac.guard";
 
 @ApiTags("Finance - More Deep Features")
 @ApiTags("Finance - More Deep Features")
 @Controller("advanced-finance/more-deep")
+// These routes carried @Permissions but no guard to read it. @Permissions only
+// writes metadata; without RbacGuard nothing consumes it, and without
+// JwtAuthGuard there is no request.user for it to consume. @ApiBearerAuth()
+// documents a requirement it does not enforce. Every route below was therefore
+// reachable unauthenticated while appearing, in source and in Swagger, to be
+// protected.
+@UseGuards(JwtAuthGuard, RbacGuard)
 @ApiBearerAuth()
 export class FinanceMoreDeepController {
   constructor(private readonly expansionService: FinanceExpansionDeepService) {}

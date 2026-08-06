@@ -12,7 +12,8 @@ class BuilderFormListPage extends ConsumerStatefulWidget {
   static const String routeName = 'builder-forms';
   static const String routePath = '/builder/forms';
   @override
-  ConsumerState<BuilderFormListPage> createState() => _BuilderFormListPageState();
+  ConsumerState<BuilderFormListPage> createState() =>
+      _BuilderFormListPageState();
 }
 
 class _BuilderFormListPageState extends ConsumerState<BuilderFormListPage> {
@@ -46,8 +47,12 @@ class _BuilderFormListPageState extends ConsumerState<BuilderFormListPage> {
             initialValue: state.query.sort,
             onSelected: controller.applySort,
             itemBuilder: (_) => _sortOptions.entries
-                .map((e) => PopupMenuItem<String>(
-                    value: e.key, child: Text(e.value),),)
+                .map(
+                  (e) => PopupMenuItem<String>(
+                    value: e.key,
+                    child: Text(e.value),
+                  ),
+                )
                 .toList(),
           ),
         ],
@@ -55,7 +60,8 @@ class _BuilderFormListPageState extends ConsumerState<BuilderFormListPage> {
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
+            padding: const EdgeInsets.fromLTRB(
+                Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
             child: TextField(
               controller: _search,
               onChanged: controller.search,
@@ -67,21 +73,27 @@ class _BuilderFormListPageState extends ConsumerState<BuilderFormListPage> {
                     ? null
                     : IconButton(
                         icon: const Icon(Icons.close),
-                        onPressed: () { _search.clear(); controller.search(''); },
+                        onPressed: () {
+                          _search.clear();
+                          controller.search('');
+                        },
                       ),
               ),
             ),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: Spacing.x4),
-            child: Row(children: [
-              Text(
-                state.isLoading
-                    ? 'Loading...'
-                    : '${state.meta.total} form${state.meta.total == 1 ? '' : 's'}',
-                style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
-              ),
-            ],),
+            child: Row(
+              children: [
+                Text(
+                  state.isLoading
+                      ? 'Loading...'
+                      : '${state.meta.total} form${state.meta.total == 1 ? '' : 's'}',
+                  style:
+                      TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
+                ),
+              ],
+            ),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -89,7 +101,8 @@ class _BuilderFormListPageState extends ConsumerState<BuilderFormListPage> {
     );
   }
 
-  Widget _body(BuilderFormListState state, BuilderFormListController controller) {
+  Widget _body(
+      BuilderFormListState state, BuilderFormListController controller) {
     if (state.isLoading && state.items.isEmpty) return const LoadingView();
     final failure = state.failure;
     if (failure != null && state.items.isEmpty) {
@@ -112,23 +125,32 @@ class _BuilderFormListPageState extends ConsumerState<BuilderFormListPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(children: [
-                Expanded(
-                  child: Text(f.title,
-                      style: Theme.of(context).textTheme.titleSmall,),
-                ),
-                UiStatusBadge(
-                  label: f.status,
-                  tone: _statusTone(f.status),
-                ),
-              ],),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      f.title,
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
+                  ),
+                  UiStatusBadge(
+                    label: f.status,
+                    tone: _statusTone(f.status),
+                  ),
+                ],
+              ),
               const SizedBox(height: Spacing.x1),
-if (f.description != null)
-                  Text(f.description!,
-                    style: TextStyle(color: palette.textSecondary, fontSize: TypeScale.xs),),
+              if (f.description != null)
+                Text(
+                  f.description!,
+                  style: TextStyle(
+                      color: palette.textSecondary, fontSize: TypeScale.xs),
+                ),
               const SizedBox(height: Spacing.x1),
-              Text('v${f.version} \u2022 ${f.fields.length} field${f.fields.length == 1 ? '' : 's'}',
-                  style: const TextStyle(fontSize: TypeScale.xs),),
+              Text(
+                'v${f.version} \u2022 ${f.fields.length} field${f.fields.length == 1 ? '' : 's'}',
+                style: const TextStyle(fontSize: TypeScale.xs),
+              ),
             ],
           ),
         ),
@@ -149,7 +171,8 @@ class BuilderPageListPage extends ConsumerStatefulWidget {
   static const String routeName = 'builder-pages';
   static const String routePath = '/builder/pages';
   @override
-  ConsumerState<BuilderPageListPage> createState() => _BuilderPageListPageState();
+  ConsumerState<BuilderPageListPage> createState() =>
+      _BuilderPageListPageState();
 }
 
 class _BuilderPageListPageState extends ConsumerState<BuilderPageListPage> {
@@ -170,7 +193,8 @@ class _BuilderPageListPageState extends ConsumerState<BuilderPageListPage> {
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
+            padding: const EdgeInsets.fromLTRB(
+                Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
             child: TextField(
               controller: _search,
               onChanged: controller.search,
@@ -182,7 +206,10 @@ class _BuilderPageListPageState extends ConsumerState<BuilderPageListPage> {
                     ? null
                     : IconButton(
                         icon: const Icon(Icons.close),
-                        onPressed: () { _search.clear(); controller.search(''); },
+                        onPressed: () {
+                          _search.clear();
+                          controller.search('');
+                        },
                       ),
               ),
             ),
@@ -193,7 +220,8 @@ class _BuilderPageListPageState extends ConsumerState<BuilderPageListPage> {
     );
   }
 
-  Widget _body(BuilderPageListState state, BuilderPageListController controller) {
+  Widget _body(
+      BuilderPageListState state, BuilderPageListController controller) {
     if (state.isLoading && state.items.isEmpty) return const LoadingView();
     final failure = state.failure;
     if (failure != null && state.items.isEmpty) {
@@ -216,13 +244,24 @@ class _BuilderPageListPageState extends ConsumerState<BuilderPageListPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(children: [
-                Expanded(child: Text(p.title, style: Theme.of(context).textTheme.titleSmall)),
-                UiStatusBadge(label: p.status, tone: p.status == 'PUBLISHED' ? UiTone.success : UiTone.neutral),
-              ],),
+              Row(
+                children: [
+                  Expanded(
+                      child: Text(p.title,
+                          style: Theme.of(context).textTheme.titleSmall)),
+                  UiStatusBadge(
+                      label: p.status,
+                      tone: p.status == 'PUBLISHED'
+                          ? UiTone.success
+                          : UiTone.neutral),
+                ],
+              ),
               const SizedBox(height: Spacing.x2),
-Text('Layout: ${p.layout} \u2022 ${p.sections.length} section${p.sections.length == 1 ? '' : 's'}',
-                    style: TextStyle(color: palette.textSecondary, fontSize: TypeScale.xs),),
+              Text(
+                'Layout: ${p.layout} \u2022 ${p.sections.length} section${p.sections.length == 1 ? '' : 's'}',
+                style: TextStyle(
+                    color: palette.textSecondary, fontSize: TypeScale.xs),
+              ),
             ],
           ),
         ),

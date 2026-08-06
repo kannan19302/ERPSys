@@ -60,14 +60,14 @@ docker run --rm -i \
 
 ## Scenario Descriptions
 
-| Scenario | File | VUs | Duration | Purpose |
-|---|---|---|---|---|
-| **Smoke** | `smoke-test.js` | 5 | 30s | Quick sanity — all major endpoints respond, auth works |
-| **Login** | `login.js` | 0→50 | 3m | Auth endpoint under load — ramp 30s, sustain 2m, ramp-down 30s |
-| **List+Paginate** | `list-paginate.js` | 0→30 | 3m | List endpoints with pagination params — cycles through products, sales, crm, hr, finance |
-| **Document Post** | `document-post.js` | 0→20 | 3m | Product creation via POST — unique SKUs per iteration |
-| **Stress** | `stress-test.js` | 0→200→500 | 9.5m | Ramp to 200 VU over 2m, sustain 5m, spike to 500 over 30s, sustain 1m, ramp down |
-| **Tenant Isolation** | `tenant-isolation.js` | 10 | 3m | Concurrent requests as different tenants — verifies data isolation |
+| Scenario             | File                  | VUs       | Duration | Purpose                                                                                  |
+| -------------------- | --------------------- | --------- | -------- | ---------------------------------------------------------------------------------------- |
+| **Smoke**            | `smoke-test.js`       | 5         | 30s      | Quick sanity — all major endpoints respond, auth works                                   |
+| **Login**            | `login.js`            | 0→50      | 3m       | Auth endpoint under load — ramp 30s, sustain 2m, ramp-down 30s                           |
+| **List+Paginate**    | `list-paginate.js`    | 0→30      | 3m       | List endpoints with pagination params — cycles through products, sales, crm, hr, finance |
+| **Document Post**    | `document-post.js`    | 0→20      | 3m       | Product creation via POST — unique SKUs per iteration                                    |
+| **Stress**           | `stress-test.js`      | 0→200→500 | 9.5m     | Ramp to 200 VU over 2m, sustain 5m, spike to 500 over 30s, sustain 1m, ramp down         |
+| **Tenant Isolation** | `tenant-isolation.js` | 10        | 3m       | Concurrent requests as different tenants — verifies data isolation                       |
 
 ### Flows Covered
 
@@ -82,20 +82,20 @@ docker run --rm -i \
 
 ### Key Metrics
 
-| Metric | Description | Target |
-|---|---|---|
-| `http_req_duration` | Total request time (send + wait + receive) | p95 < 2000ms |
-| `http_req_failed` | Fraction of failed requests | < 1% |
-| `http_req_duration{p(99)}` | Tail latency | < 5000ms |
-| `iterations` | Total completed iterations | Varies by scenario |
-| `vus_max` | Maximum concurrent virtual users | Per scenario |
+| Metric                     | Description                                | Target             |
+| -------------------------- | ------------------------------------------ | ------------------ |
+| `http_req_duration`        | Total request time (send + wait + receive) | p95 < 2000ms       |
+| `http_req_failed`          | Fraction of failed requests                | < 1%               |
+| `http_req_duration{p(99)}` | Tail latency                               | < 5000ms           |
+| `iterations`               | Total completed iterations                 | Varies by scenario |
+| `vus_max`                  | Maximum concurrent virtual users           | Per scenario       |
 
 ### Thresholds (for CI pass/fail)
 
 ```javascript
 // Default thresholds (config/options.js)
-http_req_duration: ['p(95)<2000', 'p(99)<5000']
-http_req_failed:   ['rate<0.01']
+http_req_duration: ["p(95)<2000", "p(99)<5000"];
+http_req_failed: ["rate<0.01"];
 ```
 
 ### Sample Output
@@ -122,13 +122,13 @@ http_req_failed:   ['rate<0.01']
 These targets must be met before the foundation freeze lifts and re-verified per release.
 A stated capacity means the system sustains this load within thresholds.
 
-| Flow | Target RPS | Target p95 | VUs | Notes |
-|---|---|---|---|---|
-| Login | ≥50 req/s | <2000ms | 50 | Throttled at controller level (5/60s) — tests throttle behaviour |
-| List+Paginate | ≥100 req/s | <2000ms | 30 | Most common operation; proxies to DB with LIMIT/OFFSET |
-| Document Post | ≥20 req/s | <3000ms | 20 | Write path with validation + DB insert |
-| Mixed (Stress) | ≥200 req/s combined | <3000ms p95, <8000ms p99 | 200–500 | Spike to 500 VU; brief degradation tolerated |
-| Tenant Isolation | N/A | <3000ms | 10 | Concurrent tenants; no data leak, no crash |
+| Flow             | Target RPS          | Target p95               | VUs     | Notes                                                            |
+| ---------------- | ------------------- | ------------------------ | ------- | ---------------------------------------------------------------- |
+| Login            | ≥50 req/s           | <2000ms                  | 50      | Throttled at controller level (5/60s) — tests throttle behaviour |
+| List+Paginate    | ≥100 req/s          | <2000ms                  | 30      | Most common operation; proxies to DB with LIMIT/OFFSET           |
+| Document Post    | ≥20 req/s           | <3000ms                  | 20      | Write path with validation + DB insert                           |
+| Mixed (Stress)   | ≥200 req/s combined | <3000ms p95, <8000ms p99 | 200–500 | Spike to 500 VU; brief degradation tolerated                     |
+| Tenant Isolation | N/A                 | <3000ms                  | 10      | Concurrent tenants; no data leak, no crash                       |
 
 ---
 

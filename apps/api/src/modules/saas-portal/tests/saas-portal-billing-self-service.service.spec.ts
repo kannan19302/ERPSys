@@ -18,6 +18,7 @@ vi.mock("@unerp/database", () => ({
 }));
 
 import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 import { SaasPortalBillingSelfServiceService } from "../saas-portal-billing-self-service.service";
 
 describe("SaasPortalBillingSelfServiceService", () => {

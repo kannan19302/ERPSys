@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 // ── Form Templates ──
 export const createFormTemplateSchema = z.object({
@@ -38,7 +38,9 @@ export const createFormSubmissionSchema = z.object({
   data: z.record(z.unknown()),
   metadata: z.record(z.unknown()).optional(),
 });
-export type CreateFormSubmissionInput = z.infer<typeof createFormSubmissionSchema>;
+export type CreateFormSubmissionInput = z.infer<
+  typeof createFormSubmissionSchema
+>;
 
 // ── Page Templates ──
 export const createPageTemplateSchema = z.object({
@@ -69,10 +71,15 @@ export const createWorkflowDefinitionSchema = z.object({
   settings: z.record(z.unknown()).optional(),
   status: z.string().optional(),
 });
-export type CreateWorkflowDefinitionInput = z.infer<typeof createWorkflowDefinitionSchema>;
+export type CreateWorkflowDefinitionInput = z.infer<
+  typeof createWorkflowDefinitionSchema
+>;
 
-export const updateWorkflowDefinitionSchema = createWorkflowDefinitionSchema.partial();
-export type UpdateWorkflowDefinitionInput = z.infer<typeof updateWorkflowDefinitionSchema>;
+export const updateWorkflowDefinitionSchema =
+  createWorkflowDefinitionSchema.partial();
+export type UpdateWorkflowDefinitionInput = z.infer<
+  typeof updateWorkflowDefinitionSchema
+>;
 
 // ── Workflow Steps ──
 export const createWorkflowStepSchema = z.object({

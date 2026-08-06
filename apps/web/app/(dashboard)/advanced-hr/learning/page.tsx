@@ -103,7 +103,9 @@ export default function AdvancedHrLearningPage() {
           <Card
             style={{ padding: "32px", gridColumn: "1/-1", textAlign: "center" }}
           >
-            <p style={{ color: "#64748b" }}>No learning paths available.</p>
+            <p style={{ color: "var(--color-text-secondary)" }}>
+              No learning paths available.
+            </p>
           </Card>
         ) : (
           paths.map((p) => (
@@ -116,7 +118,7 @@ export default function AdvancedHrLearningPage() {
                   marginBottom: "8px",
                 }}
               >
-                <BookOpen size={18} color="#8b5cf6" />
+                <BookOpen size={18} color="var(--chart-5)" />
                 <h4 style={{ fontSize: "15px", fontWeight: 600 }}>
                   {p.pathName}
                 </h4>
@@ -125,7 +127,12 @@ export default function AdvancedHrLearningPage() {
                 style={{ display: "flex", gap: "8px", marginBottom: "12px" }}
               >
                 <Badge variant="info">{p.category}</Badge>
-                <span style={{ fontSize: "12px", color: "#64748b" }}>
+                <span
+                  style={{
+                    fontSize: "12px",
+                    color: "var(--color-text-secondary)",
+                  }}
+                >
                   {p.estimatedHours}h
                 </span>
               </div>

@@ -51,8 +51,11 @@ class EmailTemplateDetailPage extends ConsumerWidget {
       body: templateAsync.when(
         loading: () => const LoadingView(),
         error: (Object error, StackTrace _) => FailureView(
-          failure: error is Failure ? error : const ServerFailure('Could not load template.'),
-          onRetry: () => ref.invalidate(emailTemplateDetailProvider(templateId)),
+          failure: error is Failure
+              ? error
+              : const ServerFailure('Could not load template.'),
+          onRetry: () =>
+              ref.invalidate(emailTemplateDetailProvider(templateId)),
         ),
         data: (EmailTemplate template) => _TemplateDetail(template: template),
       ),
@@ -79,9 +82,8 @@ class EmailTemplateDetailPage extends ConsumerWidget {
     );
     if (confirmed != true || !context.mounted) return;
 
-    final result = await ref
-        .read(emailTemplatesProvider.notifier)
-        .delete(templateId);
+    final result =
+        await ref.read(emailTemplatesProvider.notifier).delete(templateId);
 
     if (!context.mounted) return;
     result.fold(

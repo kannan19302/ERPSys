@@ -87,13 +87,18 @@ const Vendor _vendorActive = Vendor(
 class FakeProcurementRepository implements ProcurementRepository {
   @override
   Future<Result<Cacheable<Paginated<PurchaseOrder>>>> listPurchaseOrders(
-          ListQuery query,) async =>
+    ListQuery query,
+  ) async =>
       const Result<Cacheable<Paginated<PurchaseOrder>>>.ok(
         Cacheable<Paginated<PurchaseOrder>>(
           value: Paginated<PurchaseOrder>(
             data: <PurchaseOrder>[_poDraft, _poSubmitted],
             meta: PaginationMeta(
-                page: 1, limit: 25, total: 2, totalPages: 1,),
+              page: 1,
+              limit: 25,
+              total: 2,
+              totalPages: 1,
+            ),
           ),
         ),
       );
@@ -104,12 +109,15 @@ class FakeProcurementRepository implements ProcurementRepository {
 
   @override
   Future<Result<PurchaseOrder>> createPurchaseOrder(
-          Map<String, dynamic> payload,) async =>
+    Map<String, dynamic> payload,
+  ) async =>
       const Result<PurchaseOrder>.ok(_poDraft);
 
   @override
   Future<Result<PurchaseOrder>> updatePurchaseOrder(
-          String id, Map<String, dynamic> payload,) async =>
+    String id,
+    Map<String, dynamic> payload,
+  ) async =>
       const Result<PurchaseOrder>.ok(_poDraft);
 
   @override
@@ -134,13 +142,18 @@ class FakeProcurementRepository implements ProcurementRepository {
 
   @override
   Future<Result<Cacheable<Paginated<Vendor>>>> listVendors(
-          ListQuery query,) async =>
+    ListQuery query,
+  ) async =>
       const Result<Cacheable<Paginated<Vendor>>>.ok(
         Cacheable<Paginated<Vendor>>(
           value: Paginated<Vendor>(
             data: <Vendor>[_vendorActive],
             meta: PaginationMeta(
-                page: 1, limit: 25, total: 1, totalPages: 1,),
+              page: 1,
+              limit: 25,
+              total: 1,
+              totalPages: 1,
+            ),
           ),
         ),
       );
@@ -155,7 +168,9 @@ class FakeProcurementRepository implements ProcurementRepository {
 
   @override
   Future<Result<Vendor>> updateVendor(
-          String id, Map<String, dynamic> payload,) async =>
+    String id,
+    Map<String, dynamic> payload,
+  ) async =>
       const Result<Vendor>.ok(_vendorActive);
 
   @override
@@ -164,50 +179,63 @@ class FakeProcurementRepository implements ProcurementRepository {
 
   @override
   Future<Result<Cacheable<Paginated<RFQ>>>> listRFQs(
-          ListQuery query,) async =>
+    ListQuery query,
+  ) async =>
       const Result<Cacheable<Paginated<RFQ>>>.ok(
         Cacheable<Paginated<RFQ>>(
           value: Paginated<RFQ>(
             data: <RFQ>[],
             meta: PaginationMeta(
-                page: 1, limit: 25, total: 0, totalPages: 0,),
+              page: 1,
+              limit: 25,
+              total: 0,
+              totalPages: 0,
+            ),
           ),
         ),
       );
 
   @override
-  Future<Result<RFQ>> getRFQ(String id) async =>
-      const Result<RFQ>.ok(RFQ(id: 'rfq1', rfqNumber: 'RFQ-0001', status: 'DRAFT'));
+  Future<Result<RFQ>> getRFQ(String id) async => const Result<RFQ>.ok(
+      RFQ(id: 'rfq1', rfqNumber: 'RFQ-0001', status: 'DRAFT'));
 
   @override
   Future<Result<RFQ>> createRFQ(Map<String, dynamic> payload) async =>
-      const Result<RFQ>.ok(RFQ(id: 'rfq1', rfqNumber: 'RFQ-0001', status: 'DRAFT'));
+      const Result<RFQ>.ok(
+          RFQ(id: 'rfq1', rfqNumber: 'RFQ-0001', status: 'DRAFT'));
 
   @override
   Future<Result<RFQ>> updateRFQ(
-          String id, Map<String, dynamic> payload,) async =>
-      const Result<RFQ>.ok(RFQ(id: 'rfq1', rfqNumber: 'RFQ-0001', status: 'DRAFT'));
+    String id,
+    Map<String, dynamic> payload,
+  ) async =>
+      const Result<RFQ>.ok(
+          RFQ(id: 'rfq1', rfqNumber: 'RFQ-0001', status: 'DRAFT'));
 
   @override
-  Future<Result<RFQ>> submitRFQ(String id) async =>
-      const Result<RFQ>.ok(RFQ(id: 'rfq1', rfqNumber: 'RFQ-0001', status: 'SUBMITTED'));
+  Future<Result<RFQ>> submitRFQ(String id) async => const Result<RFQ>.ok(
+      RFQ(id: 'rfq1', rfqNumber: 'RFQ-0001', status: 'SUBMITTED'));
 
   @override
-  Future<Result<RFQ>> closeRFQ(String id) async =>
-      const Result<RFQ>.ok(RFQ(id: 'rfq1', rfqNumber: 'RFQ-0001', status: 'CLOSED'));
+  Future<Result<RFQ>> closeRFQ(String id) async => const Result<RFQ>.ok(
+      RFQ(id: 'rfq1', rfqNumber: 'RFQ-0001', status: 'CLOSED'));
 
   @override
   Future<Result<Cacheable<Paginated<SupplierQuotation>>>>
       listSupplierQuotations(ListQuery query) async =>
-      const Result<Cacheable<Paginated<SupplierQuotation>>>.ok(
-        Cacheable<Paginated<SupplierQuotation>>(
-          value: Paginated<SupplierQuotation>(
-            data: <SupplierQuotation>[],
-            meta: PaginationMeta(
-                page: 1, limit: 25, total: 0, totalPages: 0,),
-          ),
-        ),
-      );
+          const Result<Cacheable<Paginated<SupplierQuotation>>>.ok(
+            Cacheable<Paginated<SupplierQuotation>>(
+              value: Paginated<SupplierQuotation>(
+                data: <SupplierQuotation>[],
+                meta: PaginationMeta(
+                  page: 1,
+                  limit: 25,
+                  total: 0,
+                  totalPages: 0,
+                ),
+              ),
+            ),
+          );
 
   @override
   Future<Result<SupplierQuotation>> getSupplierQuotation(String id) async =>
@@ -217,35 +245,41 @@ class FakeProcurementRepository implements ProcurementRepository {
 
   @override
   Future<Result<SupplierQuotation>> createSupplierQuotation(
-          Map<String, dynamic> payload,) async =>
+    Map<String, dynamic> payload,
+  ) async =>
       const Result<SupplierQuotation>.ok(
         SupplierQuotation(id: 'sq1', status: 'DRAFT'),
       );
 
   @override
   Future<Result<SupplierQuotation>> updateSupplierQuotation(
-          String id, Map<String, dynamic> payload,) async =>
+    String id,
+    Map<String, dynamic> payload,
+  ) async =>
       const Result<SupplierQuotation>.ok(
         SupplierQuotation(id: 'sq1', status: 'DRAFT'),
       );
 
   @override
   Future<Result<SupplierQuotation>> approveSupplierQuotation(
-          String id,) async =>
+    String id,
+  ) async =>
       const Result<SupplierQuotation>.ok(
         SupplierQuotation(id: 'sq1', status: 'APPROVED'),
       );
 
   @override
   Future<Result<SupplierQuotation>> rejectSupplierQuotation(
-          String id,) async =>
+    String id,
+  ) async =>
       const Result<SupplierQuotation>.ok(
         SupplierQuotation(id: 'sq1', status: 'REJECTED'),
       );
 
   @override
   Future<Result<SupplierQuotation>> convertSupplierQuotation(
-          String id,) async =>
+    String id,
+  ) async =>
       const Result<SupplierQuotation>.ok(
         SupplierQuotation(id: 'sq1', status: 'CONVERTED'),
       );
@@ -253,53 +287,67 @@ class FakeProcurementRepository implements ProcurementRepository {
   @override
   Future<Result<Cacheable<Paginated<PurchaseRequisition>>>>
       listPurchaseRequisitions(ListQuery query) async =>
-      const Result<Cacheable<Paginated<PurchaseRequisition>>>.ok(
-        Cacheable<Paginated<PurchaseRequisition>>(
-          value: Paginated<PurchaseRequisition>(
-            data: <PurchaseRequisition>[],
-            meta: PaginationMeta(
-                page: 1, limit: 25, total: 0, totalPages: 0,),
-          ),
-        ),
-      );
+          const Result<Cacheable<Paginated<PurchaseRequisition>>>.ok(
+            Cacheable<Paginated<PurchaseRequisition>>(
+              value: Paginated<PurchaseRequisition>(
+                data: <PurchaseRequisition>[],
+                meta: PaginationMeta(
+                  page: 1,
+                  limit: 25,
+                  total: 0,
+                  totalPages: 0,
+                ),
+              ),
+            ),
+          );
 
   @override
   Future<Result<PurchaseRequisition>> getPurchaseRequisition(
-          String id,) async =>
+    String id,
+  ) async =>
       const Result<PurchaseRequisition>.ok(
         PurchaseRequisition(id: 'pr1', title: 'Office Supply', status: 'DRAFT'),
       );
 
   @override
   Future<Result<PurchaseRequisition>> createPurchaseRequisition(
-          Map<String, dynamic> payload,) async =>
+    Map<String, dynamic> payload,
+  ) async =>
       const Result<PurchaseRequisition>.ok(
         PurchaseRequisition(id: 'pr1', title: 'Office Supply', status: 'DRAFT'),
       );
 
   @override
   Future<Result<PurchaseRequisition>> updatePurchaseRequisition(
-          String id, Map<String, dynamic> payload,) async =>
+    String id,
+    Map<String, dynamic> payload,
+  ) async =>
       const Result<PurchaseRequisition>.ok(
         PurchaseRequisition(id: 'pr1', title: 'Office Supply', status: 'DRAFT'),
       );
 
   @override
   Future<Result<PurchaseRequisition>> approvePurchaseRequisition(
-          String id,) async =>
+    String id,
+  ) async =>
       const Result<PurchaseRequisition>.ok(
-        PurchaseRequisition(id: 'pr1', title: 'Office Supply', status: 'APPROVED'),
+        PurchaseRequisition(
+            id: 'pr1', title: 'Office Supply', status: 'APPROVED'),
       );
 
   @override
-  Future<Result<Cacheable<Paginated<PurchaseReceipt>>>>
-      listPurchaseReceipts(ListQuery query) async =>
+  Future<Result<Cacheable<Paginated<PurchaseReceipt>>>> listPurchaseReceipts(
+          ListQuery query) async =>
       const Result<Cacheable<Paginated<PurchaseReceipt>>>.ok(
         Cacheable<Paginated<PurchaseReceipt>>(
           value: Paginated<PurchaseReceipt>(
             data: <PurchaseReceipt>[],
             meta: PaginationMeta(
-                page: 1, limit: 25, total: 0, totalPages: 0,),
+              page: 1,
+              limit: 25,
+              total: 0,
+              totalPages: 0,
+            ),
           ),
         ),
       );
@@ -307,32 +355,42 @@ class FakeProcurementRepository implements ProcurementRepository {
   @override
   Future<Result<PurchaseReceipt>> getPurchaseReceipt(String id) async =>
       const Result<PurchaseReceipt>.ok(
-        PurchaseReceipt(id: 'prc1', receiptNumber: 'PREC-0001', status: 'DRAFT'),
+        PurchaseReceipt(
+            id: 'prc1', receiptNumber: 'PREC-0001', status: 'DRAFT'),
       );
 
   @override
   Future<Result<PurchaseReceipt>> createPurchaseReceipt(
-          Map<String, dynamic> payload,) async =>
+    Map<String, dynamic> payload,
+  ) async =>
       const Result<PurchaseReceipt>.ok(
-        PurchaseReceipt(id: 'prc1', receiptNumber: 'PREC-0001', status: 'DRAFT'),
+        PurchaseReceipt(
+            id: 'prc1', receiptNumber: 'PREC-0001', status: 'DRAFT'),
       );
 
   @override
   Future<Result<PurchaseReceipt>> updatePurchaseReceipt(
-          String id, Map<String, dynamic> payload,) async =>
+    String id,
+    Map<String, dynamic> payload,
+  ) async =>
       const Result<PurchaseReceipt>.ok(
-        PurchaseReceipt(id: 'prc1', receiptNumber: 'PREC-0001', status: 'DRAFT'),
+        PurchaseReceipt(
+            id: 'prc1', receiptNumber: 'PREC-0001', status: 'DRAFT'),
       );
 
   @override
-  Future<Result<Cacheable<Paginated<SupplierContract>>>>
-      listSupplierContracts(ListQuery query) async =>
+  Future<Result<Cacheable<Paginated<SupplierContract>>>> listSupplierContracts(
+          ListQuery query) async =>
       const Result<Cacheable<Paginated<SupplierContract>>>.ok(
         Cacheable<Paginated<SupplierContract>>(
           value: Paginated<SupplierContract>(
             data: <SupplierContract>[],
             meta: PaginationMeta(
-                page: 1, limit: 25, total: 0, totalPages: 0,),
+              page: 1,
+              limit: 25,
+              total: 0,
+              totalPages: 0,
+            ),
           ),
         ),
       );
@@ -352,7 +410,8 @@ class FakeProcurementRepository implements ProcurementRepository {
 
   @override
   Future<Result<SupplierContract>> createSupplierContract(
-          Map<String, dynamic> payload,) async =>
+    Map<String, dynamic> payload,
+  ) async =>
       const Result<SupplierContract>.ok(
         SupplierContract(
           id: 'sc1',
@@ -366,7 +425,9 @@ class FakeProcurementRepository implements ProcurementRepository {
 
   @override
   Future<Result<SupplierContract>> updateSupplierContract(
-          String id, Map<String, dynamic> payload,) async =>
+    String id,
+    Map<String, dynamic> payload,
+  ) async =>
       const Result<SupplierContract>.ok(
         SupplierContract(
           id: 'sc1',
@@ -426,7 +487,8 @@ Future<ProviderContainer> pumpWidget(
   final container = ProviderContainer(
     overrides: <Override>[
       sharedPreferencesProvider.overrideWithValue(MockSharedPreferences()),
-      cookieStoreProvider.overrideWithValue(CookieStore(CookieJar(), Uri.parse('http://localhost'))),
+      cookieStoreProvider.overrideWithValue(
+          CookieStore(CookieJar(), Uri.parse('http://localhost'))),
       apiClientProvider.overrideWithValue(ApiClient.forTesting(Dio())),
       activeTenantIdProvider.overrideWithValue('tenant-1'),
       repositoryOverride,
@@ -516,7 +578,9 @@ void main() {
       expect(find.text('123 Supply St, Metro City'), findsOneWidget);
     });
 
-    testWidgets('renders details section with payment terms, currency, purchases and rating', (
+    testWidgets(
+        'renders details section with payment terms, currency, purchases and rating',
+        (
       WidgetTester tester,
     ) async {
       await pumpVendorDetail(tester, _vendorActive);

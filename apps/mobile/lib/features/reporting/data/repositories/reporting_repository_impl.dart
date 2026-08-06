@@ -37,7 +37,8 @@ class ReportingRepositoryImpl implements ReportingRepository {
       final List<Map<String, dynamic>> jsonItems = page.data
           .map((dynamic e) => (e as dynamic).toJson() as Map<String, dynamic>)
           .toList(growable: false);
-      await _cache.write(_tenantId, namespace, query.cacheKey, <String, Object?>{
+      await _cache
+          .write(_tenantId, namespace, query.cacheKey, <String, Object?>{
         'data': jsonItems,
         'meta': page.meta.toJson(),
       });
@@ -45,9 +46,11 @@ class ReportingRepositoryImpl implements ReportingRepository {
         Cacheable<Paginated<T>>(value: page),
       );
     } on NetworkException catch (error) {
-      final cached = _cache.read<Map<String, dynamic>>(_tenantId, namespace, query.cacheKey);
+      final cached = _cache.read<Map<String, dynamic>>(
+          _tenantId, namespace, query.cacheKey);
       if (cached == null) {
-        return Result<Cacheable<Paginated<T>>>.err(mapExceptionToFailure(error));
+        return Result<Cacheable<Paginated<T>>>.err(
+            mapExceptionToFailure(error));
       }
       return Result<Cacheable<Paginated<T>>>.ok(
         Cacheable<Paginated<T>>(
@@ -90,9 +93,14 @@ class ReportingRepositoryImpl implements ReportingRepository {
 
   @override
   Future<Result<Cacheable<Paginated<ReportTemplate>>>> listTemplates(
-    ListQuery query,) =>
-      _paginated(_templateNamespace, query, () => _remote.listTemplates(query),
-        ReportTemplateModel.fromJson,);
+    ListQuery query,
+  ) =>
+      _paginated(
+        _templateNamespace,
+        query,
+        () => _remote.listTemplates(query),
+        ReportTemplateModel.fromJson,
+      );
 
   @override
   Future<Result<ReportTemplate>> getTemplate(String id) =>
@@ -103,7 +111,8 @@ class ReportingRepositoryImpl implements ReportingRepository {
       _write(() => _remote.createTemplate(p));
 
   @override
-  Future<Result<ReportTemplate>> updateTemplate(String id, Map<String, dynamic> p) =>
+  Future<Result<ReportTemplate>> updateTemplate(
+          String id, Map<String, dynamic> p) =>
       _write(() => _remote.updateTemplate(id, p));
 
   @override
@@ -116,8 +125,12 @@ class ReportingRepositoryImpl implements ReportingRepository {
 
   @override
   Future<Result<Cacheable<Paginated<ReportJob>>>> listJobs(ListQuery query) =>
-      _paginated(_jobNamespace, query, () => _remote.listJobs(query),
-        ReportJobModel.fromJson,);
+      _paginated(
+        _jobNamespace,
+        query,
+        () => _remote.listJobs(query),
+        ReportJobModel.fromJson,
+      );
 
   @override
   Future<Result<ReportJob>> getJob(String id) =>
@@ -125,9 +138,14 @@ class ReportingRepositoryImpl implements ReportingRepository {
 
   @override
   Future<Result<Cacheable<Paginated<ReportExport>>>> listExports(
-    ListQuery query,) =>
-      _paginated(_exportNamespace, query, () => _remote.listExports(query),
-        ReportExportModel.fromJson,);
+    ListQuery query,
+  ) =>
+      _paginated(
+        _exportNamespace,
+        query,
+        () => _remote.listExports(query),
+        ReportExportModel.fromJson,
+      );
 
   @override
   Future<Result<ReportExport>> getExport(String id) =>
@@ -135,37 +153,53 @@ class ReportingRepositoryImpl implements ReportingRepository {
 
   @override
   Future<Result<Cacheable<Paginated<ReportCompliance>>>> listCompliance(
-    ListQuery query,) =>
-      _paginated(_complianceNamespace, query, () => _remote.listCompliance(query),
-        ReportComplianceModel.fromJson,);
+    ListQuery query,
+  ) =>
+      _paginated(
+        _complianceNamespace,
+        query,
+        () => _remote.listCompliance(query),
+        ReportComplianceModel.fromJson,
+      );
 
   @override
-  Future<Result<ReportCompliance>> createCompliance(Map<String, dynamic> p) async => throw UnimplementedError();
+  Future<Result<ReportCompliance>> createCompliance(
+          Map<String, dynamic> p) async =>
+      throw UnimplementedError();
 
   @override
-  Future<Result<ReportExport>> createExport(Map<String, dynamic> p) async => throw UnimplementedError();
+  Future<Result<ReportExport>> createExport(Map<String, dynamic> p) async =>
+      throw UnimplementedError();
 
   @override
-  Future<Result<ReportJob>> createJob(Map<String, dynamic> p) async => throw UnimplementedError();
+  Future<Result<ReportJob>> createJob(Map<String, dynamic> p) async =>
+      throw UnimplementedError();
 
   @override
-  Future<Result<void>> deleteCompliance(String id) async => throw UnimplementedError();
+  Future<Result<void>> deleteCompliance(String id) async =>
+      throw UnimplementedError();
 
-  Future<Result<void>> deleteExport(String id) async => throw UnimplementedError();
+  Future<Result<void>> deleteExport(String id) async =>
+      throw UnimplementedError();
 
   Future<Result<void>> deleteJob(String id) async => throw UnimplementedError();
 
   @override
-  Future<Result<ReportCompliance>> updateCompliance(String id, Map<String, dynamic> p) async => throw UnimplementedError();
+  Future<Result<ReportCompliance>> updateCompliance(
+          String id, Map<String, dynamic> p) async =>
+      throw UnimplementedError();
 
   @override
-  Future<Result<ReportExport>> updateExport(String id, Map<String, dynamic> p) async => throw UnimplementedError();
-
-
-  @override
-  Future<Result<ReportCompliance>> getCompliance(String id) async => throw UnimplementedError();
+  Future<Result<ReportExport>> updateExport(
+          String id, Map<String, dynamic> p) async =>
+      throw UnimplementedError();
 
   @override
-  Future<Result<ReportJob>> updateJob(String id, Map<String, dynamic> p) async => throw UnimplementedError();
+  Future<Result<ReportCompliance>> getCompliance(String id) async =>
+      throw UnimplementedError();
 
+  @override
+  Future<Result<ReportJob>> updateJob(
+          String id, Map<String, dynamic> p) async =>
+      throw UnimplementedError();
 }

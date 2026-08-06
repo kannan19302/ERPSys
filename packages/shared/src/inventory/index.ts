@@ -319,14 +319,14 @@ export interface CreateQAInspectionInput {
 
 export interface SubmitQAInspectionCheckpointInput {
   id: string;
-  result?: string | null;  // PASS, FAIL, NA
+  result?: string | null; // PASS, FAIL, NA
   observedValue?: string | null;
   remarks?: string | null;
 }
 
 export interface SubmitQAInspectionInput {
   checkpoints: SubmitQAInspectionCheckpointInput[];
-  status: string;           // PASS, FAIL, PARTIAL
+  status: string; // PASS, FAIL, PARTIAL
   disposition?: string | null;
   acceptedQty: number;
   rejectedQty: number;

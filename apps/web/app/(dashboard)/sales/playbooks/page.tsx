@@ -64,8 +64,14 @@ export default function SalesPlaybooksPage() {
               padding: "8px 16px",
               borderRadius: "6px",
               border: "none",
-              backgroundColor: activeStage === stg ? "#3b82f6" : "#f1f5f9",
-              color: activeStage === stg ? "#fff" : "#475569",
+              backgroundColor:
+                activeStage === stg
+                  ? "var(--color-primary)"
+                  : "var(--color-bg-hover)",
+              color:
+                activeStage === stg
+                  ? "var(--color-text-inverse)"
+                  : "var(--color-text-secondary)",
               fontWeight: 500,
               cursor: "pointer",
             }}
@@ -95,7 +101,7 @@ export default function SalesPlaybooksPage() {
                 padding: "32px",
                 textAlign: "center",
                 gridColumn: "1 / -1",
-                color: "#64748b",
+                color: "var(--color-text-secondary)",
               }}
             >
               No playbooks configured for stage <strong>{activeStage}</strong>.
@@ -119,7 +125,7 @@ export default function SalesPlaybooksPage() {
                 <p
                   style={{
                     fontSize: "14px",
-                    color: "#64748b",
+                    color: "var(--color-text-secondary)",
                     marginBottom: "16px",
                   }}
                 >
@@ -132,7 +138,7 @@ export default function SalesPlaybooksPage() {
                     style={{
                       fontSize: "14px",
                       fontWeight: 600,
-                      color: "#334155",
+                      color: "var(--color-border-strong)",
                       marginBottom: "8px",
                     }}
                   >
@@ -143,7 +149,7 @@ export default function SalesPlaybooksPage() {
                       paddingLeft: "20px",
                       margin: 0,
                       fontSize: "13px",
-                      color: "#475569",
+                      color: "var(--color-text-secondary)",
                     }}
                   >
                     {pb.steps?.map((step: any) => (

@@ -34,11 +34,13 @@ class InvoiceModel extends Invoice {
       status: json['status'] as String? ?? 'DRAFT',
       items: json['lineItems'] is List
           ? (json['lineItems'] as List)
-              .map((Object? e) => InvoiceLineItemModel.fromJson(e as Map<String, dynamic>))
+              .map((Object? e) =>
+                  InvoiceLineItemModel.fromJson(e as Map<String, dynamic>))
               .toList()
           : json['items'] is List
               ? (json['items'] as List)
-                  .map((Object? e) => InvoiceLineItemModel.fromJson(e as Map<String, dynamic>))
+                  .map((Object? e) =>
+                      InvoiceLineItemModel.fromJson(e as Map<String, dynamic>))
                   .toList()
               : const <InvoiceLineItemModel>[],
       subtotal: asDouble(json['subtotal']),
@@ -62,7 +64,9 @@ class InvoiceModel extends Invoice {
         'customerName': customerName,
         'invoiceNumber': invoiceNumber,
         'status': status,
-        'items': items.map((InvoiceLineItem i) => (i as InvoiceLineItemModel).toJson()).toList(),
+        'items': items
+            .map((InvoiceLineItem i) => (i as InvoiceLineItemModel).toJson())
+            .toList(),
         'subtotal': subtotal,
         'taxTotal': taxTotal,
         'discountTotal': discountTotal,
@@ -206,7 +210,8 @@ class CreditNoteModel extends CreditNote {
       reason: json['reason'] as String?,
       items: json['items'] is List
           ? (json['items'] as List)
-              .map((Object? e) => CreditNoteLineItemModel.fromJson(e as Map<String, dynamic>))
+              .map((Object? e) =>
+                  CreditNoteLineItemModel.fromJson(e as Map<String, dynamic>))
               .toList()
           : const <CreditNoteLineItemModel>[],
       totalAmount: asDouble(json['totalAmount']),
@@ -224,7 +229,10 @@ class CreditNoteModel extends CreditNote {
         'status': status,
         'invoiceId': invoiceId,
         'reason': reason,
-        'items': items.map((CreditNoteLineItem i) => (i as CreditNoteLineItemModel).toJson()).toList(),
+        'items': items
+            .map((CreditNoteLineItem i) =>
+                (i as CreditNoteLineItemModel).toJson())
+            .toList(),
         'totalAmount': totalAmount,
         'currency': currency,
         'date': date.toIso8601String(),
@@ -379,7 +387,9 @@ class TaxFilingModel extends TaxFiling {
       totalTax: asDouble(json['totalTax']),
       status: json['status'] as String? ?? 'DRAFT',
       dueAt: DateTime.parse(json['dueAt'] as String),
-      filedAt: json['filedAt'] != null ? DateTime.tryParse('${json['filedAt']}') : null,
+      filedAt: json['filedAt'] != null
+          ? DateTime.tryParse('${json['filedAt']}')
+          : null,
       notes: json['notes'] as String?,
       createdAt: DateTime.tryParse('${json['createdAt']}'),
     );
@@ -506,7 +516,8 @@ class JournalEntryModel extends JournalEntry {
       createdAt: DateTime.tryParse('${json['createdAt']}'),
       lineItems: json['lineItems'] is List
           ? (json['lineItems'] as List)
-              .map((Object? e) => JournalEntryLineItemModel.fromJson(e as Map<String, dynamic>))
+              .map((Object? e) =>
+                  JournalEntryLineItemModel.fromJson(e as Map<String, dynamic>))
               .toList()
           : const <JournalEntryLineItemModel>[],
     );
@@ -523,7 +534,8 @@ class JournalEntryModel extends JournalEntry {
         'status': status,
         'createdAt': createdAt?.toIso8601String(),
         'lineItems': lineItems
-            .map((JournalEntryLineItem i) => (i as JournalEntryLineItemModel).toJson())
+            .map((JournalEntryLineItem i) =>
+                (i as JournalEntryLineItemModel).toJson())
             .toList(),
       };
 }

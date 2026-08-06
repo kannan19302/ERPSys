@@ -44,21 +44,28 @@ class _LanguageListPageState extends ConsumerState<LanguageListPage> {
         margin: EdgeInsets.zero,
         child: Padding(
           padding: const EdgeInsets.all(Spacing.x3),
-          child: Row(children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(l.name, style: Theme.of(context).textTheme.titleSmall),
-                  const SizedBox(height: Spacing.x1),
-                  Text('${l.code} · ${l.direction}',
-                      style: TextStyle(color: context.tokens.textSecondary, fontSize: TypeScale.xs),),
-                ],
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(l.name, style: Theme.of(context).textTheme.titleSmall),
+                    const SizedBox(height: Spacing.x1),
+                    Text(
+                      '${l.code} · ${l.direction}',
+                      style: TextStyle(
+                          color: context.tokens.textSecondary,
+                          fontSize: TypeScale.xs),
+                    ),
+                  ],
+                ),
               ),
-            ),
-            if (l.isDefault)
-              Icon(Icons.star, color: context.tokens.warning, size: TypeScale.base),
-          ],),
+              if (l.isDefault)
+                Icon(Icons.star,
+                    color: context.tokens.warning, size: TypeScale.base),
+            ],
+          ),
         ),
       ),
     );

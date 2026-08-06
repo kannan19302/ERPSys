@@ -63,4 +63,6 @@
   gap: var(--space-3);
   padding-top: var(--space-2);
 }
-.s1 { height: 34px; }
+.s1 {
+  height: 34px;
+}

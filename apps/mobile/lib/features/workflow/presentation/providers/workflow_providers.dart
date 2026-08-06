@@ -32,7 +32,8 @@ final Provider<WorkflowRepository> workflowRepositoryProvider =
 class WorkflowDefinitionListState extends Equatable {
   const WorkflowDefinitionListState({
     this.items = const <WorkflowDefinition>[],
-    this.meta = const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
+    this.meta =
+        const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
     this.query = const ListQuery(sort: '-createdAt'),
     this.isLoading = true,
     this.isLoadingMore = false,
@@ -69,23 +70,33 @@ class WorkflowDefinitionListState extends Equatable {
         isLoading: isLoading ?? this.isLoading,
         isLoadingMore: isLoadingMore ?? this.isLoadingMore,
         failure: clearFailures ? null : (failure ?? this.failure),
-        loadMoreFailure: clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
+        loadMoreFailure:
+            clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
         cachedAt: clearCachedAt ? null : (cachedAt ?? this.cachedAt),
       );
 
   @override
   List<Object?> get props => <Object?>[
-        items, meta, query.cacheKey, isLoading, isLoadingMore, failure, loadMoreFailure, cachedAt,
+        items,
+        meta,
+        query.cacheKey,
+        isLoading,
+        isLoadingMore,
+        failure,
+        loadMoreFailure,
+        cachedAt,
       ];
 }
 
-final NotifierProvider<WorkflowDefinitionListController, WorkflowDefinitionListState>
-    workflowDefinitionListControllerProvider =
-    NotifierProvider<WorkflowDefinitionListController, WorkflowDefinitionListState>(
+final NotifierProvider<WorkflowDefinitionListController,
+        WorkflowDefinitionListState> workflowDefinitionListControllerProvider =
+    NotifierProvider<WorkflowDefinitionListController,
+        WorkflowDefinitionListState>(
   WorkflowDefinitionListController.new,
 );
 
-class WorkflowDefinitionListController extends Notifier<WorkflowDefinitionListState> {
+class WorkflowDefinitionListController
+    extends Notifier<WorkflowDefinitionListState> {
   Timer? _searchDebounce;
 
   @override
@@ -106,8 +117,12 @@ class WorkflowDefinitionListController extends Notifier<WorkflowDefinitionListSt
     state = result.fold(
       (f) => state.copyWith(isLoading: false, failure: f, items: const []),
       (page) => state.copyWith(
-        items: page.value.data, meta: page.value.meta, query: query,
-        isLoading: false, clearFailures: true, cachedAt: page.cachedAt,
+        items: page.value.data,
+        meta: page.value.meta,
+        query: query,
+        isLoading: false,
+        clearFailures: true,
+        cachedAt: page.cachedAt,
         clearCachedAt: !page.isFromCache,
       ),
     );
@@ -121,8 +136,11 @@ class WorkflowDefinitionListController extends Notifier<WorkflowDefinitionListSt
     state = result.fold(
       (f) => state.copyWith(isLoadingMore: false, loadMoreFailure: f),
       (page) => state.copyWith(
-        items: [...state.items, ...page.value.data], meta: page.value.meta,
-        query: next, isLoadingMore: false, clearFailures: true,
+        items: [...state.items, ...page.value.data],
+        meta: page.value.meta,
+        query: next,
+        isLoadingMore: false,
+        clearFailures: true,
       ),
     );
   }
@@ -130,7 +148,8 @@ class WorkflowDefinitionListController extends Notifier<WorkflowDefinitionListSt
   void search(String term) {
     _searchDebounce?.cancel();
     _searchDebounce = Timer(const Duration(milliseconds: 350), () {
-      state = state.copyWith(query: state.query.copyWith(search: term, page: 1));
+      state =
+          state.copyWith(query: state.query.copyWith(search: term, page: 1));
       refresh();
     });
   }
@@ -141,33 +160,40 @@ class WorkflowDefinitionListController extends Notifier<WorkflowDefinitionListSt
   }
 
   void applyFilters(Map<String, String> filters) {
-    state = state.copyWith(query: state.query.copyWith(filters: filters, page: 1));
+    state =
+        state.copyWith(query: state.query.copyWith(filters: filters, page: 1));
     refresh();
   }
 
   Future<Result<void>> delete(String id) async {
     final result = await DeleteWorkflowDefinitionUseCase(
-      ref.read(workflowRepositoryProvider),)(id);
+      ref.read(workflowRepositoryProvider),
+    )(id);
     if (result.isOk) await refresh();
     return result;
   }
 
   Future<void> activate(String id) async {
     await ActivateWorkflowDefinitionUseCase(
-      ref.read(workflowRepositoryProvider),)(id);
+      ref.read(workflowRepositoryProvider),
+    )(id);
     await refresh();
   }
 
   Future<void> deactivate(String id) async {
     await DeactivateWorkflowDefinitionUseCase(
-      ref.read(workflowRepositoryProvider),)(id);
+      ref.read(workflowRepositoryProvider),
+    )(id);
     await refresh();
   }
 
-  Future<Result<WorkflowDefinition>> save(Map<String, dynamic> payload, {String? id}) async {
+  Future<Result<WorkflowDefinition>> save(Map<String, dynamic> payload,
+      {String? id}) async {
     final result = await SaveWorkflowDefinitionUseCase(
-      ref.read(workflowRepositoryProvider),)(
-      SaveWorkflowDefinitionParams(id: id, payload: payload),);
+      ref.read(workflowRepositoryProvider),
+    )(
+      SaveWorkflowDefinitionParams(id: id, payload: payload),
+    );
     if (result.isOk) await refresh();
     return result;
   }
@@ -178,7 +204,8 @@ class WorkflowDefinitionListController extends Notifier<WorkflowDefinitionListSt
 class WorkflowInstanceListState extends Equatable {
   const WorkflowInstanceListState({
     this.items = const <WorkflowInstance>[],
-    this.meta = const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
+    this.meta =
+        const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
     this.query = const ListQuery(sort: '-createdAt'),
     this.isLoading = true,
     this.isLoadingMore = false,
@@ -195,31 +222,46 @@ class WorkflowInstanceListState extends Equatable {
   final Failure? loadMoreFailure;
 
   WorkflowInstanceListState copyWith({
-    List<WorkflowInstance>? items, PaginationMeta? meta, ListQuery? query,
-    bool? isLoading, bool? isLoadingMore, Failure? failure,
-    Failure? loadMoreFailure, bool clearFailures = false,
+    List<WorkflowInstance>? items,
+    PaginationMeta? meta,
+    ListQuery? query,
+    bool? isLoading,
+    bool? isLoadingMore,
+    Failure? failure,
+    Failure? loadMoreFailure,
+    bool clearFailures = false,
   }) =>
       WorkflowInstanceListState(
-        items: items ?? this.items, meta: meta ?? this.meta,
-        query: query ?? this.query, isLoading: isLoading ?? this.isLoading,
+        items: items ?? this.items,
+        meta: meta ?? this.meta,
+        query: query ?? this.query,
+        isLoading: isLoading ?? this.isLoading,
         isLoadingMore: isLoadingMore ?? this.isLoadingMore,
         failure: clearFailures ? null : (failure ?? this.failure),
-        loadMoreFailure: clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
+        loadMoreFailure:
+            clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
       );
 
   @override
   List<Object?> get props => <Object?>[
-        items, meta, query.cacheKey, isLoading, isLoadingMore, failure, loadMoreFailure,
+        items,
+        meta,
+        query.cacheKey,
+        isLoading,
+        isLoadingMore,
+        failure,
+        loadMoreFailure,
       ];
 }
 
-final NotifierProvider<WorkflowInstanceListController, WorkflowInstanceListState>
-    workflowInstanceListControllerProvider =
+final NotifierProvider<WorkflowInstanceListController,
+        WorkflowInstanceListState> workflowInstanceListControllerProvider =
     NotifierProvider<WorkflowInstanceListController, WorkflowInstanceListState>(
   WorkflowInstanceListController.new,
 );
 
-class WorkflowInstanceListController extends Notifier<WorkflowInstanceListState> {
+class WorkflowInstanceListController
+    extends Notifier<WorkflowInstanceListState> {
   @override
   WorkflowInstanceListState build() {
     ref.watch(activeTenantIdProvider);
@@ -237,8 +279,11 @@ class WorkflowInstanceListController extends Notifier<WorkflowInstanceListState>
     state = result.fold(
       (f) => state.copyWith(isLoading: false, failure: f, items: const []),
       (page) => state.copyWith(
-        items: page.value.data, meta: page.value.meta, query: query,
-        isLoading: false, clearFailures: true,
+        items: page.value.data,
+        meta: page.value.meta,
+        query: query,
+        isLoading: false,
+        clearFailures: true,
       ),
     );
   }
@@ -251,21 +296,26 @@ class WorkflowInstanceListController extends Notifier<WorkflowInstanceListState>
     state = result.fold(
       (f) => state.copyWith(isLoadingMore: false, loadMoreFailure: f),
       (page) => state.copyWith(
-        items: [...state.items, ...page.value.data], meta: page.value.meta,
-        query: next, isLoadingMore: false, clearFailures: true,
+        items: [...state.items, ...page.value.data],
+        meta: page.value.meta,
+        query: next,
+        isLoadingMore: false,
+        clearFailures: true,
       ),
     );
   }
 
   Future<void> cancel(String id) async {
     await CancelWorkflowInstanceUseCase(
-      ref.read(workflowRepositoryProvider),)(id);
+      ref.read(workflowRepositoryProvider),
+    )(id);
     await refresh();
   }
 
   Future<void> advance(String id) async {
     await AdvanceWorkflowInstanceUseCase(
-      ref.read(workflowRepositoryProvider),)(id);
+      ref.read(workflowRepositoryProvider),
+    )(id);
     await refresh();
   }
 }
@@ -275,8 +325,10 @@ class WorkflowInstanceListController extends Notifier<WorkflowInstanceListState>
 class WorkflowTaskListState extends Equatable {
   const WorkflowTaskListState({
     this.items = const <WorkflowTask>[],
-    this.meta = const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
-    this.query = const ListQuery(sort: '-createdAt', filters: {'status': 'PENDING'}),
+    this.meta =
+        const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
+    this.query =
+        const ListQuery(sort: '-createdAt', filters: {'status': 'PENDING'}),
     this.isLoading = true,
     this.isLoadingMore = false,
     this.failure,
@@ -292,22 +344,36 @@ class WorkflowTaskListState extends Equatable {
   final Failure? loadMoreFailure;
 
   WorkflowTaskListState copyWith({
-    List<WorkflowTask>? items, PaginationMeta? meta, ListQuery? query,
-    bool? isLoading, bool? isLoadingMore, Failure? failure,
-    Failure? loadMoreFailure, bool clearFailures = false,
+    List<WorkflowTask>? items,
+    PaginationMeta? meta,
+    ListQuery? query,
+    bool? isLoading,
+    bool? isLoadingMore,
+    Failure? failure,
+    Failure? loadMoreFailure,
+    bool clearFailures = false,
     bool clearCachedAt = false,
   }) =>
       WorkflowTaskListState(
-        items: items ?? this.items, meta: meta ?? this.meta,
-        query: query ?? this.query, isLoading: isLoading ?? this.isLoading,
+        items: items ?? this.items,
+        meta: meta ?? this.meta,
+        query: query ?? this.query,
+        isLoading: isLoading ?? this.isLoading,
         isLoadingMore: isLoadingMore ?? this.isLoadingMore,
         failure: clearFailures ? null : (failure ?? this.failure),
-        loadMoreFailure: clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
+        loadMoreFailure:
+            clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
       );
 
   @override
   List<Object?> get props => <Object?>[
-        items, meta, query.cacheKey, isLoading, isLoadingMore, failure, loadMoreFailure,
+        items,
+        meta,
+        query.cacheKey,
+        isLoading,
+        isLoadingMore,
+        failure,
+        loadMoreFailure,
       ];
 }
 
@@ -335,8 +401,11 @@ class WorkflowTaskListController extends Notifier<WorkflowTaskListState> {
     state = result.fold(
       (f) => state.copyWith(isLoading: false, failure: f, items: const []),
       (page) => state.copyWith(
-        items: page.value.data, meta: page.value.meta, query: query,
-        isLoading: false, clearFailures: true,
+        items: page.value.data,
+        meta: page.value.meta,
+        query: query,
+        isLoading: false,
+        clearFailures: true,
       ),
     );
   }
@@ -349,14 +418,18 @@ class WorkflowTaskListController extends Notifier<WorkflowTaskListState> {
     state = result.fold(
       (f) => state.copyWith(isLoadingMore: false, loadMoreFailure: f),
       (page) => state.copyWith(
-        items: [...state.items, ...page.value.data], meta: page.value.meta,
-        query: next, isLoadingMore: false, clearFailures: true,
+        items: [...state.items, ...page.value.data],
+        meta: page.value.meta,
+        query: next,
+        isLoadingMore: false,
+        clearFailures: true,
       ),
     );
   }
 
   void applyFilters(Map<String, String> filters) {
-    state = state.copyWith(query: state.query.copyWith(filters: filters, page: 1));
+    state =
+        state.copyWith(query: state.query.copyWith(filters: filters, page: 1));
     refresh();
   }
 
@@ -375,33 +448,41 @@ class WorkflowTaskListController extends Notifier<WorkflowTaskListState> {
     await refresh();
   }
 
-  Future<Result<WorkflowTask>> save(Map<String, dynamic> payload, {String? id}) async {
+  Future<Result<WorkflowTask>> save(Map<String, dynamic> payload,
+      {String? id}) async {
     final result = await SaveWorkflowTaskUseCase(
-      ref.read(workflowRepositoryProvider),)(
-      SaveWorkflowTaskParams(id: id, payload: payload),);
+      ref.read(workflowRepositoryProvider),
+    )(
+      SaveWorkflowTaskParams(id: id, payload: payload),
+    );
     if (result.isOk) await refresh();
     return result;
   }
 }
 
-final FutureProviderFamily<WorkflowDefinition, String> workflowDefinitionDetailProvider =
-    FutureProvider.family<WorkflowDefinition, String>((Ref ref, String id) async {
+final FutureProviderFamily<WorkflowDefinition, String>
+    workflowDefinitionDetailProvider =
+    FutureProvider.family<WorkflowDefinition, String>(
+        (Ref ref, String id) async {
   final result = await GetWorkflowDefinitionUseCase(
-    ref.watch(workflowRepositoryProvider),)(id);
+    ref.watch(workflowRepositoryProvider),
+  )(id);
   return result.fold((f) => throw f, (w) => w);
 });
 
-final FutureProviderFamily<WorkflowInstance, String> workflowInstanceDetailProvider =
+final FutureProviderFamily<WorkflowInstance, String>
+    workflowInstanceDetailProvider =
     FutureProvider.family<WorkflowInstance, String>((Ref ref, String id) async {
   final result = await GetWorkflowInstanceUseCase(
-    ref.watch(workflowRepositoryProvider),)(id);
+    ref.watch(workflowRepositoryProvider),
+  )(id);
   return result.fold((f) => throw f, (w) => w);
 });
 
 final FutureProviderFamily<WorkflowTask, String> workflowTaskDetailProvider =
     FutureProvider.family<WorkflowTask, String>((Ref ref, String id) async {
   final result = await GetWorkflowTaskUseCase(
-    ref.watch(workflowRepositoryProvider),)(id);
+    ref.watch(workflowRepositoryProvider),
+  )(id);
   return result.fold((f) => throw f, (t) => t);
 });
-

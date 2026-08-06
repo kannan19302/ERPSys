@@ -20,11 +20,14 @@ class OfflineQueuePage extends ConsumerWidget {
       body: state.isLoading
           ? const LoadingView()
           : state.items.isEmpty
-              ? const EmptyView(title: 'Queue is empty', message: 'No pending offline actions')
+              ? const EmptyView(
+                  title: 'Queue is empty',
+                  message: 'No pending offline actions')
               : ListView.separated(
                   padding: const EdgeInsets.all(Spacing.x4),
                   itemCount: state.items.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: Spacing.x2),
+                  separatorBuilder: (_, __) =>
+                      const SizedBox(height: Spacing.x2),
                   itemBuilder: (_, i) => _QueueCard(item: state.items[i]),
                 ),
     );
@@ -49,22 +52,54 @@ class _QueueCard extends StatelessWidget {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(Spacing.x4),
-      decoration: BoxDecoration(color: t.bgElevated, borderRadius: Radii.card, border: Border.all(color: t.border)),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Row(children: [
-          Icon(icon, color: color, size: TypeScale.xl),
-          const SizedBox(width: Spacing.x2),
-          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(item.actionType, style: TextStyle(fontWeight: TypeScale.semibold, color: t.text)),
-            Text('Retry #${item.retryCount}', style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs)),
-          ],),),
-          Text(item.status, style: TextStyle(color: color, fontSize: TypeScale.xs, fontWeight: TypeScale.medium)),
-        ],),
-        const SizedBox(height: Spacing.x2),
-        Text('Created: ${item.createdAt != null ? Formatters.dateTime(item.createdAt!) : "—"}', style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs)),
-        if (item.errorMessage != null) Padding(padding: const EdgeInsets.only(top: Spacing.x1), child: Text(item.errorMessage!, style: TextStyle(color: t.danger, fontSize: TypeScale.xs))),
-        if (item.syncedAt != null) Padding(padding: const EdgeInsets.only(top: Spacing.x1), child: Text('Synced: ${Formatters.dateTime(item.syncedAt!)}', style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs))),
-      ],),
+      decoration: BoxDecoration(
+          color: t.bgElevated,
+          borderRadius: Radii.card,
+          border: Border.all(color: t.border)),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, color: color, size: TypeScale.xl),
+              const SizedBox(width: Spacing.x2),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(item.actionType,
+                        style: TextStyle(
+                            fontWeight: TypeScale.semibold, color: t.text)),
+                    Text('Retry #${item.retryCount}',
+                        style: TextStyle(
+                            color: t.textTertiary, fontSize: TypeScale.xs)),
+                  ],
+                ),
+              ),
+              Text(item.status,
+                  style: TextStyle(
+                      color: color,
+                      fontSize: TypeScale.xs,
+                      fontWeight: TypeScale.medium)),
+            ],
+          ),
+          const SizedBox(height: Spacing.x2),
+          Text(
+              'Created: ${item.createdAt != null ? Formatters.dateTime(item.createdAt!) : "—"}',
+              style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs)),
+          if (item.errorMessage != null)
+            Padding(
+                padding: const EdgeInsets.only(top: Spacing.x1),
+                child: Text(item.errorMessage!,
+                    style: TextStyle(color: t.danger, fontSize: TypeScale.xs))),
+          if (item.syncedAt != null)
+            Padding(
+                padding: const EdgeInsets.only(top: Spacing.x1),
+                child: Text('Synced: ${Formatters.dateTime(item.syncedAt!)}',
+                    style: TextStyle(
+                        color: t.textTertiary, fontSize: TypeScale.xs))),
+        ],
+      ),
     );
   }
 }

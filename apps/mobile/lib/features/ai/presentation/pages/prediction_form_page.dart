@@ -19,7 +19,8 @@ class AiPredictionFormPage extends ConsumerStatefulWidget {
   final String? predictionId;
 
   @override
-  ConsumerState<AiPredictionFormPage> createState() => _AiPredictionFormPageState();
+  ConsumerState<AiPredictionFormPage> createState() =>
+      _AiPredictionFormPageState();
 }
 
 class _AiPredictionFormPageState extends ConsumerState<AiPredictionFormPage> {
@@ -43,14 +44,14 @@ class _AiPredictionFormPageState extends ConsumerState<AiPredictionFormPage> {
   }
 
   void _loadPrediction() {
-    final AiPrediction? prediction = ref
-        .read(aiPredictionDetailProvider(widget.predictionId!))
-        .valueOrNull;
+    final AiPrediction? prediction =
+        ref.read(aiPredictionDetailProvider(widget.predictionId!)).valueOrNull;
     if (prediction != null) {
       _modelIdCtrl.text = prediction.modelId ?? '';
       _modelNameCtrl.text = prediction.modelName ?? '';
       _inputCtrl.text = _encodeMap(prediction.input);
-      _outputCtrl.text = prediction.output != null ? _encodeMap(prediction.output!) : '';
+      _outputCtrl.text =
+          prediction.output != null ? _encodeMap(prediction.output!) : '';
       _confidenceCtrl.text = prediction.confidence?.toString() ?? '';
     }
   }
@@ -86,10 +87,14 @@ class _AiPredictionFormPageState extends ConsumerState<AiPredictionFormPage> {
     setState(() => _saving = true);
 
     final Map<String, dynamic> payload = <String, dynamic>{
-      'modelId': _modelIdCtrl.text.trim().isEmpty ? null : _modelIdCtrl.text.trim(),
-      'modelName': _modelNameCtrl.text.trim().isEmpty ? null : _modelNameCtrl.text.trim(),
+      'modelId':
+          _modelIdCtrl.text.trim().isEmpty ? null : _modelIdCtrl.text.trim(),
+      'modelName': _modelNameCtrl.text.trim().isEmpty
+          ? null
+          : _modelNameCtrl.text.trim(),
       'input': _decodeMap(_inputCtrl.text),
-      'output': _outputCtrl.text.trim().isEmpty ? null : _decodeMap(_outputCtrl.text),
+      'output':
+          _outputCtrl.text.trim().isEmpty ? null : _decodeMap(_outputCtrl.text),
       'confidence': double.tryParse(_confidenceCtrl.text),
     };
 
@@ -162,7 +167,8 @@ class _AiPredictionFormPageState extends ConsumerState<AiPredictionFormPage> {
             const SizedBox(height: Spacing.x4),
             TextFormField(
               controller: _confidenceCtrl,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
               decoration: const InputDecoration(
                 labelText: 'Confidence',
                 helperText: '0.0 to 1.0',

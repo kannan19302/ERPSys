@@ -15,6 +15,7 @@ vi.mock("@unerp/database", () => ({
 }));
 
 import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 import { ReportingComplianceSignoffDeepService } from "../reporting-compliance-signoff-deep.service";
 
 describe("ReportingComplianceSignoffDeepService", () => {

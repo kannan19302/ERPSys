@@ -31,7 +31,10 @@ class _EmailTemplateFormPageState extends ConsumerState<EmailTemplateFormPage> {
   bool _saving = false;
 
   static const List<String> _categories = <String>[
-    'SALES', 'MARKETING', 'SUPPORT', 'GENERAL',
+    'SALES',
+    'MARKETING',
+    'SUPPORT',
+    'GENERAL',
   ];
 
   bool get _isEditing => widget.templateId != null;
@@ -45,9 +48,8 @@ class _EmailTemplateFormPageState extends ConsumerState<EmailTemplateFormPage> {
   }
 
   Future<void> _loadTemplate() async {
-    final EmailTemplate? template = ref
-        .read(emailTemplateDetailProvider(widget.templateId!))
-        .valueOrNull;
+    final EmailTemplate? template =
+        ref.read(emailTemplateDetailProvider(widget.templateId!)).valueOrNull;
     if (template != null) {
       _nameCtrl.text = template.name;
       _subjectCtrl.text = template.subject;

@@ -74,10 +74,14 @@ class _LeadListPageState extends ConsumerState<LeadListPage> {
       ),
       body: Column(
         children: <Widget>[
-          if (state.cachedAt != null) StaleDataBanner(cachedAt: state.cachedAt!),
+          if (state.cachedAt != null)
+            StaleDataBanner(cachedAt: state.cachedAt!),
           Padding(
             padding: const EdgeInsets.fromLTRB(
-              Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2,
+              Spacing.x4,
+              Spacing.x3,
+              Spacing.x4,
+              Spacing.x2,
             ),
             child: TextField(
               controller: _search,
@@ -119,7 +123,8 @@ class _LeadListPageState extends ConsumerState<LeadListPage> {
                   underline: const SizedBox.shrink(),
                   items: _statusFilters.entries
                       .map(
-                        (MapEntry<String, String> e) => DropdownMenuItem<String>(
+                        (MapEntry<String, String> e) =>
+                            DropdownMenuItem<String>(
                           value: e.key,
                           child: Text(e.value),
                         ),
@@ -130,7 +135,8 @@ class _LeadListPageState extends ConsumerState<LeadListPage> {
                     if (value == null) {
                       controller.applyFilters(const <String, String>{});
                     } else {
-                      controller.applyFilters(<String, String>{'status': value});
+                      controller
+                          .applyFilters(<String, String>{'status': value});
                     }
                   },
                 ),
@@ -290,8 +296,11 @@ class _LeadTile extends StatelessWidget {
             Row(
               children: <Widget>[
                 if (lead.email != null)
-                  Text(lead.email!,
-                      style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs),),
+                  Text(
+                    lead.email!,
+                    style: TextStyle(
+                        color: t.textTertiary, fontSize: TypeScale.xs),
+                  ),
                 const Spacer(),
                 if (lead.estimatedRevenue != null)
                   Text(
@@ -313,7 +322,8 @@ class _LeadTile extends StatelessWidget {
                 if (onQualify != null)
                   TextButton.icon(
                     onPressed: onQualify,
-                    icon: const Icon(Icons.check_circle_outline, size: TypeScale.base),
+                    icon: const Icon(Icons.check_circle_outline,
+                        size: TypeScale.base),
                     label: const Text('Qualify'),
                   ),
                 if (onConvert != null)
@@ -330,5 +340,3 @@ class _LeadTile extends StatelessWidget {
     );
   }
 }
-
-

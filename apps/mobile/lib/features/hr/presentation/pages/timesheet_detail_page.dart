@@ -104,7 +104,8 @@ class _TimesheetDetail extends StatelessWidget {
                 'Week',
                 'Week of ${Formatters.date(timesheet.weekStart)}',
               ),
-              _Row('Total Hours', '${timesheet.totalHours.toStringAsFixed(1)} h'),
+              _Row('Total Hours',
+                  '${timesheet.totalHours.toStringAsFixed(1)} h'),
               if (timesheet.createdAt != null)
                 _Row('Created', Formatters.dateTime(timesheet.createdAt!)),
             ],

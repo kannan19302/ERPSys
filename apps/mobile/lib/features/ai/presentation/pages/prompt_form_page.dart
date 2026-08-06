@@ -41,9 +41,8 @@ class _AiPromptFormPageState extends ConsumerState<AiPromptFormPage> {
   }
 
   Future<void> _loadPrompt() async {
-    final AiPrompt? prompt = ref
-        .read(aiPromptDetailProvider(widget.promptId!))
-        .valueOrNull;
+    final AiPrompt? prompt =
+        ref.read(aiPromptDetailProvider(widget.promptId!)).valueOrNull;
     if (prompt != null) {
       _titleCtrl.text = prompt.title ?? '';
       _promptCtrl.text = prompt.prompt;
@@ -67,7 +66,8 @@ class _AiPromptFormPageState extends ConsumerState<AiPromptFormPage> {
     final Map<String, dynamic> payload = <String, dynamic>{
       'title': _titleCtrl.text.trim().isEmpty ? null : _titleCtrl.text.trim(),
       'prompt': _promptCtrl.text.trim(),
-      'modelId': _modelIdCtrl.text.trim().isEmpty ? null : _modelIdCtrl.text.trim(),
+      'modelId':
+          _modelIdCtrl.text.trim().isEmpty ? null : _modelIdCtrl.text.trim(),
       'status': _status,
     };
 
@@ -135,8 +135,10 @@ class _AiPromptFormPageState extends ConsumerState<AiPromptFormPage> {
               initialValue: _status,
               decoration: const InputDecoration(labelText: 'Status'),
               items: const <DropdownMenuItem<String>>[
-                DropdownMenuItem<String>(value: 'ACTIVE', child: Text('Active')),
-                DropdownMenuItem<String>(value: 'ARCHIVED', child: Text('Archived')),
+                DropdownMenuItem<String>(
+                    value: 'ACTIVE', child: Text('Active')),
+                DropdownMenuItem<String>(
+                    value: 'ARCHIVED', child: Text('Archived')),
               ],
               onChanged: (String? v) {
                 if (v != null) setState(() => _status = v);

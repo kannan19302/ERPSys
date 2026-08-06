@@ -1,67 +1,56 @@
-# UniERP API Versioning & Deprecation Policy (Track G.1)
+# API Versioning Policy
 
-> Status: platform contract — sealed with foundation v1.0 (roadmap § 12b);
-> changes require an ADR. Created 2026-07-18 (Phase F cycle 10).
-> Mechanism: `apps/api/src/common/versioning/` (registry + middleware).
+> **Canonical document.** Per `PLATFORM_ARCHITECTURE.md § 9`, deprecation requires a `Sunset` header,  
+> 12 months' notice, telemetry proving no active caller, **and an entry in this file**.  
+> Two majors supported concurrently, maximum.
 
-## 1. Versioning scheme
+## Current API Versions
 
-- **URI-versioned**: every public REST surface lives under `/api/v<major>`
-  (today: `/api/v1`, the global prefix in `main.ts`).
-- **Major versions only** appear in the URI. Additive, backward-compatible
-  change (new endpoints, new optional fields, new response fields) happens
-  *within* a major version and is NOT versioned.
-- **Breaking change** (removing/renaming fields, changing semantics or status
-  codes, tightening validation on existing input) requires a new major
-  surface served **beside** the old one — never an in-place break.
+| API Surface   |       Current Major       | Previous Major | Status                            |
+| :------------ | :-----------------------: | :------------: | :-------------------------------- |
+| Tenant Plane  |         `/api/v1`         |       —        | Active                            |
+| Control Plane |    `/api/platform/v1`     |       —        | Active                            |
+| Extension API | `@unerp/extension-api` v1 |       —        | Active — 3-year support guarantee |
 
-## 2. Side-by-side rule
+## Versioning Rules
 
-A new major version ships alongside the previous one for **at least one
-documented release cycle** (minimum 6 months for any surface a marketplace
-extension or external integration can reach). Both versions share services;
-the old surface becomes a thin adapter over the new one — divergence of
-business logic between versions is forbidden.
+1. **URL-versioned major:** `/api/v1`, `/api/platform/v1`. Additive-only within a major.
+2. **Maximum two majors concurrent.** When `v3` ships, `v1` enters end-of-life with 12 months' notice.
+3. **Breaking changes require a new major** — never introduced within a major.
+4. **Every deprecation MUST have all four of:**
+   - A `Sunset` header on the deprecated endpoint: `Sunset: <date>`
+   - 12 months' minimum notice in this file
+   - Telemetry evidence that no active caller remains
+   - An entry in the Deprecated Endpoints table below
 
-## 3. Deprecation clocks (mechanical, not prose)
+## Compatibility Windows
 
-Deprecating a surface = adding an entry to
-`common/versioning/deprecation-registry.ts` with `deprecatedAt`, a
-`successor`, a migration-guide `link`, and (when scheduled) `sunsetAt`. The
-middleware then emits on every matching response:
+| Boundary                          | Window                                             |
+| :-------------------------------- | :------------------------------------------------- |
+| `@unerp/extension-api` (public)   | 3 years support, 12 months deprecation notice      |
+| `@unierp/sdk` ↔ API major         | 2 majors concurrent                                |
+| `@unerp/contracts` ↔ `unierp-api` | Same train ± 1                                     |
+| `@unerp/database` ↔ `unierp-api`  | Migration backward-compatible for one full train   |
+| Internal L0/L1 packages           | Same train; may break between trains subject to M2 |
 
-| Header | Format | Meaning |
-|---|---|---|
-| `Deprecation` | `@<unix-ts>` (RFC 9745) | surface is deprecated since that instant |
-| `Sunset` | HTTP-date (RFC 8594) | hard removal date |
-| `Link` | `rel="successor-version"`, `rel="deprecation"` | where to migrate + docs |
+## Deprecated Endpoints
 
-Rules:
-- No `sunsetAt` may be set less than the § 2 window away from `deprecatedAt`.
-- Nothing is removed while telemetry shows an active in-window consumer
-  (§15.5 doctrine: *"breaking an extension without its migration window is a
-  platform incident"*).
-- Expired entries move to the history table below (never silently deleted).
+| Endpoint | Deprecated In | Sunset Date | Replacement | Active Callers (telemetry) |
+| :------- | :-----------: | :---------: | :---------- | :------------------------- |
+| (none)   |       —       |      —      | —           | —                          |
 
-## 4. Extension `apiVersion` window interplay
+## Process: Adding a Deprecation
 
-Marketplace/out-of-process extensions declare a numeric `apiVersion`
-(service-kit `EXT_API_VERSION`). The platform supports extensions across a
-**two-version window** (current + previous). A REST major-version deprecation
-that affects the ext-gateway surface MUST be mirrored as an `EXT_API_VERSION`
-bump with the same clock, so both mechanisms tell one story.
+1. Add the `Sunset: <date>` header to the deprecated endpoint handler
+2. Verify via telemetry (Grafana: `http_requests_total{path="<endpoint>"}`) that callers are notified
+3. Confirm active caller count drops to zero in the 12-month window
+4. Add an entry to the table above with: endpoint, train version, sunset date, replacement, caller count
+5. Open a PR to this file — CI verifies the sunset date is at least 12 months in the future
 
-## 5. Process checklist (per deprecation)
+## Extension API Compatibility
 
-1. ADR describing the breaking change + successor design.
-2. Ship successor surface; contract tests green for both versions.
-3. Registry entry (headers live from that deploy) + CHANGELOG note.
-4. Migration guide published at the `link` URL.
-5. Telemetry on old-surface usage; sunset only at zero in-window consumers
-   (or contractual expiry).
-6. After sunset: remove code, move the registry entry to History.
+The extension API compatibility promise is the contract that makes the marketplace safe:
 
-## 6. History
+> An extension built against `extension-API v1` runs unmodified on every platform release for the life of `v1` — minimum 3 years' support, 12 months' deprecation notice.
 
-_No UniERP API surface has been deprecated yet. The registry is empty; the
-mechanism is live and unit-tested._
+A CI job replays the reference extension corpus (`real-estate`, `education`, `healthcare`, `field-service`) against every platform build. A break is a release blocker.

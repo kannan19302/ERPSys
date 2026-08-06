@@ -61,7 +61,8 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
     if (!_termsAccepted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('You must agree to the Terms of Service and Privacy Policy'),
+          content:
+              Text('You must agree to the Terms of Service and Privacy Policy'),
         ),
       );
       return;
@@ -115,16 +116,15 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                       style: Theme.of(context).textTheme.bodySmall,
                     ),
                     const SizedBox(height: Spacing.x6),
-
                     if (failure != null) _ErrorBanner(message: failure.message),
-
                     Row(
                       children: <Widget>[
                         Expanded(
                           child: TextFormField(
                             controller: _firstName,
                             textInputAction: TextInputAction.next,
-                            decoration: const InputDecoration(labelText: 'First name'),
+                            decoration:
+                                const InputDecoration(labelText: 'First name'),
                             validator: (String? v) =>
                                 (v ?? '').trim().isEmpty ? 'Required' : null,
                           ),
@@ -134,7 +134,8 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                           child: TextFormField(
                             controller: _lastName,
                             textInputAction: TextInputAction.next,
-                            decoration: const InputDecoration(labelText: 'Last name'),
+                            decoration:
+                                const InputDecoration(labelText: 'Last name'),
                             validator: (String? v) =>
                                 (v ?? '').trim().isEmpty ? 'Required' : null,
                           ),
@@ -142,7 +143,6 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                       ],
                     ),
                     const SizedBox(height: Spacing.x4),
-
                     TextFormField(
                       controller: _email,
                       keyboardType: TextInputType.emailAddress,
@@ -162,7 +162,6 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                       },
                     ),
                     const SizedBox(height: Spacing.x4),
-
                     TextFormField(
                       controller: _organizationName,
                       textInputAction: TextInputAction.next,
@@ -170,11 +169,11 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                         labelText: 'Organisation name',
                         prefixIcon: Icon(Icons.apartment_outlined),
                       ),
-                      validator: (String? v) =>
-                          (v ?? '').trim().isEmpty ? 'Enter your organisation name' : null,
+                      validator: (String? v) => (v ?? '').trim().isEmpty
+                          ? 'Enter your organisation name'
+                          : null,
                     ),
                     const SizedBox(height: Spacing.x4),
-
                     DropdownButtonFormField<String>(
                       initialValue: _industry,
                       decoration: const InputDecoration(
@@ -183,12 +182,13 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                       ),
                       items: <DropdownMenuItem<String>>[
                         for (final (String value, String label) in _industries)
-                          DropdownMenuItem<String>(value: value, child: Text(label)),
+                          DropdownMenuItem<String>(
+                              value: value, child: Text(label)),
                       ],
-                      onChanged: (String? value) => setState(() => _industry = value),
+                      onChanged: (String? value) =>
+                          setState(() => _industry = value),
                     ),
                     const SizedBox(height: Spacing.x4),
-
                     TextFormField(
                       controller: _password,
                       obscureText: _obscurePassword,
@@ -196,21 +196,23 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                       textInputAction: TextInputAction.next,
                       decoration: InputDecoration(
                         labelText: 'Password',
-                        helperText: '12+ characters, upper/lowercase, number, symbol',
+                        helperText:
+                            '12+ characters, upper/lowercase, number, symbol',
                         helperMaxLines: 2,
                         prefixIcon: const Icon(Icons.lock_outline),
                         suffixIcon: IconButton(
-                          icon: Icon(_obscurePassword
-                              ? Icons.visibility_outlined
-                              : Icons.visibility_off_outlined,),
-                          onPressed: () =>
-                              setState(() => _obscurePassword = !_obscurePassword),
+                          icon: Icon(
+                            _obscurePassword
+                                ? Icons.visibility_outlined
+                                : Icons.visibility_off_outlined,
+                          ),
+                          onPressed: () => setState(
+                              () => _obscurePassword = !_obscurePassword),
                         ),
                       ),
                       validator: _validatePassword,
                     ),
                     const SizedBox(height: Spacing.x4),
-
                     TextFormField(
                       controller: _confirmPassword,
                       obscureText: _obscureConfirm,
@@ -220,22 +222,23 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                         labelText: 'Confirm password',
                         prefixIcon: const Icon(Icons.lock_outline),
                         suffixIcon: IconButton(
-                          icon: Icon(_obscureConfirm
-                              ? Icons.visibility_outlined
-                              : Icons.visibility_off_outlined,),
-                          onPressed: () =>
-                              setState(() => _obscureConfirm = !_obscureConfirm),
+                          icon: Icon(
+                            _obscureConfirm
+                                ? Icons.visibility_outlined
+                                : Icons.visibility_off_outlined,
+                          ),
+                          onPressed: () => setState(
+                              () => _obscureConfirm = !_obscureConfirm),
                         ),
                       ),
-                      validator: (String? v) => v != _password.text
-                          ? 'Passwords do not match'
-                          : null,
+                      validator: (String? v) =>
+                          v != _password.text ? 'Passwords do not match' : null,
                     ),
                     const SizedBox(height: Spacing.x4),
-
                     CheckboxListTile(
                       value: _termsAccepted,
-                      onChanged: (bool? v) => setState(() => _termsAccepted = v ?? false),
+                      onChanged: (bool? v) =>
+                          setState(() => _termsAccepted = v ?? false),
                       controlAffinity: ListTileControlAffinity.leading,
                       contentPadding: EdgeInsets.zero,
                       title: const Text(
@@ -243,7 +246,6 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                       ),
                     ),
                     const SizedBox(height: Spacing.x4),
-
                     FilledButton(
                       onPressed: state.isSubmitting ? null : _submit,
                       child: state.isSubmitting
@@ -258,7 +260,6 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                           : const Text('Create workspace'),
                     ),
                     const SizedBox(height: Spacing.x4),
-
                     TextButton(
                       onPressed: () => context.pop(),
                       child: const Text('Already have an account? Sign in'),
@@ -306,7 +307,8 @@ class _ErrorBanner extends StatelessWidget {
           Icon(Icons.error_outline, color: t.danger, size: TypeScale.lg),
           const SizedBox(width: Spacing.x2),
           Expanded(
-            child: Text(message, style: TextStyle(color: t.danger, fontSize: TypeScale.sm)),
+            child: Text(message,
+                style: TextStyle(color: t.danger, fontSize: TypeScale.sm)),
           ),
         ],
       ),

@@ -111,7 +111,7 @@ export default function CompetitorLandscapePage() {
                 <div style={{ fontSize: "1.5rem", fontWeight: 700 }}>
                   {landscape.intelligence?.totalReports}
                 </div>
-                <p style={{ color: "#666" }}>
+                <p style={{ color: "var(--color-text-secondary)" }}>
                   Total reports | {landscape.intelligence?.unreadReports} unread
                 </p>
                 {landscape.intelligence?.recentReports?.map(
@@ -146,20 +146,25 @@ export default function CompetitorLandscapePage() {
                 >
                   <div
                     style={{
-                      background: "#f0fdf4",
+                      background: "var(--color-success-light)",
                       padding: "0.75rem",
                       borderRadius: 6,
                       textAlign: "center",
                     }}
                   >
-                    <div style={{ fontSize: "0.75rem", color: "#666" }}>
+                    <div
+                      style={{
+                        fontSize: "0.75rem",
+                        color: "var(--color-text-secondary)",
+                      }}
+                    >
                       Win Rate
                     </div>
                     <div
                       style={{
                         fontSize: "1.3rem",
                         fontWeight: 700,
-                        color: "#10b981",
+                        color: "var(--chart-9)",
                       }}
                     >
                       {landscape.competitivePositioning?.winRate}%
@@ -167,20 +172,25 @@ export default function CompetitorLandscapePage() {
                   </div>
                   <div
                     style={{
-                      background: "#fef2f2",
+                      background: "var(--color-danger-light)",
                       padding: "0.75rem",
                       borderRadius: 6,
                       textAlign: "center",
                     }}
                   >
-                    <div style={{ fontSize: "0.75rem", color: "#666" }}>
+                    <div
+                      style={{
+                        fontSize: "0.75rem",
+                        color: "var(--color-text-secondary)",
+                      }}
+                    >
                       Deals Against
                     </div>
                     <div
                       style={{
                         fontSize: "1.3rem",
                         fontWeight: 700,
-                        color: "#ef4444",
+                        color: "var(--chart-4)",
                       }}
                     >
                       {landscape.competitivePositioning?.totalDealsAgainst}
@@ -188,20 +198,25 @@ export default function CompetitorLandscapePage() {
                   </div>
                   <div
                     style={{
-                      background: "#eff6ff",
+                      background: "var(--color-info-light)",
                       padding: "0.75rem",
                       borderRadius: 6,
                       textAlign: "center",
                     }}
                   >
-                    <div style={{ fontSize: "0.75rem", color: "#666" }}>
+                    <div
+                      style={{
+                        fontSize: "0.75rem",
+                        color: "var(--color-text-secondary)",
+                      }}
+                    >
                       Wins
                     </div>
                     <div
                       style={{
                         fontSize: "1.3rem",
                         fontWeight: 700,
-                        color: "#3b82f6",
+                        color: "var(--color-primary)",
                       }}
                     >
                       {landscape.competitivePositioning?.wins}
@@ -215,14 +230,19 @@ export default function CompetitorLandscapePage() {
                       textAlign: "center",
                     }}
                   >
-                    <div style={{ fontSize: "0.75rem", color: "#666" }}>
+                    <div
+                      style={{
+                        fontSize: "0.75rem",
+                        color: "var(--color-text-secondary)",
+                      }}
+                    >
                       Value at Risk
                     </div>
                     <div
                       style={{
                         fontSize: "1.3rem",
                         fontWeight: 700,
-                        color: "#f59e0b",
+                        color: "var(--chart-3)",
                       }}
                     >
                       $

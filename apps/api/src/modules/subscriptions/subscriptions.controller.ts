@@ -9,6 +9,7 @@ import {
   Query,
   Body,
   UseInterceptors,
+  UseGuards,
 } from "@nestjs/common";
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
 import { Request } from "express";
@@ -18,6 +19,8 @@ import { TrackChanges } from "../../common/decorators/track-changes.decorator";
 import { SubscriptionsService } from "./subscriptions.service";
 import { SubscriptionPlansService } from "./subscription-plans.service";
 import { SubscriptionUsageService } from "./subscription-usage.service";
+import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard";
+import { RbacGuard } from "../../common/guards/rbac.guard";
 
 interface AuthenticatedRequest extends Request {
   user: { tenantId: string; userId: string; orgId?: string; roles?: string[] };
@@ -25,6 +28,13 @@ interface AuthenticatedRequest extends Request {
 
 @ApiTags("Subscriptions")
 @Controller("subscriptions")
+// These routes carried @Permissions but no guard to read it. @Permissions only
+// writes metadata; without RbacGuard nothing consumes it, and without
+// JwtAuthGuard there is no request.user for it to consume. @ApiBearerAuth()
+// documents a requirement it does not enforce. Every route below was therefore
+// reachable unauthenticated while appearing, in source and in Swagger, to be
+// protected.
+@UseGuards(JwtAuthGuard, RbacGuard)
 export class SubscriptionsController {
   constructor(
     private readonly service: SubscriptionsService,

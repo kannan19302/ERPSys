@@ -28,9 +28,11 @@ class SalesRepositoryImpl implements SalesRepository {
     ListQuery query,
   ) async {
     try {
-      final Paginated<QuotationModel> page = await _remote.listQuotations(query);
+      final Paginated<QuotationModel> page =
+          await _remote.listQuotations(query);
 
-      await _cache.write(_tenantId, _quotationsNamespace, query.cacheKey, <String, Object?>{
+      await _cache.write(
+          _tenantId, _quotationsNamespace, query.cacheKey, <String, Object?>{
         'data': page.data.map((QuotationModel p) => p.toJson()).toList(),
         'meta': page.meta.toJson(),
       });
@@ -78,7 +80,8 @@ class SalesRepositoryImpl implements SalesRepository {
   }
 
   @override
-  Future<Result<Quotation>> createQuotation(Map<String, dynamic> payload) async {
+  Future<Result<Quotation>> createQuotation(
+      Map<String, dynamic> payload) async {
     try {
       final Quotation created = await _remote.createQuotation(payload);
       await _cache.clearTenant(_tenantId);
@@ -147,9 +150,11 @@ class SalesRepositoryImpl implements SalesRepository {
     ListQuery query,
   ) async {
     try {
-      final Paginated<SalesOrderModel> page = await _remote.listSalesOrders(query);
+      final Paginated<SalesOrderModel> page =
+          await _remote.listSalesOrders(query);
 
-      await _cache.write(_tenantId, _ordersNamespace, query.cacheKey, <String, Object?>{
+      await _cache
+          .write(_tenantId, _ordersNamespace, query.cacheKey, <String, Object?>{
         'data': page.data.map((SalesOrderModel p) => p.toJson()).toList(),
         'meta': page.meta.toJson(),
       });
@@ -197,7 +202,8 @@ class SalesRepositoryImpl implements SalesRepository {
   }
 
   @override
-  Future<Result<SalesOrder>> createSalesOrder(Map<String, dynamic> payload) async {
+  Future<Result<SalesOrder>> createSalesOrder(
+      Map<String, dynamic> payload) async {
     try {
       final SalesOrder created = await _remote.createSalesOrder(payload);
       await _cache.clearTenant(_tenantId);
@@ -251,9 +257,11 @@ class SalesRepositoryImpl implements SalesRepository {
   }
 
   @override
-  Future<Result<Paginated<DeliveryNote>>> listDeliveryNotes(ListQuery query) async {
+  Future<Result<Paginated<DeliveryNote>>> listDeliveryNotes(
+      ListQuery query) async {
     try {
-      final Paginated<DeliveryNoteModel> page = await _remote.listDeliveryNotes(query);
+      final Paginated<DeliveryNoteModel> page =
+          await _remote.listDeliveryNotes(query);
       return Result<Paginated<DeliveryNote>>.ok(
         Paginated<DeliveryNote>(data: page.data, meta: page.meta),
       );
@@ -272,7 +280,8 @@ class SalesRepositoryImpl implements SalesRepository {
   }
 
   @override
-  Future<Result<DeliveryNote>> createDeliveryNote(Map<String, dynamic> payload) async {
+  Future<Result<DeliveryNote>> createDeliveryNote(
+      Map<String, dynamic> payload) async {
     try {
       final DeliveryNote created = await _remote.createDeliveryNote(payload);
       await _cache.clearTenant(_tenantId);
@@ -288,7 +297,8 @@ class SalesRepositoryImpl implements SalesRepository {
     Map<String, dynamic> payload,
   ) async {
     try {
-      final DeliveryNote updated = await _remote.updateDeliveryNote(id, payload);
+      final DeliveryNote updated =
+          await _remote.updateDeliveryNote(id, payload);
       await _cache.clearTenant(_tenantId);
       return Result<DeliveryNote>.ok(updated);
     } on Object catch (error) {
@@ -317,9 +327,11 @@ class SalesRepositoryImpl implements SalesRepository {
   }
 
   @override
-  Future<Result<Paginated<SalesReturn>>> listSalesReturns(ListQuery query) async {
+  Future<Result<Paginated<SalesReturn>>> listSalesReturns(
+      ListQuery query) async {
     try {
-      final Paginated<SalesReturnModel> page = await _remote.listSalesReturns(query);
+      final Paginated<SalesReturnModel> page =
+          await _remote.listSalesReturns(query);
       return Result<Paginated<SalesReturn>>.ok(
         Paginated<SalesReturn>(data: page.data, meta: page.meta),
       );
@@ -338,7 +350,8 @@ class SalesRepositoryImpl implements SalesRepository {
   }
 
   @override
-  Future<Result<SalesReturn>> createSalesReturn(Map<String, dynamic> payload) async {
+  Future<Result<SalesReturn>> createSalesReturn(
+      Map<String, dynamic> payload) async {
     try {
       final SalesReturn created = await _remote.createSalesReturn(payload);
       await _cache.clearTenant(_tenantId);
@@ -387,9 +400,11 @@ class SalesRepositoryImpl implements SalesRepository {
   }
 
   @override
-  Future<Result<Paginated<Opportunity>>> listOpportunities(ListQuery query) async {
+  Future<Result<Paginated<Opportunity>>> listOpportunities(
+      ListQuery query) async {
     try {
-      final Paginated<OpportunityModel> page = await _remote.listOpportunities(query);
+      final Paginated<OpportunityModel> page =
+          await _remote.listOpportunities(query);
       return Result<Paginated<Opportunity>>.ok(
         Paginated<Opportunity>(data: page.data, meta: page.meta),
       );
@@ -408,7 +423,8 @@ class SalesRepositoryImpl implements SalesRepository {
   }
 
   @override
-  Future<Result<Opportunity>> createOpportunity(Map<String, dynamic> payload) async {
+  Future<Result<Opportunity>> createOpportunity(
+      Map<String, dynamic> payload) async {
     try {
       final Opportunity created = await _remote.createOpportunity(payload);
       await _cache.clearTenant(_tenantId);
@@ -444,9 +460,11 @@ class SalesRepositoryImpl implements SalesRepository {
   }
 
   @override
-  Future<Result<Opportunity>> updateOpportunityStage(String id, String stage) async {
+  Future<Result<Opportunity>> updateOpportunityStage(
+      String id, String stage) async {
     try {
-      return Result<Opportunity>.ok(await _remote.updateOpportunityStage(id, stage));
+      return Result<Opportunity>.ok(
+          await _remote.updateOpportunityStage(id, stage));
     } on Object catch (error) {
       return Result<Opportunity>.err(mapExceptionToFailure(error));
     }
@@ -471,7 +489,8 @@ class SalesRepositoryImpl implements SalesRepository {
   }
 
   @override
-  Future<Result<SalesActivity>> logSalesActivity(Map<String, dynamic> payload) async {
+  Future<Result<SalesActivity>> logSalesActivity(
+      Map<String, dynamic> payload) async {
     try {
       return Result<SalesActivity>.ok(await _remote.logSalesActivity(payload));
     } on Object catch (error) {

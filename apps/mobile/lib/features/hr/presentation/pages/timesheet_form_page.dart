@@ -52,14 +52,11 @@ class _TimesheetFormPageState extends ConsumerState<TimesheetFormPage> {
       'employeeName': _employeeCtrl.text.trim(),
       'date': _selectedDate.toIso8601String(),
       'hours': double.tryParse(_hoursCtrl.text) ?? 0,
-      'projectName': _projectCtrl.text.trim().isEmpty
-          ? null
-          : _projectCtrl.text.trim(),
-      'taskName':
-          _taskCtrl.text.trim().isEmpty ? null : _taskCtrl.text.trim(),
-      'description': _descCtrl.text.trim().isEmpty
-          ? null
-          : _descCtrl.text.trim(),
+      'projectName':
+          _projectCtrl.text.trim().isEmpty ? null : _projectCtrl.text.trim(),
+      'taskName': _taskCtrl.text.trim().isEmpty ? null : _taskCtrl.text.trim(),
+      'description':
+          _descCtrl.text.trim().isEmpty ? null : _descCtrl.text.trim(),
       'status': TimesheetStatus.draft,
     };
 
@@ -153,11 +150,12 @@ class _TimesheetFormPageState extends ConsumerState<TimesheetFormPage> {
       ),
     );
   }
-Future<Result<Timesheet>> _saveTimesheet(
-      Map<String, dynamic> payload,) async {
+
+  Future<Result<Timesheet>> _saveTimesheet(
+    Map<String, dynamic> payload,
+  ) async {
     final HrRepository repo = ref.read(hrRepositoryProvider);
-    final Result<Timesheet> result =
-        await SaveTimesheetUseCase(repo)(
+    final Result<Timesheet> result = await SaveTimesheetUseCase(repo)(
       SaveTimesheetParams(payload: payload),
     );
     if (result.isOk) {

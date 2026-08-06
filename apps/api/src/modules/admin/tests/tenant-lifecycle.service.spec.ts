@@ -1,5 +1,7 @@
+import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { TenantLifecycleService } from "../tenant-lifecycle/tenant-lifecycle.service";
+import { TenantLifecycleService } from "../../../platform/v1/tenant-lifecycle.service";
 import {
   NotFoundException,
   BadRequestException,
@@ -33,7 +35,12 @@ vi.mock("@unerp/database", () => {
     },
   };
 
-  return {
+  // Identity models (user, role, userSession, ...) are read through
+  // `idpPrisma`, not `prisma` â€” this spec predates that split and stubs
+  // them under `prisma`. Exporting the same stub object under both names
+  // keeps every `vi.mocked(prisma.user.*)` setup pointing at exactly the
+  // function the service calls.
+  const mocked = {
     prisma: {
       tenant: {
         findUnique: vi.fn(),
@@ -72,6 +79,7 @@ vi.mock("@unerp/database", () => {
       },
     },
   };
+  return { ...mocked, idpPrisma: mocked.prisma };
 });
 
 describe("TenantLifecycleService", () => {
@@ -107,7 +115,7 @@ describe("TenantLifecycleService", () => {
           createdAt: new Date(),
         },
       ]);
-      prisma.user.count.mockResolvedValue(5);
+      idpPrisma.user.count.mockResolvedValue(5);
       prisma.organization.count.mockResolvedValue(1);
 
       const result = await service.getLifecycleStatus("tenant-1");
@@ -132,7 +140,7 @@ describe("TenantLifecycleService", () => {
     it("should generate correct export manifest with data counts", async () => {
       const { prisma } = await import("@unerp/database");
       prisma.tenant.findUnique.mockResolvedValue(mockTenant);
-      prisma.user.findMany.mockResolvedValue([
+      idpPrisma.user.findMany.mockResolvedValue([
         {
           id: "u-1",
           email: "a@b.com",
@@ -144,7 +152,7 @@ describe("TenantLifecycleService", () => {
       prisma.organization.findMany.mockResolvedValue([
         { id: "org-1", name: "Test Org", tenantId: "tenant-1" },
       ]);
-      prisma.role.findMany.mockResolvedValue([]);
+      idpPrisma.role.findMany.mockResolvedValue([]);
 
       const result = await service.exportTenant("tenant-1");
 

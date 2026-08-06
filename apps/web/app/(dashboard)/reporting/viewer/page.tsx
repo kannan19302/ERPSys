@@ -107,7 +107,11 @@ export default function ReportingViewerPage() {
         </h3>
         {sessions.length === 0 ? (
           <p
-            style={{ color: "#64748b", textAlign: "center", padding: "32px 0" }}
+            style={{
+              color: "var(--color-text-secondary)",
+              textAlign: "center",
+              padding: "32px 0",
+            }}
           >
             No active interactive sessions.
           </p>
@@ -134,7 +138,7 @@ export default function ReportingViewerPage() {
                   <td
                     style={{
                       padding: "12px",
-                      color: "#64748b",
+                      color: "var(--color-text-secondary)",
                       fontSize: "13px",
                     }}
                   >

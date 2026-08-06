@@ -41,9 +41,23 @@ class PosOrder extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, orderNumber, customerId, customerName, status, items, payments,
-        subtotal, discountTotal, taxTotal, totalAmount, terminalId,
-        registerId, cashierId, shiftId, createdAt, updatedAt,
+        id,
+        orderNumber,
+        customerId,
+        customerName,
+        status,
+        items,
+        payments,
+        subtotal,
+        discountTotal,
+        taxTotal,
+        totalAmount,
+        terminalId,
+        registerId,
+        cashierId,
+        shiftId,
+        createdAt,
+        updatedAt,
       ];
 }
 
@@ -70,7 +84,14 @@ class PosOrderItem extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, productId, productName, quantity, rate, amount, discount, taxRate,
+        id,
+        productId,
+        productName,
+        quantity,
+        rate,
+        amount,
+        discount,
+        taxRate,
       ];
 }
 
@@ -95,7 +116,13 @@ class PosPayment extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, orderId, amount, method, reference, status, createdAt,
+        id,
+        orderId,
+        amount,
+        method,
+        reference,
+        status,
+        createdAt,
       ];
 }
 
@@ -120,7 +147,13 @@ class PosTerminal extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, name, serialNumber, location, isActive, createdAt, updatedAt,
+        id,
+        name,
+        serialNumber,
+        location,
+        isActive,
+        createdAt,
+        updatedAt,
       ];
 }
 
@@ -147,7 +180,14 @@ class PosRegister extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, name, openingBalance, closingBalance, status, location, createdAt, updatedAt,
+        id,
+        name,
+        openingBalance,
+        closingBalance,
+        status,
+        location,
+        createdAt,
+        updatedAt,
       ];
 }
 
@@ -182,8 +222,18 @@ class PosShift extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, registerId, userId, openedAt, closedAt, openingBalance,
-        closingBalance, cashSales, cardSales, totalSales, status, createdAt,
+        id,
+        registerId,
+        userId,
+        openedAt,
+        closedAt,
+        openingBalance,
+        closingBalance,
+        cashSales,
+        cardSales,
+        totalSales,
+        status,
+        createdAt,
       ];
 }
 
@@ -212,7 +262,15 @@ class PosDiscount extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, name, type, value, isActive, applicableOn, minAmount, maxDiscount, createdAt,
+        id,
+        name,
+        type,
+        value,
+        isActive,
+        applicableOn,
+        minAmount,
+        maxDiscount,
+        createdAt,
       ];
 }
 
@@ -243,8 +301,16 @@ class PosLoyaltyProgram extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, name, type, pointsPerAmount, rewardValue, validFrom, validTo,
-        isActive, memberCount, createdAt,
+        id,
+        name,
+        type,
+        pointsPerAmount,
+        rewardValue,
+        validFrom,
+        validTo,
+        isActive,
+        memberCount,
+        createdAt,
       ];
 }
 
@@ -275,8 +341,16 @@ class PosLoyaltyMember extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, customerId, customerName, programId, programName,
-        points, tier, joinedAt, createdAt, updatedAt,
+        id,
+        customerId,
+        customerName,
+        programId,
+        programName,
+        points,
+        tier,
+        joinedAt,
+        createdAt,
+        updatedAt,
       ];
 }
 
@@ -301,7 +375,13 @@ class PosLoyaltyTransaction extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, memberId, points, type, orderId, description, createdAt,
+        id,
+        memberId,
+        points,
+        type,
+        orderId,
+        description,
+        createdAt,
       ];
 }
 
@@ -334,8 +414,17 @@ class PosCoupon extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, code, discountType, discountValue, minOrder, maxUses,
-        currentUses, validFrom, validTo, isActive, createdAt,
+        id,
+        code,
+        discountType,
+        discountValue,
+        minOrder,
+        maxUses,
+        currentUses,
+        validFrom,
+        validTo,
+        isActive,
+        createdAt,
       ];
 }
 
@@ -364,8 +453,15 @@ class PosGiftCard extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, code, initialBalance, currentBalance, customerId, customerName,
-        expiryDate, isActive, createdAt,
+        id,
+        code,
+        initialBalance,
+        currentBalance,
+        customerId,
+        customerName,
+        expiryDate,
+        isActive,
+        createdAt,
       ];
 }
 
@@ -405,6 +501,12 @@ class PosPriceList extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, name, currency, isDefault, isActive, items, createdAt,
+        id,
+        name,
+        currency,
+        isDefault,
+        isActive,
+        items,
+        createdAt,
       ];
 }

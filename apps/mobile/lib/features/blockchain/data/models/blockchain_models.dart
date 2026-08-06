@@ -14,7 +14,6 @@ int asInt(Object? value) => switch (value) {
       _ => 0,
     };
 
-
 class BlockchainTransactionModel extends BlockchainTransaction {
   const BlockchainTransactionModel({
     required super.id,
@@ -34,7 +33,8 @@ class BlockchainTransactionModel extends BlockchainTransaction {
 
   factory BlockchainTransactionModel.fromJson(Map<String, dynamic> json) {
     final id = json['id'];
-    if (id is! String) throw const ParseException('BlockchainTransaction missing id');
+    if (id is! String)
+      throw const ParseException('BlockchainTransaction missing id');
     return BlockchainTransactionModel(
       id: id,
       txHash: json['txHash'] as String? ?? '',
@@ -86,7 +86,8 @@ class BlockchainContractModel extends BlockchainContract {
 
   factory BlockchainContractModel.fromJson(Map<String, dynamic> json) {
     final id = json['id'];
-    if (id is! String) throw const ParseException('BlockchainContract missing id');
+    if (id is! String)
+      throw const ParseException('BlockchainContract missing id');
     return BlockchainContractModel(
       id: id,
       name: json['name'] as String? ?? '',
@@ -133,7 +134,8 @@ class BlockchainAuditEntryModel extends BlockchainAuditEntry {
 
   factory BlockchainAuditEntryModel.fromJson(Map<String, dynamic> json) {
     final id = json['id'];
-    if (id is! String) throw const ParseException('BlockchainAuditEntry missing id');
+    if (id is! String)
+      throw const ParseException('BlockchainAuditEntry missing id');
     return BlockchainAuditEntryModel(
       id: id,
       eventType: json['eventType'] as String? ?? '',
@@ -177,7 +179,8 @@ class BlockchainNetworkHealthModel extends BlockchainNetworkHealth {
 
   factory BlockchainNetworkHealthModel.fromJson(Map<String, dynamic> json) {
     final id = json['id'];
-    if (id is! String) throw const ParseException('BlockchainNetworkHealth missing id');
+    if (id is! String)
+      throw const ParseException('BlockchainNetworkHealth missing id');
     return BlockchainNetworkHealthModel(
       id: id,
       network: json['network'] as String? ?? '',

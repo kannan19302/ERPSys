@@ -18,10 +18,12 @@ class BlockchainContractFormPage extends ConsumerStatefulWidget {
   final String? contractId;
 
   @override
-  ConsumerState<BlockchainContractFormPage> createState() => _BlockchainContractFormPageState();
+  ConsumerState<BlockchainContractFormPage> createState() =>
+      _BlockchainContractFormPageState();
 }
 
-class _BlockchainContractFormPageState extends ConsumerState<BlockchainContractFormPage> {
+class _BlockchainContractFormPageState
+    extends ConsumerState<BlockchainContractFormPage> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _nameCtrl = TextEditingController();
   final TextEditingController _addressCtrl = TextEditingController();
@@ -127,7 +129,8 @@ class _BlockchainContractFormPageState extends ConsumerState<BlockchainContractF
             const SizedBox(height: Spacing.x4),
             TextFormField(
               controller: _addressCtrl,
-              decoration: const InputDecoration(labelText: 'Contract Address *'),
+              decoration:
+                  const InputDecoration(labelText: 'Contract Address *'),
               validator: (String? v) =>
                   v == null || v.trim().isEmpty ? 'Required' : null,
             ),
@@ -146,9 +149,12 @@ class _BlockchainContractFormPageState extends ConsumerState<BlockchainContractF
               initialValue: _status,
               decoration: const InputDecoration(labelText: 'Status'),
               items: const <DropdownMenuItem<String>>[
-                DropdownMenuItem<String>(value: 'PENDING', child: Text('Pending')),
-                DropdownMenuItem<String>(value: 'DEPLOYED', child: Text('Deployed')),
-                DropdownMenuItem<String>(value: 'FAILED', child: Text('Failed')),
+                DropdownMenuItem<String>(
+                    value: 'PENDING', child: Text('Pending')),
+                DropdownMenuItem<String>(
+                    value: 'DEPLOYED', child: Text('Deployed')),
+                DropdownMenuItem<String>(
+                    value: 'FAILED', child: Text('Failed')),
               ],
               onChanged: (String? v) {
                 if (v != null) setState(() => _status = v);

@@ -35,7 +35,8 @@ class _TimesheetFormPageState extends ConsumerState<TimesheetFormPage> {
   }
 
   Future<void> _loadTimesheet() async {
-    final ts = ref.read(timesheetDetailProvider(widget.timesheetId!)).valueOrNull;
+    final ts =
+        ref.read(timesheetDetailProvider(widget.timesheetId!)).valueOrNull;
     if (ts != null) {
       _projectIdCtrl.text = ts.projectId;
       _employeeIdCtrl.text = ts.employeeId;
@@ -63,17 +64,23 @@ class _TimesheetFormPageState extends ConsumerState<TimesheetFormPage> {
       'employeeId': _employeeIdCtrl.text.trim(),
       'hours': double.tryParse(_hoursCtrl.text) ?? 0,
       'date': _date?.toIso8601String(),
-      'description': _descriptionCtrl.text.trim().isEmpty ? null : _descriptionCtrl.text.trim(),
+      'description': _descriptionCtrl.text.trim().isEmpty
+          ? null
+          : _descriptionCtrl.text.trim(),
       'billable': _billable,
     };
 
-    final result = await ref.read(timesheetListControllerProvider.notifier).save(
-      payload, id: widget.timesheetId,);
+    final result =
+        await ref.read(timesheetListControllerProvider.notifier).save(
+              payload,
+              id: widget.timesheetId,
+            );
 
     if (!context.mounted) return;
     setState(() => _saving = false);
     result.fold(
-      (f) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(f.message))),
+      (f) => ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(f.message))),
       (_) => Navigator.of(context).pop(),
     );
   }
@@ -87,7 +94,10 @@ class _TimesheetFormPageState extends ConsumerState<TimesheetFormPage> {
           TextButton(
             onPressed: _saving ? null : _save,
             child: _saving
-                ? const SizedBox(height: Spacing.x5, width: Spacing.x5, child: CircularProgressIndicator(strokeWidth: 2))
+                ? const SizedBox(
+                    height: Spacing.x5,
+                    width: Spacing.x5,
+                    child: CircularProgressIndicator(strokeWidth: 2))
                 : const Text('Save'),
           ),
         ],
@@ -100,13 +110,15 @@ class _TimesheetFormPageState extends ConsumerState<TimesheetFormPage> {
             TextFormField(
               controller: _projectIdCtrl,
               decoration: const InputDecoration(labelText: 'Project ID *'),
-              validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,
+              validator: (v) =>
+                  v == null || v.trim().isEmpty ? 'Required' : null,
             ),
             const SizedBox(height: Spacing.x4),
             TextFormField(
               controller: _employeeIdCtrl,
               decoration: const InputDecoration(labelText: 'Employee ID *'),
-              validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,
+              validator: (v) =>
+                  v == null || v.trim().isEmpty ? 'Required' : null,
             ),
             const SizedBox(height: Spacing.x4),
             InkWell(
@@ -121,17 +133,21 @@ class _TimesheetFormPageState extends ConsumerState<TimesheetFormPage> {
               },
               child: InputDecorator(
                 decoration: const InputDecoration(labelText: 'Date *'),
-                child: Text(_date != null ? '${_date!.toLocal()}'.split(' ')[0] : 'Tap to select'),
+                child: Text(_date != null
+                    ? '${_date!.toLocal()}'.split(' ')[0]
+                    : 'Tap to select'),
               ),
             ),
             const SizedBox(height: Spacing.x4),
             TextFormField(
               controller: _hoursCtrl,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
               decoration: const InputDecoration(labelText: 'Hours *'),
               validator: (v) {
                 if (v == null || v.trim().isEmpty) return 'Required';
-                if (double.tryParse(v) == null || double.parse(v) <= 0) return 'Enter a positive number';
+                if (double.tryParse(v) == null || double.parse(v) <= 0)
+                  return 'Enter a positive number';
                 return null;
               },
             ),
@@ -139,7 +155,8 @@ class _TimesheetFormPageState extends ConsumerState<TimesheetFormPage> {
             TextFormField(
               controller: _descriptionCtrl,
               maxLines: 3,
-              decoration: const InputDecoration(labelText: 'Description', alignLabelWithHint: true),
+              decoration: const InputDecoration(
+                  labelText: 'Description', alignLabelWithHint: true),
             ),
             const SizedBox(height: Spacing.x4),
             SwitchListTile(

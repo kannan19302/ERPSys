@@ -10,13 +10,16 @@ class Cacheable<T> {
 }
 
 abstract class SavedViewsRepository {
-  Future<Result<Cacheable<Paginated<SavedView>>>> listSavedViews(ListQuery query);
+  Future<Result<Cacheable<Paginated<SavedView>>>> listSavedViews(
+      ListQuery query);
   Future<Result<SavedView>> getSavedView(String id);
   Future<Result<SavedView>> createSavedView(Map<String, dynamic> payload);
-  Future<Result<SavedView>> updateSavedView(String id, Map<String, dynamic> payload);
+  Future<Result<SavedView>> updateSavedView(
+      String id, Map<String, dynamic> payload);
   Future<Result<void>> deleteSavedView(String id);
 
-  Future<Result<Cacheable<Paginated<SavedViewShare>>>> listShares(ListQuery query);
+  Future<Result<Cacheable<Paginated<SavedViewShare>>>> listShares(
+      ListQuery query);
   Future<Result<SavedViewShare>> createShare(Map<String, dynamic> payload);
   Future<Result<void>> deleteShare(String id);
 }

@@ -12,8 +12,8 @@ import '../../domain/entities/api_platform.dart';
 import '../../domain/repositories/api_platform_repository.dart';
 import '../../domain/usecases/api_platform_usecases.dart';
 
-final Provider<ApiPlatformRemoteDataSource> apiPlatformRemoteDataSourceProvider =
-    Provider<ApiPlatformRemoteDataSource>(
+final Provider<ApiPlatformRemoteDataSource>
+    apiPlatformRemoteDataSourceProvider = Provider<ApiPlatformRemoteDataSource>(
   (Ref ref) => ApiPlatformRemoteDataSourceImpl(ref.watch(apiClientProvider)),
 );
 
@@ -29,7 +29,8 @@ final Provider<ApiPlatformRepository> apiPlatformRepositoryProvider =
 class ApiKeyListState extends Equatable {
   const ApiKeyListState({
     this.items = const <ApiKey>[],
-    this.meta = const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
+    this.meta =
+        const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
     this.query = const ListQuery(sort: '-createdAt'),
     this.isLoading = true,
     this.isLoadingMore = false,
@@ -46,20 +47,36 @@ class ApiKeyListState extends Equatable {
   final Failure? loadMoreFailure;
 
   ApiKeyListState copyWith({
-    List<ApiKey>? items, PaginationMeta? meta, ListQuery? query,
-    bool? isLoading, bool? isLoadingMore, Failure? failure,
-    Failure? loadMoreFailure, bool clearFailures = false,
+    List<ApiKey>? items,
+    PaginationMeta? meta,
+    ListQuery? query,
+    bool? isLoading,
+    bool? isLoadingMore,
+    Failure? failure,
+    Failure? loadMoreFailure,
+    bool clearFailures = false,
   }) =>
       ApiKeyListState(
-        items: items ?? this.items, meta: meta ?? this.meta,
-        query: query ?? this.query, isLoading: isLoading ?? this.isLoading,
+        items: items ?? this.items,
+        meta: meta ?? this.meta,
+        query: query ?? this.query,
+        isLoading: isLoading ?? this.isLoading,
         isLoadingMore: isLoadingMore ?? this.isLoadingMore,
         failure: clearFailures ? null : (failure ?? this.failure),
-        loadMoreFailure: clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
+        loadMoreFailure:
+            clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
       );
 
   @override
-  List<Object?> get props => <Object?>[items, meta, query.cacheKey, isLoading, isLoadingMore, failure, loadMoreFailure];
+  List<Object?> get props => <Object?>[
+        items,
+        meta,
+        query.cacheKey,
+        isLoading,
+        isLoadingMore,
+        failure,
+        loadMoreFailure
+      ];
 }
 
 final NotifierProvider<ApiKeyListController, ApiKeyListState>
@@ -89,8 +106,11 @@ class ApiKeyListController extends Notifier<ApiKeyListState> {
     state = result.fold(
       (f) => state.copyWith(isLoading: false, failure: f, items: const []),
       (page) => state.copyWith(
-        items: page.value.data, meta: page.value.meta, query: query,
-        isLoading: false, clearFailures: true,
+        items: page.value.data,
+        meta: page.value.meta,
+        query: query,
+        isLoading: false,
+        clearFailures: true,
       ),
     );
   }
@@ -103,8 +123,11 @@ class ApiKeyListController extends Notifier<ApiKeyListState> {
     state = result.fold(
       (f) => state.copyWith(isLoadingMore: false, loadMoreFailure: f),
       (page) => state.copyWith(
-        items: [...state.items, ...page.value.data], meta: page.value.meta,
-        query: next, isLoadingMore: false, clearFailures: true,
+        items: [...state.items, ...page.value.data],
+        meta: page.value.meta,
+        query: next,
+        isLoadingMore: false,
+        clearFailures: true,
       ),
     );
   }
@@ -112,14 +135,16 @@ class ApiKeyListController extends Notifier<ApiKeyListState> {
   void search(String term) {
     _searchDebounce?.cancel();
     _searchDebounce = Timer(const Duration(milliseconds: 350), () {
-      state = state.copyWith(query: state.query.copyWith(search: term, page: 1));
+      state =
+          state.copyWith(query: state.query.copyWith(search: term, page: 1));
       refresh();
     });
   }
 
   Future<Result<void>> delete(String id) async {
     final result = await DeleteApiKeyUseCase(
-      ref.read(apiPlatformRepositoryProvider),)(id);
+      ref.read(apiPlatformRepositoryProvider),
+    )(id);
     if (result.isOk) await refresh();
     return result;
   }
@@ -128,7 +153,8 @@ class ApiKeyListController extends Notifier<ApiKeyListState> {
 class WebhookListState extends Equatable {
   const WebhookListState({
     this.items = const <WebhookEndpoint>[],
-    this.meta = const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
+    this.meta =
+        const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
     this.query = const ListQuery(sort: '-createdAt'),
     this.isLoading = true,
     this.isLoadingMore = false,
@@ -145,20 +171,36 @@ class WebhookListState extends Equatable {
   final Failure? loadMoreFailure;
 
   WebhookListState copyWith({
-    List<WebhookEndpoint>? items, PaginationMeta? meta, ListQuery? query,
-    bool? isLoading, bool? isLoadingMore, Failure? failure,
-    Failure? loadMoreFailure, bool clearFailures = false,
+    List<WebhookEndpoint>? items,
+    PaginationMeta? meta,
+    ListQuery? query,
+    bool? isLoading,
+    bool? isLoadingMore,
+    Failure? failure,
+    Failure? loadMoreFailure,
+    bool clearFailures = false,
   }) =>
       WebhookListState(
-        items: items ?? this.items, meta: meta ?? this.meta,
-        query: query ?? this.query, isLoading: isLoading ?? this.isLoading,
+        items: items ?? this.items,
+        meta: meta ?? this.meta,
+        query: query ?? this.query,
+        isLoading: isLoading ?? this.isLoading,
         isLoadingMore: isLoadingMore ?? this.isLoadingMore,
         failure: clearFailures ? null : (failure ?? this.failure),
-        loadMoreFailure: clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
+        loadMoreFailure:
+            clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
       );
 
   @override
-  List<Object?> get props => <Object?>[items, meta, query.cacheKey, isLoading, isLoadingMore, failure, loadMoreFailure];
+  List<Object?> get props => <Object?>[
+        items,
+        meta,
+        query.cacheKey,
+        isLoading,
+        isLoadingMore,
+        failure,
+        loadMoreFailure
+      ];
 }
 
 final NotifierProvider<WebhookListController, WebhookListState>
@@ -185,8 +227,11 @@ class WebhookListController extends Notifier<WebhookListState> {
     state = result.fold(
       (f) => state.copyWith(isLoading: false, failure: f, items: const []),
       (page) => state.copyWith(
-        items: page.value.data, meta: page.value.meta, query: query,
-        isLoading: false, clearFailures: true,
+        items: page.value.data,
+        meta: page.value.meta,
+        query: query,
+        isLoading: false,
+        clearFailures: true,
       ),
     );
   }
@@ -195,7 +240,8 @@ class WebhookListController extends Notifier<WebhookListState> {
 class UsageLogListState extends Equatable {
   const UsageLogListState({
     this.items = const <ApiUsageLog>[],
-    this.meta = const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
+    this.meta =
+        const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
     this.query = const ListQuery(sort: '-createdAt'),
     this.isLoading = true,
     this.isLoadingMore = false,
@@ -212,20 +258,36 @@ class UsageLogListState extends Equatable {
   final Failure? loadMoreFailure;
 
   UsageLogListState copyWith({
-    List<ApiUsageLog>? items, PaginationMeta? meta, ListQuery? query,
-    bool? isLoading, bool? isLoadingMore, Failure? failure,
-    Failure? loadMoreFailure, bool clearFailures = false,
+    List<ApiUsageLog>? items,
+    PaginationMeta? meta,
+    ListQuery? query,
+    bool? isLoading,
+    bool? isLoadingMore,
+    Failure? failure,
+    Failure? loadMoreFailure,
+    bool clearFailures = false,
   }) =>
       UsageLogListState(
-        items: items ?? this.items, meta: meta ?? this.meta,
-        query: query ?? this.query, isLoading: isLoading ?? this.isLoading,
+        items: items ?? this.items,
+        meta: meta ?? this.meta,
+        query: query ?? this.query,
+        isLoading: isLoading ?? this.isLoading,
         isLoadingMore: isLoadingMore ?? this.isLoadingMore,
         failure: clearFailures ? null : (failure ?? this.failure),
-        loadMoreFailure: clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
+        loadMoreFailure:
+            clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
       );
 
   @override
-  List<Object?> get props => <Object?>[items, meta, query.cacheKey, isLoading, isLoadingMore, failure, loadMoreFailure];
+  List<Object?> get props => <Object?>[
+        items,
+        meta,
+        query.cacheKey,
+        isLoading,
+        isLoadingMore,
+        failure,
+        loadMoreFailure
+      ];
 }
 
 final NotifierProvider<UsageLogListController, UsageLogListState>
@@ -252,8 +314,11 @@ class UsageLogListController extends Notifier<UsageLogListState> {
     state = result.fold(
       (f) => state.copyWith(isLoading: false, failure: f, items: const []),
       (page) => state.copyWith(
-        items: page.value.data, meta: page.value.meta, query: query,
-        isLoading: false, clearFailures: true,
+        items: page.value.data,
+        meta: page.value.meta,
+        query: query,
+        isLoading: false,
+        clearFailures: true,
       ),
     );
   }
@@ -266,16 +331,31 @@ class UsageLogListController extends Notifier<UsageLogListState> {
     state = result.fold(
       (f) => state.copyWith(isLoadingMore: false, loadMoreFailure: f),
       (page) => state.copyWith(
-        items: [...state.items, ...page.value.data], meta: page.value.meta,
-        query: next, isLoadingMore: false, clearFailures: true,
+        items: [...state.items, ...page.value.data],
+        meta: page.value.meta,
+        query: next,
+        isLoadingMore: false,
+        clearFailures: true,
       ),
     );
   }
 }
 
-final FutureProviderFamily<ApiKey, String> apiKeyDetailProvider = FutureProvider.family((ref, id) async => throw UnimplementedError());
-final FutureProviderFamily<ApiUsageLog, String> webhookDetailProvider = FutureProvider.family((ref, id) async => throw UnimplementedError());
-final FutureProviderFamily<ApiUsageLog, String> usageLogDetailProvider = FutureProvider.family((ref, id) async => throw UnimplementedError());
+final FutureProviderFamily<ApiKey, String> apiKeyDetailProvider =
+    FutureProvider.family((ref, id) async => throw UnimplementedError());
+final FutureProviderFamily<ApiUsageLog, String> webhookDetailProvider =
+    FutureProvider.family((ref, id) async => throw UnimplementedError());
+final FutureProviderFamily<ApiUsageLog, String> usageLogDetailProvider =
+    FutureProvider.family((ref, id) async => throw UnimplementedError());
 
-extension SaveApiKey on ApiKeyListController { Future<Result<ApiKey>> save(Map<String, dynamic> payload, {String? id}) async => throw UnimplementedError(); }
-extension SaveWebhook on WebhookListController { Future<Result<WebhookEndpoint>> save(Map<String, dynamic> payload, {String? id}) async => throw UnimplementedError(); }
+extension SaveApiKey on ApiKeyListController {
+  Future<Result<ApiKey>> save(Map<String, dynamic> payload,
+          {String? id}) async =>
+      throw UnimplementedError();
+}
+
+extension SaveWebhook on WebhookListController {
+  Future<Result<WebhookEndpoint>> save(Map<String, dynamic> payload,
+          {String? id}) async =>
+      throw UnimplementedError();
+}

@@ -38,9 +38,11 @@ class AuthProfilePage extends ConsumerWidget {
                         ),
                       ),
                       const SizedBox(height: Spacing.x3),
-                      Text(user.fullName, style: Theme.of(context).textTheme.titleLarge),
+                      Text(user.fullName,
+                          style: Theme.of(context).textTheme.titleLarge),
                       const SizedBox(height: Spacing.x1),
-                      Text(user.email, style: TextStyle(color: t.textSecondary)),
+                      Text(user.email,
+                          style: TextStyle(color: t.textSecondary)),
                     ],
                   ),
                 ),
@@ -52,7 +54,8 @@ class AuthProfilePage extends ConsumerWidget {
                       const _SectionTitle(title: 'Account'),
                       _FieldRow('Name', user.fullName),
                       _FieldRow('Email', user.email),
-                      if (user.roles.isNotEmpty) _FieldRow('Roles', user.roles.join(', ')),
+                      if (user.roles.isNotEmpty)
+                        _FieldRow('Roles', user.roles.join(', ')),
                     ],
                   ),
                 ),
@@ -85,7 +88,8 @@ class AuthProfilePage extends ConsumerWidget {
                         context: context,
                         builder: (BuildContext dc) => AlertDialog(
                           title: const Text('Change Password'),
-                          content: const Text('A password reset link will be sent to your email.'),
+                          content: const Text(
+                              'A password reset link will be sent to your email.'),
                           actions: <Widget>[
                             TextButton(
                               onPressed: () => Navigator.of(dc).pop(),
@@ -95,7 +99,8 @@ class AuthProfilePage extends ConsumerWidget {
                               onPressed: () {
                                 Navigator.of(dc).pop();
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Reset link sent')),
+                                  const SnackBar(
+                                      content: Text('Reset link sent')),
                                 );
                               },
                               child: const Text('Send Reset Link'),
@@ -104,12 +109,16 @@ class AuthProfilePage extends ConsumerWidget {
                         ),
                       );
                     },
-                    child: Row(children: <Widget>[
-                      Icon(Icons.lock_outline, color: t.textSecondary),
-                      const SizedBox(width: Spacing.x2),
-                      Expanded(child: Text('Change Password', style: Theme.of(context).textTheme.labelLarge)),
-                      Icon(Icons.chevron_right, color: t.textTertiary),
-                    ],),
+                    child: Row(
+                      children: <Widget>[
+                        Icon(Icons.lock_outline, color: t.textSecondary),
+                        const SizedBox(width: Spacing.x2),
+                        Expanded(
+                            child: Text('Change Password',
+                                style: Theme.of(context).textTheme.labelLarge)),
+                        Icon(Icons.chevron_right, color: t.textTertiary),
+                      ],
+                    ),
                   ),
                 ),
               ],
@@ -125,8 +134,12 @@ class _SectionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final Palette t = context.tokens;
     return Container(
-      width: double.infinity, padding: const EdgeInsets.all(Spacing.x4),
-      decoration: BoxDecoration(color: t.bgElevated, borderRadius: Radii.card, border: Border.all(color: t.border)),
+      width: double.infinity,
+      padding: const EdgeInsets.all(Spacing.x4),
+      decoration: BoxDecoration(
+          color: t.bgElevated,
+          borderRadius: Radii.card,
+          border: Border.all(color: t.border)),
       child: child,
     );
   }
@@ -137,9 +150,9 @@ class _SectionTitle extends StatelessWidget {
   final String title;
   @override
   Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.only(bottom: Spacing.x3),
-    child: Text(title, style: Theme.of(context).textTheme.titleMedium),
-  );
+        padding: const EdgeInsets.only(bottom: Spacing.x3),
+        child: Text(title, style: Theme.of(context).textTheme.titleMedium),
+      );
 }
 
 class _FieldRow extends StatelessWidget {
@@ -151,10 +164,16 @@ class _FieldRow extends StatelessWidget {
     final Palette t = context.tokens;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: Spacing.x1_5),
-      child: Row(children: <Widget>[
-        Expanded(child: Text(label, style: TextStyle(color: t.textSecondary))),
-        Flexible(child: Text(value, style: Theme.of(context).textTheme.labelLarge, textAlign: TextAlign.end)),
-      ],),
+      child: Row(
+        children: <Widget>[
+          Expanded(
+              child: Text(label, style: TextStyle(color: t.textSecondary))),
+          Flexible(
+              child: Text(value,
+                  style: Theme.of(context).textTheme.labelLarge,
+                  textAlign: TextAlign.end)),
+        ],
+      ),
     );
   }
 }

@@ -60,7 +60,8 @@ class _PipelineView extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
         Padding(
-          padding: const EdgeInsets.fromLTRB(Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
+          padding: const EdgeInsets.fromLTRB(
+              Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
           child: Text(
             pipeline.name,
             style: Theme.of(context).textTheme.titleMedium,
@@ -70,12 +71,14 @@ class _PipelineView extends StatelessWidget {
           child: ListView(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.all(Spacing.x4),
-            children: pipeline.stages.map(
-              (PipelineStage stage) => _StageColumn(
-                stage: stage,
-                opportunities: const <Opportunity>[],
-              ),
-            ).toList(),
+            children: pipeline.stages
+                .map(
+                  (PipelineStage stage) => _StageColumn(
+                    stage: stage,
+                    opportunities: const <Opportunity>[],
+                  ),
+                )
+                .toList(),
           ),
         ),
       ],

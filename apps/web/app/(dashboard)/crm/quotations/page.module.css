@@ -64,7 +64,7 @@
 
 .style8 {
   width: 100%;
-  padding: 8px 12px 8px 36px;
+  padding: var(--space-2) var(--space-3) var(--space-2) var(--space-9);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   background: var(--color-bg);
@@ -74,7 +74,7 @@
 }
 
 .style9 {
-  padding: 8px 12px;
+  padding: var(--space-2) var(--space-3);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   background: var(--color-bg);
@@ -110,7 +110,7 @@
 }
 
 .style14 {
-  padding: 6px 10px;
+  padding: var(--space-1-5) var(--space-2-5);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   font-size: var(--text-sm);
@@ -120,7 +120,7 @@
 }
 
 .style15 {
-  padding: 6px 10px;
+  padding: var(--space-1-5) var(--space-2-5);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   font-size: var(--text-sm);
@@ -130,7 +130,7 @@
 }
 
 .style16 {
-  padding: 6px 10px;
+  padding: var(--space-1-5) var(--space-2-5);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   font-size: var(--text-sm);
@@ -140,7 +140,7 @@
 }
 
 .style17 {
-  padding: 6px 10px;
+  padding: var(--space-1-5) var(--space-2-5);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   font-size: var(--text-sm);
@@ -175,4 +175,11 @@
   font-weight: var(--weight-bold);
   text-align: right;
 }
-.s1 { border-radius: var(--radius-md); border: 1px solid; cursor: pointer; font-size: var(--text-xs); font-weight: var(--weight-medium); padding: 6px 12px; }
+.s1 {
+  border-radius: var(--radius-md);
+  border: 1px solid;
+  cursor: pointer;
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  padding: var(--space-1-5) var(--space-3);
+}

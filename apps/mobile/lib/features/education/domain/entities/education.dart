@@ -37,9 +37,20 @@ class Student extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, firstName, lastName, email, phone, dateOfBirth, gender,
-        address, enrollmentNumber, guardianName, guardianPhone,
-        status, createdAt, updatedAt,
+        id,
+        firstName,
+        lastName,
+        email,
+        phone,
+        dateOfBirth,
+        gender,
+        address,
+        enrollmentNumber,
+        guardianName,
+        guardianPhone,
+        status,
+        createdAt,
+        updatedAt,
       ];
 }
 
@@ -72,8 +83,17 @@ class Course extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, code, name, department, instructor, credits, durationHours,
-        description, status, createdAt, updatedAt,
+        id,
+        code,
+        name,
+        department,
+        instructor,
+        credits,
+        durationHours,
+        description,
+        status,
+        createdAt,
+        updatedAt,
       ];
 }
 
@@ -108,9 +128,18 @@ class Enrollment extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, studentId, studentName, courseId, courseName,
-        enrollmentDate, status, grade, semester, academicYear,
-        createdAt, updatedAt,
+        id,
+        studentId,
+        studentName,
+        courseId,
+        courseName,
+        enrollmentDate,
+        status,
+        grade,
+        semester,
+        academicYear,
+        createdAt,
+        updatedAt,
       ];
 }
 
@@ -145,8 +174,18 @@ class GradeEntry extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, studentId, studentName, courseId, courseName, grade,
-        score, maxScore, gradeDate, remarks, createdAt, updatedAt,
+        id,
+        studentId,
+        studentName,
+        courseId,
+        courseName,
+        grade,
+        score,
+        maxScore,
+        gradeDate,
+        remarks,
+        createdAt,
+        updatedAt,
       ];
 }
 
@@ -187,9 +226,21 @@ class EducationFeeInvoice extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, studentId, studentName, invoiceNumber, status, amount,
-        paidAmount, feeType, semester, academicYear, dueDate, paidDate,
-        notes, createdAt, updatedAt,
+        id,
+        studentId,
+        studentName,
+        invoiceNumber,
+        status,
+        amount,
+        paidAmount,
+        feeType,
+        semester,
+        academicYear,
+        dueDate,
+        paidDate,
+        notes,
+        createdAt,
+        updatedAt,
       ];
 }
 
@@ -226,7 +277,18 @@ class Exam extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, title, courseId, courseName, examDate, status, maxScore,
-        durationMinutes, examType, room, notes, createdAt, updatedAt,
+        id,
+        title,
+        courseId,
+        courseName,
+        examDate,
+        status,
+        maxScore,
+        durationMinutes,
+        examType,
+        room,
+        notes,
+        createdAt,
+        updatedAt,
       ];
 }

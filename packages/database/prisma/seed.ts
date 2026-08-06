@@ -1,4 +1,4 @@
-/* eslint-disable no-console, @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { PrismaClient, Prisma } from "@prisma/client";
 import { seedWebTemplates } from "./seed-web-templates";
 

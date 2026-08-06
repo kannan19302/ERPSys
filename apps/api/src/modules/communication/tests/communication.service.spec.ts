@@ -1,8 +1,15 @@
+import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { CommunicationService } from "../communication.service";
 
 vi.mock("@unerp/database", () => {
-  return {
+  // Identity models (user, role, userSession, ...) are read through
+  // `idpPrisma`, not `prisma` — this spec predates that split and stubs
+  // them under `prisma`. Exporting the same stub object under both names
+  // keeps every `vi.mocked(prisma.user.*)` setup pointing at exactly the
+  // function the service calls.
+  const mocked = {
     prisma: {
       user: { findMany: vi.fn(), findFirst: vi.fn() },
       userPresence: { findMany: vi.fn(), upsert: vi.fn() },
@@ -54,6 +61,7 @@ vi.mock("@unerp/database", () => {
       department: { findMany: vi.fn() },
     },
   };
+  return { ...mocked, idpPrisma: mocked.prisma };
 });
 
 describe("CommunicationService (Connect)", () => {
@@ -72,7 +80,7 @@ describe("CommunicationService (Connect)", () => {
 
   it("builds a directory merging users with presence", async () => {
     const { prisma } = await import("@unerp/database");
-    vi.mocked(prisma.user.findMany).mockResolvedValue([
+    vi.mocked(idpPrisma.user.findMany).mockResolvedValue([
       {
         id: "u1",
         firstName: "Ada",
@@ -81,7 +89,7 @@ describe("CommunicationService (Connect)", () => {
         avatar: null,
       },
     ] as never);
-    vi.mocked(prisma.userPresence.findMany).mockResolvedValue([
+    vi.mocked(idpPrisma.userPresence.findMany).mockResolvedValue([
       { userId: "u1", presence: "DND", statusText: "Focus" },
     ] as never);
     vi.mocked(prisma.employee.findMany).mockResolvedValue([] as never);
@@ -164,13 +172,13 @@ describe("CommunicationService (Connect)", () => {
 
   it("upserts presence", async () => {
     const { prisma } = await import("@unerp/database");
-    vi.mocked(prisma.userPresence.upsert).mockResolvedValue({
+    vi.mocked(idpPrisma.userPresence.upsert).mockResolvedValue({
       userId: "u1",
       presence: "AWAY",
     } as never);
 
     const res = await svc.setPresence("t1", "u1", { presence: "AWAY" });
-    expect(prisma.userPresence.upsert).toHaveBeenCalled();
+    expect(idpPrisma.userPresence.upsert).toHaveBeenCalled();
     expect(res.presence).toBe("AWAY");
   });
 
@@ -228,11 +236,11 @@ describe("CommunicationService (Connect)", () => {
       reactions: [],
     } as never);
     vi.mocked(prisma.channel.update).mockResolvedValue({} as never);
-    vi.mocked(prisma.user.findFirst).mockResolvedValue({
+    vi.mocked(idpPrisma.user.findFirst).mockResolvedValue({
       firstName: "Grace",
       lastName: "Hopper",
     } as never);
-    vi.mocked(prisma.user.findMany).mockResolvedValue([
+    vi.mocked(idpPrisma.user.findMany).mockResolvedValue([
       { id: "ada", firstName: "Ada" },
       { id: "author", firstName: "Grace" },
     ] as never);

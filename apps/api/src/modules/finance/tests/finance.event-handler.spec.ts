@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { FinanceEventHandler } from "../finance.event-handler";
 import { FinanceService } from "../finance.service";
 import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 
 vi.mock("@unerp/database", () => {
   return {

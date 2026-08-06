@@ -18,7 +18,8 @@ class BuilderPageFormPage extends ConsumerStatefulWidget {
   final String? pageId;
 
   @override
-  ConsumerState<BuilderPageFormPage> createState() => _BuilderPageFormPageState();
+  ConsumerState<BuilderPageFormPage> createState() =>
+      _BuilderPageFormPageState();
 }
 
 class _BuilderPageFormPageState extends ConsumerState<BuilderPageFormPage> {
@@ -41,9 +42,8 @@ class _BuilderPageFormPageState extends ConsumerState<BuilderPageFormPage> {
   }
 
   Future<void> _loadPage() async {
-    final BuilderPage? page = ref
-        .read(builderPageDetailProvider(widget.pageId!))
-        .valueOrNull;
+    final BuilderPage? page =
+        ref.read(builderPageDetailProvider(widget.pageId!)).valueOrNull;
     if (page != null) {
       _titleCtrl.text = page.title;
       _slugCtrl.text = page.slug ?? '';
@@ -128,9 +128,12 @@ class _BuilderPageFormPageState extends ConsumerState<BuilderPageFormPage> {
               initialValue: _layout,
               decoration: const InputDecoration(labelText: 'Layout'),
               items: const <DropdownMenuItem<String>>[
-                DropdownMenuItem<String>(value: 'default', child: Text('Default')),
-                DropdownMenuItem<String>(value: 'full_width', child: Text('Full Width')),
-                DropdownMenuItem<String>(value: 'sidebar', child: Text('Sidebar')),
+                DropdownMenuItem<String>(
+                    value: 'default', child: Text('Default')),
+                DropdownMenuItem<String>(
+                    value: 'full_width', child: Text('Full Width')),
+                DropdownMenuItem<String>(
+                    value: 'sidebar', child: Text('Sidebar')),
               ],
               onChanged: (String? v) {
                 if (v != null) setState(() => _layout = v);
@@ -142,7 +145,8 @@ class _BuilderPageFormPageState extends ConsumerState<BuilderPageFormPage> {
               decoration: const InputDecoration(labelText: 'Status'),
               items: const <DropdownMenuItem<String>>[
                 DropdownMenuItem<String>(value: 'DRAFT', child: Text('Draft')),
-                DropdownMenuItem<String>(value: 'PUBLISHED', child: Text('Published')),
+                DropdownMenuItem<String>(
+                    value: 'PUBLISHED', child: Text('Published')),
               ],
               onChanged: (String? v) {
                 if (v != null) setState(() => _status = v);

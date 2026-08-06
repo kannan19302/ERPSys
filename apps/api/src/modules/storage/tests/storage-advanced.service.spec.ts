@@ -1,4 +1,5 @@
 import { Test, TestingModule } from "@nestjs/testing";
+import { withTenantSession } from "../../../../test/tenant-session";
 import { StorageAdvancedService } from "../storage-advanced.service";
 
 describe("StorageAdvancedService", () => {
@@ -8,7 +9,9 @@ describe("StorageAdvancedService", () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [StorageAdvancedService],
     }).compile();
-    service = module.get<StorageAdvancedService>(StorageAdvancedService);
+    service = withTenantSession(
+      module.get<StorageAdvancedService>(StorageAdvancedService),
+    );
   });
 
   it("should be defined", () => {
@@ -17,7 +20,7 @@ describe("StorageAdvancedService", () => {
 
   describe("Backups", () => {
     it("should return empty backups list for new tenant", async () => {
-      const backups = await service.getBackups("tenant-new");
+      const backups = await service.getBackups("tenant-new-storage");
       expect(Array.isArray(backups)).toBe(true);
     });
 
@@ -45,7 +48,7 @@ describe("StorageAdvancedService", () => {
 
   describe("Alerts", () => {
     it("should return empty alerts for new tenant", async () => {
-      const alerts = await service.getAlerts("tenant-new");
+      const alerts = await service.getAlerts("tenant-new-storage");
       expect(Array.isArray(alerts)).toBe(true);
     });
 
@@ -77,7 +80,7 @@ describe("StorageAdvancedService", () => {
 
   describe("Snapshots", () => {
     it("should return empty snapshots for new tenant", async () => {
-      const snapshots = await service.getSnapshots("tenant-new");
+      const snapshots = await service.getSnapshots("tenant-new-storage");
       expect(Array.isArray(snapshots)).toBe(true);
     });
 
@@ -107,7 +110,7 @@ describe("StorageAdvancedService", () => {
 
   describe("Migrations", () => {
     it("should return empty migrations", async () => {
-      const migrations = await service.getMigrations("tenant-new");
+      const migrations = await service.getMigrations("tenant-new-storage");
       expect(Array.isArray(migrations)).toBe(true);
     });
 
@@ -130,7 +133,7 @@ describe("StorageAdvancedService", () => {
 
   describe("Retention Policies", () => {
     it("should return empty policies", async () => {
-      const policies = await service.getRetentionPolicies("tenant-new");
+      const policies = await service.getRetentionPolicies("tenant-new-storage");
       expect(Array.isArray(policies)).toBe(true);
     });
 
@@ -147,7 +150,7 @@ describe("StorageAdvancedService", () => {
 
   describe("Syncs", () => {
     it("should return empty syncs", async () => {
-      const syncs = await service.getSyncs("tenant-new");
+      const syncs = await service.getSyncs("tenant-new-storage");
       expect(Array.isArray(syncs)).toBe(true);
     });
 

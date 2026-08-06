@@ -13,7 +13,8 @@ class AppNotification extends Equatable {
     this.link,
   });
 
-  factory AppNotification.fromJson(Map<String, dynamic> json) => AppNotification(
+  factory AppNotification.fromJson(Map<String, dynamic> json) =>
+      AppNotification(
         id: json['id'] as String? ?? '',
         title: json['title'] as String? ?? '',
         content: json['content'] as String? ?? '',

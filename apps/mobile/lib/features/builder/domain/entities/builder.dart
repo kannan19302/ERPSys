@@ -23,7 +23,14 @@ class BuilderForm extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, title, description, fields, status, version, createdAt, updatedAt,
+        id,
+        title,
+        description,
+        fields,
+        status,
+        version,
+        createdAt,
+        updatedAt,
       ];
 }
 
@@ -50,7 +57,14 @@ class BuilderFormField extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, label, fieldType, required, placeholder, options, defaultValue, order,
+        id,
+        label,
+        fieldType,
+        required,
+        placeholder,
+        options,
+        defaultValue,
+        order,
       ];
 }
 
@@ -77,7 +91,14 @@ class BuilderPage extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, title, slug, layout, sections, status, createdAt, updatedAt,
+        id,
+        title,
+        slug,
+        layout,
+        sections,
+        status,
+        createdAt,
+        updatedAt,
       ];
 }
 
@@ -121,7 +142,13 @@ class BuilderWorkflow extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, name, description, steps, status, createdAt, updatedAt,
+        id,
+        name,
+        description,
+        steps,
+        status,
+        createdAt,
+        updatedAt,
       ];
 }
 
@@ -167,6 +194,13 @@ class BuilderTemplate extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, name, category, description, content, status, createdAt, updatedAt,
+        id,
+        name,
+        category,
+        description,
+        content,
+        status,
+        createdAt,
+        updatedAt,
       ];
 }

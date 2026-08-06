@@ -14,7 +14,8 @@ abstract class CrmRemoteDataSource {
 
   Future<void> deleteCustomer(String id);
 
-  Future<Paginated<ContactModel>> getCustomerContacts(String customerId, ListQuery query);
+  Future<Paginated<ContactModel>> getCustomerContacts(
+      String customerId, ListQuery query);
 
   Future<Map<String, dynamic>> getCustomerStats(String id);
 
@@ -68,7 +69,8 @@ abstract class CrmRemoteDataSource {
 
   Future<EmailTemplateModel> createEmailTemplate(Map<String, dynamic> payload);
 
-  Future<EmailTemplateModel> updateEmailTemplate(String id, Map<String, dynamic> payload);
+  Future<EmailTemplateModel> updateEmailTemplate(
+      String id, Map<String, dynamic> payload);
 
   Future<void> deleteEmailTemplate(String id);
 }
@@ -106,7 +108,8 @@ class CrmRemoteDataSourceImpl implements CrmRemoteDataSource {
       );
 
   @override
-  Future<void> deleteCustomer(String id) => _client.delete(ApiPaths.customer(id));
+  Future<void> deleteCustomer(String id) =>
+      _client.delete(ApiPaths.customer(id));
 
   @override
   Future<Paginated<ContactModel>> getCustomerContacts(
@@ -243,7 +246,8 @@ class CrmRemoteDataSourceImpl implements CrmRemoteDataSource {
       _client.delete(ApiPaths.leadSources);
 
   @override
-  Future<LeadSourceModel> createLeadSource(Map<String, dynamic> payload) async =>
+  Future<LeadSourceModel> createLeadSource(
+          Map<String, dynamic> payload) async =>
       LeadSourceModel.fromJson(
         await _client.post(ApiPaths.leadSources, body: payload),
       );

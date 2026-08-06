@@ -36,7 +36,9 @@ class TaxFilingDetailPage extends ConsumerWidget {
       body: filingAsync.when(
         loading: () => const LoadingView(),
         error: (Object error, StackTrace _) => FailureView(
-          failure: error is Failure ? error : const ServerFailure('Could not load tax filing.'),
+          failure: error is Failure
+              ? error
+              : const ServerFailure('Could not load tax filing.'),
           onRetry: () => ref.invalidate(taxFilingDetailProvider(taxFilingId)),
         ),
         data: (TaxFiling filing) => _TaxFilingDetail(filing: filing),
@@ -64,9 +66,8 @@ class TaxFilingDetailPage extends ConsumerWidget {
     );
     if (confirmed != true || !context.mounted) return;
 
-    final result = await ref
-        .read(taxFilingsProvider.notifier)
-        .delete(taxFilingId);
+    final result =
+        await ref.read(taxFilingsProvider.notifier).delete(taxFilingId);
 
     if (!context.mounted) return;
     result.fold(
@@ -127,7 +128,11 @@ class _TaxFilingDetail extends StatelessWidget {
               _FieldRow('Return Type', filing.returnType),
               _FieldRow('Total Tax', Formatters.currency(filing.totalTax)),
               _FieldRow('Due Date', Formatters.date(filing.dueAt)),
-              _FieldRow('Filed At', filing.filedAt != null ? Formatters.dateTime(filing.filedAt!) : '—'),
+              _FieldRow(
+                  'Filed At',
+                  filing.filedAt != null
+                      ? Formatters.dateTime(filing.filedAt!)
+                      : '—'),
               _FieldRow('Status', filing.status),
             ],
           ),
@@ -189,9 +194,7 @@ class _ActionButtons extends ConsumerWidget {
     );
     if (confirmed != true || !context.mounted) return;
 
-    final result = await ref
-        .read(taxFilingsProvider.notifier)
-        .submit(filingId);
+    final result = await ref.read(taxFilingsProvider.notifier).submit(filingId);
 
     if (!context.mounted) return;
     result.fold(
@@ -234,7 +237,8 @@ class _FieldRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: Spacing.x1_5),
       child: Row(
         children: <Widget>[
-          Expanded(child: Text(label, style: TextStyle(color: t.textSecondary))),
+          Expanded(
+              child: Text(label, style: TextStyle(color: t.textSecondary))),
           Text(value, style: Theme.of(context).textTheme.labelLarge),
         ],
       ),

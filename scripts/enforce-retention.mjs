@@ -33,7 +33,7 @@ try {
   // no .env — rely on real environment
 }
 
-const require = createRequire(path.join(root, 'packages', 'database', 'package.json'));
+const require = createRequire(path.join(root, 'node_modules', '@unerp', 'database', 'package.json'));
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 

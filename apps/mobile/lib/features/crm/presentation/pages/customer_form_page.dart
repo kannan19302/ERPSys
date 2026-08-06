@@ -52,9 +52,8 @@ class _CustomerFormPageState extends ConsumerState<CustomerFormPage> {
   }
 
   Future<void> _loadCustomer() async {
-    final Customer? customer = ref
-        .read(customerDetailProvider(widget.customerId!))
-        .valueOrNull;
+    final Customer? customer =
+        ref.read(customerDetailProvider(widget.customerId!)).valueOrNull;
     if (customer != null) {
       _nameCtrl.text = customer.name;
       _emailCtrl.text = customer.email ?? '';
@@ -100,19 +99,28 @@ class _CustomerFormPageState extends ConsumerState<CustomerFormPage> {
       'email': _emailCtrl.text.trim().isEmpty ? null : _emailCtrl.text.trim(),
       'phone': _phoneCtrl.text.trim().isEmpty ? null : _phoneCtrl.text.trim(),
       'taxId': _taxIdCtrl.text.trim().isEmpty ? null : _taxIdCtrl.text.trim(),
-      'billingAddress': _billingCtrl.text.trim().isEmpty ? null : _billingCtrl.text.trim(),
-      'shippingAddress': _shippingCtrl.text.trim().isEmpty ? null : _shippingCtrl.text.trim(),
+      'billingAddress':
+          _billingCtrl.text.trim().isEmpty ? null : _billingCtrl.text.trim(),
+      'shippingAddress':
+          _shippingCtrl.text.trim().isEmpty ? null : _shippingCtrl.text.trim(),
       'status': _status,
       'customerType': _customerType,
-      'industry': _industryCtrl.text.trim().isEmpty ? null : _industryCtrl.text.trim(),
-      'website': _websiteCtrl.text.trim().isEmpty ? null : _websiteCtrl.text.trim(),
+      'industry':
+          _industryCtrl.text.trim().isEmpty ? null : _industryCtrl.text.trim(),
+      'website':
+          _websiteCtrl.text.trim().isEmpty ? null : _websiteCtrl.text.trim(),
       'notes': _notesCtrl.text.trim().isEmpty ? null : _notesCtrl.text.trim(),
-      'currency': _currencyCtrl.text.trim().isEmpty ? null : _currencyCtrl.text.trim(),
+      'currency':
+          _currencyCtrl.text.trim().isEmpty ? null : _currencyCtrl.text.trim(),
       'creditLimit': double.tryParse(_creditLimitCtrl.text) ?? 0,
       'portalAccess': _portalAccess,
       'tags': _tagsCtrl.text.trim().isEmpty
           ? <String>[]
-          : _tagsCtrl.text.split(',').map((String s) => s.trim()).where((String s) => s.isNotEmpty).toList(),
+          : _tagsCtrl.text
+              .split(',')
+              .map((String s) => s.trim())
+              .where((String s) => s.isNotEmpty)
+              .toList(),
     };
 
     final Result<Customer> result = await ref
@@ -187,8 +195,10 @@ class _CustomerFormPageState extends ConsumerState<CustomerFormPage> {
               initialValue: _status,
               decoration: const InputDecoration(labelText: 'Status'),
               items: const <DropdownMenuItem<String>>[
-                DropdownMenuItem<String>(value: 'ACTIVE', child: Text('Active')),
-                DropdownMenuItem<String>(value: 'INACTIVE', child: Text('Inactive')),
+                DropdownMenuItem<String>(
+                    value: 'ACTIVE', child: Text('Active')),
+                DropdownMenuItem<String>(
+                    value: 'INACTIVE', child: Text('Inactive')),
                 DropdownMenuItem<String>(value: 'LEAD', child: Text('Lead')),
               ],
               onChanged: (String? v) {
@@ -200,8 +210,10 @@ class _CustomerFormPageState extends ConsumerState<CustomerFormPage> {
               initialValue: _customerType,
               decoration: const InputDecoration(labelText: 'Customer Type'),
               items: const <DropdownMenuItem<String>>[
-                DropdownMenuItem<String>(value: 'COMPANY', child: Text('Company')),
-                DropdownMenuItem<String>(value: 'INDIVIDUAL', child: Text('Individual')),
+                DropdownMenuItem<String>(
+                    value: 'COMPANY', child: Text('Company')),
+                DropdownMenuItem<String>(
+                    value: 'INDIVIDUAL', child: Text('Individual')),
               ],
               onChanged: (String? v) {
                 if (v != null) setState(() => _customerType = v);

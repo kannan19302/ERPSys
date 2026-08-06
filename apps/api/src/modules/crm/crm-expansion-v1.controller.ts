@@ -7,14 +7,24 @@ import {
   Query,
   UseInterceptors,
   Req,
+  UseGuards,
 } from "@nestjs/common";
 import { CrmExpansionV1Service } from "./crm-expansion-v1.service";
 import { Permissions } from "../../common/decorators/permissions.decorator";
 import { TrackChanges } from "../../common/decorators/track-changes.decorator";
 import { ChangeHistoryInterceptor } from "../../common/interceptors/change-history.interceptor";
 import { Request } from "express";
+import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard";
+import { RbacGuard } from "../../common/guards/rbac.guard";
 
 @Controller("crm/expansion-v1")
+// These routes carried @Permissions but no guard to read it. @Permissions only
+// writes metadata; without RbacGuard nothing consumes it, and without
+// JwtAuthGuard there is no request.user for it to consume. @ApiBearerAuth()
+// documents a requirement it does not enforce. Every route below was therefore
+// reachable unauthenticated while appearing, in source and in Swagger, to be
+// protected.
+@UseGuards(JwtAuthGuard, RbacGuard)
 @UseInterceptors(ChangeHistoryInterceptor)
 export class CrmExpansionV1Controller {
   constructor(private readonly service: CrmExpansionV1Service) {}

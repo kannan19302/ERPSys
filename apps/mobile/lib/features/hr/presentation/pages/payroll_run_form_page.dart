@@ -21,7 +21,8 @@ class PayrollRunFormPage extends ConsumerStatefulWidget {
 class _PayrollRunFormPageState extends ConsumerState<PayrollRunFormPage> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _nameCtrl = TextEditingController();
-  final TextEditingController _employeeCountCtrl = TextEditingController(text: '0');
+  final TextEditingController _employeeCountCtrl =
+      TextEditingController(text: '0');
 
   DateTime _periodStart = DateTime.now();
   DateTime _periodEnd = DateTime.now().add(const Duration(days: 30));
@@ -46,9 +47,8 @@ class _PayrollRunFormPageState extends ConsumerState<PayrollRunFormPage> {
       'status': PayrollRunStatus.draft,
     };
 
-    final Result<PayrollRun> result = await ref
-        .read(payrollRunListControllerProvider.notifier)
-        .save(payload);
+    final Result<PayrollRun> result =
+        await ref.read(payrollRunListControllerProvider.notifier).save(payload);
 
     if (!context.mounted) return;
     setState(() => _saving = false);

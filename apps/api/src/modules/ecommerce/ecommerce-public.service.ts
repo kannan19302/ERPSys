@@ -5,6 +5,7 @@ import {
 } from "@nestjs/common";
 import { randomUUID } from "crypto";
 import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 import { AddCartItemDto, UpdateCartItemDto } from "./dto/ecommerce.dto";
 
 const CART_TTL_MS = 1000 * 60 * 60 * 24 * 14; // 14 days

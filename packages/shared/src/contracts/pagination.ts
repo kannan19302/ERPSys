@@ -9,17 +9,22 @@
  * converge as they are touched. Changing the shape is a sealed-contract
  * change (roadmap § 12b).
  */
-import { z } from 'zod';
+import { z } from "zod";
 
 export const LIST_LIMIT_DEFAULT = 25;
 export const LIST_LIMIT_MAX = 100;
 
 export const listQuerySchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
-  limit: z.coerce.number().int().min(1).max(LIST_LIMIT_MAX).default(LIST_LIMIT_DEFAULT),
+  limit: z.coerce
+    .number()
+    .int()
+    .min(1)
+    .max(LIST_LIMIT_MAX)
+    .default(LIST_LIMIT_DEFAULT),
   /** Field name to sort by — endpoints must allowlist accepted values. */
   sortBy: z.string().min(1).max(64).optional(),
-  sortOrder: z.enum(['asc', 'desc']).default('asc'),
+  sortOrder: z.enum(["asc", "desc"]).default("asc"),
 });
 
 export type ListQuery = z.infer<typeof listQuerySchema>;
@@ -33,7 +38,9 @@ export const paginationMetaSchema = z.object({
 
 export type PaginationMetaContract = z.infer<typeof paginationMetaSchema>;
 
-export function paginatedResponseSchema<ItemSchema extends z.ZodTypeAny>(item: ItemSchema) {
+export function paginatedResponseSchema<ItemSchema extends z.ZodTypeAny>(
+  item: ItemSchema,
+) {
   return z.object({
     data: z.array(item),
     meta: paginationMetaSchema,
@@ -45,7 +52,11 @@ export type PaginatedResponseContract<T> = {
   meta: PaginationMetaContract;
 };
 
-export function buildPaginationMeta(page: number, limit: number, total: number): PaginationMetaContract {
+export function buildPaginationMeta(
+  page: number,
+  limit: number,
+  total: number,
+): PaginationMetaContract {
   return {
     page,
     limit,

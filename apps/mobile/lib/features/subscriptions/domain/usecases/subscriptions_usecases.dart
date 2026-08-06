@@ -4,11 +4,13 @@ import '../../../../core/usecase/usecase.dart';
 import '../entities/subscriptions.dart';
 import '../repositories/subscriptions_repository.dart';
 
-class ListSubscriptionPlansUseCase extends UseCase<Cacheable<Paginated<SubscriptionPlan>>, ListQuery> {
+class ListSubscriptionPlansUseCase
+    extends UseCase<Cacheable<Paginated<SubscriptionPlan>>, ListQuery> {
   const ListSubscriptionPlansUseCase(this._repository);
   final SubscriptionsRepository _repository;
   @override
-  Future<Result<Cacheable<Paginated<SubscriptionPlan>>>> call(ListQuery params) =>
+  Future<Result<Cacheable<Paginated<SubscriptionPlan>>>> call(
+          ListQuery params) =>
       _repository.listPlans(params);
 }
 
@@ -19,19 +21,23 @@ class GetSubscriptionPlanUseCase extends UseCase<SubscriptionPlan, String> {
   Future<Result<SubscriptionPlan>> call(String id) => _repository.getPlan(id);
 }
 
-class ListSubscriptionBillingCyclesUseCase extends UseCase<Cacheable<Paginated<SubscriptionBillingCycle>>, ListQuery> {
+class ListSubscriptionBillingCyclesUseCase
+    extends UseCase<Cacheable<Paginated<SubscriptionBillingCycle>>, ListQuery> {
   const ListSubscriptionBillingCyclesUseCase(this._repository);
   final SubscriptionsRepository _repository;
   @override
-  Future<Result<Cacheable<Paginated<SubscriptionBillingCycle>>>> call(ListQuery params) =>
+  Future<Result<Cacheable<Paginated<SubscriptionBillingCycle>>>> call(
+          ListQuery params) =>
       _repository.listBillingCycles(params);
 }
 
-class GetSubscriptionBillingCycleUseCase extends UseCase<SubscriptionBillingCycle, String> {
+class GetSubscriptionBillingCycleUseCase
+    extends UseCase<SubscriptionBillingCycle, String> {
   const GetSubscriptionBillingCycleUseCase(this._repository);
   final SubscriptionsRepository _repository;
   @override
-  Future<Result<SubscriptionBillingCycle>> call(String id) => _repository.getBillingCycle(id);
+  Future<Result<SubscriptionBillingCycle>> call(String id) =>
+      _repository.getBillingCycle(id);
 }
 
 class SaveSubscriptionPlanParams {
@@ -40,7 +46,8 @@ class SaveSubscriptionPlanParams {
   final Map<String, dynamic> payload;
 }
 
-class SaveSubscriptionPlanUseCase extends UseCase<SubscriptionPlan, SaveSubscriptionPlanParams> {
+class SaveSubscriptionPlanUseCase
+    extends UseCase<SubscriptionPlan, SaveSubscriptionPlanParams> {
   const SaveSubscriptionPlanUseCase(this._repository);
   final SubscriptionsRepository _repository;
   @override
@@ -52,7 +59,8 @@ class SaveSubscriptionPlanUseCase extends UseCase<SubscriptionPlan, SaveSubscrip
   }
 }
 
-class SaveSubscriptionBillingCycleUseCase extends UseCase<SubscriptionBillingCycle, SaveBillingCycleParams> {
+class SaveSubscriptionBillingCycleUseCase
+    extends UseCase<SubscriptionBillingCycle, SaveBillingCycleParams> {
   const SaveSubscriptionBillingCycleUseCase(this._repository);
   final SubscriptionsRepository _repository;
   @override
@@ -70,19 +78,21 @@ class SaveBillingCycleParams {
   final Map<String, dynamic> payload;
 }
 
-class ListSubscriptionUsageUseCase extends UseCase<Cacheable<Paginated<SubscriptionUsageRecord>>, ListQuery> {
+class ListSubscriptionUsageUseCase
+    extends UseCase<Cacheable<Paginated<SubscriptionUsageRecord>>, ListQuery> {
   const ListSubscriptionUsageUseCase(this._repository);
   final SubscriptionsRepository _repository;
   @override
-  Future<Result<Cacheable<Paginated<SubscriptionUsageRecord>>>> call(ListQuery params) =>
+  Future<Result<Cacheable<Paginated<SubscriptionUsageRecord>>>> call(
+          ListQuery params) =>
       _repository.listUsage(params);
 }
 
-class SubmitChurnSurveyUseCase extends UseCase<ChurnSurveyResponse, Map<String, dynamic>> {
+class SubmitChurnSurveyUseCase
+    extends UseCase<ChurnSurveyResponse, Map<String, dynamic>> {
   const SubmitChurnSurveyUseCase(this._repository);
   final SubscriptionsRepository _repository;
   @override
   Future<Result<ChurnSurveyResponse>> call(Map<String, dynamic> payload) =>
       _repository.submitChurnSurvey(payload);
 }
-

@@ -35,7 +35,8 @@ final Provider<CrmRepository> crmRepositoryProvider = Provider<CrmRepository>(
 class CrmListState<T extends Equatable> extends Equatable {
   const CrmListState({
     this.items = const <Never>[],
-    this.meta = const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
+    this.meta =
+        const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
     this.query = const ListQuery(sort: '-createdAt'),
     this.isLoading = true,
     this.isLoadingMore = false,
@@ -120,7 +121,9 @@ class CustomersController extends Notifier<CrmListState<Customer>> {
 
     state = result.fold(
       (Failure failure) => state.copyWith(
-        isLoading: false, failure: failure, items: const <Customer>[],
+        isLoading: false,
+        failure: failure,
+        items: const <Customer>[],
       ),
       (Cacheable<Paginated<Customer>> page) => state.copyWith(
         items: page.value.data,
@@ -183,7 +186,8 @@ class CustomersController extends Notifier<CrmListState<Customer>> {
     return result;
   }
 
-  Future<Result<Customer>> save(Map<String, dynamic> payload, {String? id}) async {
+  Future<Result<Customer>> save(Map<String, dynamic> payload,
+      {String? id}) async {
     final Result<Customer> result =
         await SaveCustomerUseCase(ref.read(crmRepositoryProvider))(
       SaveCustomerParams(id: id, payload: payload),
@@ -233,7 +237,9 @@ class ContactsController extends Notifier<CrmListState<Contact>> {
 
     state = result.fold(
       (Failure failure) => state.copyWith(
-        isLoading: false, failure: failure, items: const <Contact>[],
+        isLoading: false,
+        failure: failure,
+        items: const <Contact>[],
       ),
       (Cacheable<Paginated<Contact>> page) => state.copyWith(
         items: page.value.data,
@@ -296,7 +302,8 @@ class ContactsController extends Notifier<CrmListState<Contact>> {
     return result;
   }
 
-  Future<Result<Contact>> save(Map<String, dynamic> payload, {String? id}) async {
+  Future<Result<Contact>> save(Map<String, dynamic> payload,
+      {String? id}) async {
     final Result<Contact> result =
         await SaveContactUseCase(ref.read(crmRepositoryProvider))(
       SaveCustomerParams(id: id, payload: payload),
@@ -318,8 +325,7 @@ final FutureProviderFamily<Contact, String> contactDetailProvider =
 
 // ── Leads ──────────────────────────────────────────────────────────────────
 
-final NotifierProvider<LeadsController, CrmListState<Lead>>
-    leadsProvider =
+final NotifierProvider<LeadsController, CrmListState<Lead>> leadsProvider =
     NotifierProvider<LeadsController, CrmListState<Lead>>(
   LeadsController.new,
 );
@@ -346,7 +352,9 @@ class LeadsController extends Notifier<CrmListState<Lead>> {
 
     state = result.fold(
       (Failure failure) => state.copyWith(
-        isLoading: false, failure: failure, items: const <Lead>[],
+        isLoading: false,
+        failure: failure,
+        items: const <Lead>[],
       ),
       (Cacheable<Paginated<Lead>> page) => state.copyWith(
         items: page.value.data,
@@ -480,7 +488,9 @@ class ActivitiesController extends Notifier<CrmListState<Activity>> {
 
     state = result.fold(
       (Failure failure) => state.copyWith(
-        isLoading: false, failure: failure, items: const <Activity>[],
+        isLoading: false,
+        failure: failure,
+        items: const <Activity>[],
       ),
       (Paginated<Activity> page) => state.copyWith(
         items: page.data,
@@ -589,7 +599,9 @@ class EmailTemplatesController extends Notifier<CrmListState<EmailTemplate>> {
 
     state = result.fold(
       (Failure failure) => state.copyWith(
-        isLoading: false, failure: failure, items: const <EmailTemplate>[],
+        isLoading: false,
+        failure: failure,
+        items: const <EmailTemplate>[],
       ),
       (Paginated<EmailTemplate> page) => state.copyWith(
         items: page.data,
@@ -638,7 +650,8 @@ class EmailTemplatesController extends Notifier<CrmListState<EmailTemplate>> {
     refresh();
   }
 
-  Future<Result<EmailTemplate>> save(Map<String, dynamic> payload, {String? id}) async {
+  Future<Result<EmailTemplate>> save(Map<String, dynamic> payload,
+      {String? id}) async {
     final Result<EmailTemplate> result =
         await SaveEmailTemplateUseCase(ref.read(crmRepositoryProvider))(
       SaveCustomerParams(id: id, payload: payload),
@@ -692,7 +705,9 @@ class LeadSourcesController extends Notifier<CrmListState<LeadSource>> {
 
     state = result.fold(
       (Failure failure) => state.copyWith(
-        isLoading: false, failure: failure, items: const <LeadSource>[],
+        isLoading: false,
+        failure: failure,
+        items: const <LeadSource>[],
       ),
       (Paginated<LeadSource> page) => state.copyWith(
         items: page.data,

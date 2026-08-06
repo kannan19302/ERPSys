@@ -128,7 +128,11 @@ export default function ReportingCompliancePage() {
         </h3>
         {audits.length === 0 ? (
           <p
-            style={{ color: "#64748b", textAlign: "center", padding: "32px 0" }}
+            style={{
+              color: "var(--color-text-secondary)",
+              textAlign: "center",
+              padding: "32px 0",
+            }}
           >
             No pending compliance report sign-offs.
           </p>
@@ -171,7 +175,7 @@ export default function ReportingCompliancePage() {
                     ) : (
                       <span
                         style={{
-                          color: "#10b981",
+                          color: "var(--chart-9)",
                           fontSize: "13px",
                           display: "flex",
                           alignItems: "center",

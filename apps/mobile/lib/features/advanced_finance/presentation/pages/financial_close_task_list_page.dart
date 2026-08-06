@@ -9,10 +9,12 @@ class FinancialCloseTaskListPage extends ConsumerStatefulWidget {
   static const String routeName = 'financial-close-tasks';
   static const String routePath = '/advanced-finance/close-tasks';
   @override
-  ConsumerState<FinancialCloseTaskListPage> createState() => _FinancialCloseTaskListPageState();
+  ConsumerState<FinancialCloseTaskListPage> createState() =>
+      _FinancialCloseTaskListPageState();
 }
 
-class _FinancialCloseTaskListPageState extends ConsumerState<FinancialCloseTaskListPage> {
+class _FinancialCloseTaskListPageState
+    extends ConsumerState<FinancialCloseTaskListPage> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(multiCurrencyRateListControllerProvider);
@@ -24,7 +26,9 @@ class _FinancialCloseTaskListPageState extends ConsumerState<FinancialCloseTaskL
       ),
       body: state.isLoading && state.items.isEmpty
           ? const LoadingView()
-          : Center(child: Text('Close tasks module', style: TextStyle(color: t.textSecondary))),
+          : Center(
+              child: Text('Close tasks module',
+                  style: TextStyle(color: t.textSecondary))),
     );
   }
 }

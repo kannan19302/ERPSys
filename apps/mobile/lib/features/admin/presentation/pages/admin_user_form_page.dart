@@ -38,7 +38,8 @@ class _AdminUserFormPageState extends ConsumerState<AdminUserFormPage> {
 
   Future<void> _loadUser() async {
     final AdminUserListState state = ref.read(adminUserListControllerProvider);
-    final AdminUser? user = state.items.where((AdminUser u) => u.id == widget.userId).firstOrNull;
+    final AdminUser? user =
+        state.items.where((AdminUser u) => u.id == widget.userId).firstOrNull;
     if (user != null) {
       _firstNameCtrl.text = user.firstName;
       _lastNameCtrl.text = user.lastName;
@@ -86,7 +87,8 @@ class _AdminUserFormPageState extends ConsumerState<AdminUserFormPage> {
 
   @override
   Widget build(BuildContext context) {
-    final AdminRoleListState roleState = ref.watch(adminRoleListControllerProvider);
+    final AdminRoleListState roleState =
+        ref.watch(adminRoleListControllerProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -95,7 +97,10 @@ class _AdminUserFormPageState extends ConsumerState<AdminUserFormPage> {
           TextButton(
             onPressed: _saving ? null : _save,
             child: _saving
-                ? const SizedBox(height: Spacing.x5, width: Spacing.x5, child: CircularProgressIndicator(strokeWidth: 2))
+                ? const SizedBox(
+                    height: Spacing.x5,
+                    width: Spacing.x5,
+                    child: CircularProgressIndicator(strokeWidth: 2))
                 : const Text('Save'),
           ),
         ],
@@ -109,14 +114,16 @@ class _AdminUserFormPageState extends ConsumerState<AdminUserFormPage> {
               controller: _firstNameCtrl,
               textCapitalization: TextCapitalization.words,
               decoration: const InputDecoration(labelText: 'First Name *'),
-              validator: (String? v) => v == null || v.trim().isEmpty ? 'Required' : null,
+              validator: (String? v) =>
+                  v == null || v.trim().isEmpty ? 'Required' : null,
             ),
             const SizedBox(height: Spacing.x4),
             TextFormField(
               controller: _lastNameCtrl,
               textCapitalization: TextCapitalization.words,
               decoration: const InputDecoration(labelText: 'Last Name *'),
-              validator: (String? v) => v == null || v.trim().isEmpty ? 'Required' : null,
+              validator: (String? v) =>
+                  v == null || v.trim().isEmpty ? 'Required' : null,
             ),
             const SizedBox(height: Spacing.x4),
             TextFormField(
@@ -139,9 +146,12 @@ class _AdminUserFormPageState extends ConsumerState<AdminUserFormPage> {
             DropdownButtonFormField<String>(
               initialValue: _selectedRole,
               decoration: const InputDecoration(labelText: 'Role'),
-              items: roleState.items.map((AdminRole r) =>
-                DropdownMenuItem<String>(value: r.name, child: Text(r.name)),
-              ).toList(growable: false),
+              items: roleState.items
+                  .map(
+                    (AdminRole r) => DropdownMenuItem<String>(
+                        value: r.name, child: Text(r.name)),
+                  )
+                  .toList(growable: false),
               onChanged: (String? v) => setState(() => _selectedRole = v),
             ),
             const SizedBox(height: Spacing.x4),
@@ -149,11 +159,16 @@ class _AdminUserFormPageState extends ConsumerState<AdminUserFormPage> {
               initialValue: _status,
               decoration: const InputDecoration(labelText: 'Status'),
               items: const <DropdownMenuItem<String>>[
-                DropdownMenuItem<String>(value: 'ACTIVE', child: Text('Active')),
-                DropdownMenuItem<String>(value: 'INACTIVE', child: Text('Inactive')),
-                DropdownMenuItem<String>(value: 'SUSPENDED', child: Text('Suspended')),
+                DropdownMenuItem<String>(
+                    value: 'ACTIVE', child: Text('Active')),
+                DropdownMenuItem<String>(
+                    value: 'INACTIVE', child: Text('Inactive')),
+                DropdownMenuItem<String>(
+                    value: 'SUSPENDED', child: Text('Suspended')),
               ],
-              onChanged: (String? v) { if (v != null) setState(() => _status = v); },
+              onChanged: (String? v) {
+                if (v != null) setState(() => _status = v);
+              },
             ),
           ],
         ),

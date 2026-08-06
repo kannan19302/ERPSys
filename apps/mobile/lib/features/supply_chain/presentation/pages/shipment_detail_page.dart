@@ -27,7 +27,9 @@ class ShipmentDetailPage extends ConsumerWidget {
       body: shipmentAsync.when(
         loading: () => const LoadingView(),
         error: (Object error, StackTrace _) => FailureView(
-          failure: error is Failure ? error : const ServerFailure('Could not load shipment.'),
+          failure: error is Failure
+              ? error
+              : const ServerFailure('Could not load shipment.'),
           onRetry: () => ref.invalidate(shipmentDetailProvider(shipmentId)),
         ),
         data: (Shipment shipment) => _ShipmentDetail(shipment: shipment),
@@ -67,7 +69,8 @@ class _ShipmentDetail extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: Spacing.x1),
-              Text(shipment.carrierName, style: TextStyle(color: t.textSecondary)),
+              Text(shipment.carrierName,
+                  style: TextStyle(color: t.textSecondary)),
             ],
           ),
         ),

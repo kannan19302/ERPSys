@@ -12,9 +12,12 @@ class SaasPortalPlanDetailPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       appBar: AppBar(title: const Text('Plan Details')),
-      body: ListView(padding: const EdgeInsets.all(Spacing.x4), children: const [
-        Text('Portal plan details'),
-      ],),
+      body: ListView(
+        padding: const EdgeInsets.all(Spacing.x4),
+        children: const [
+          Text('Portal plan details'),
+        ],
+      ),
     );
   }
 }

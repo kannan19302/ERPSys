@@ -23,7 +23,9 @@ class ProjectBudgetDetailPage extends ConsumerWidget {
       body: budgetAsync.when(
         loading: () => const LoadingView(),
         error: (error, _) => FailureView(
-          failure: error is Failure ? error : const ServerFailure('Could not load budget.'),
+          failure: error is Failure
+              ? error
+              : const ServerFailure('Could not load budget.'),
           onRetry: () => ref.invalidate(projectBudgetDetailProvider(budgetId)),
         ),
         data: (b) => _BudgetDetail(budget: b),
@@ -47,48 +49,63 @@ class _BudgetDetail extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.all(Spacing.x4),
       children: [
-        UiCard(child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(budget.category, style: Theme.of(context).textTheme.titleLarge),
-          ],
-        ),),
+        UiCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(budget.category,
+                  style: Theme.of(context).textTheme.titleLarge),
+            ],
+          ),
+        ),
         const SizedBox(height: Spacing.x4),
-        UiCard(child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const UiSectionHeader(title: 'Amounts'),
-            _Row('Budgeted', Formatters.currency(budget.budgetedAmount)),
-            _Row('Spent', Formatters.currency(budget.spentAmount)),
-            const Divider(height: Spacing.x4),
-            _Row('Remaining', Formatters.currency(budget.remainingAmount)),
-            if (overBudget)
-              Padding(
-                padding: const EdgeInsets.only(top: Spacing.x1),
-                child: Text('Over budget!', style: TextStyle(color: t.danger, fontWeight: TypeScale.semibold)),
-              ),
-          ],
-        ),),
+        UiCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const UiSectionHeader(title: 'Amounts'),
+              _Row('Budgeted', Formatters.currency(budget.budgetedAmount)),
+              _Row('Spent', Formatters.currency(budget.spentAmount)),
+              const Divider(height: Spacing.x4),
+              _Row('Remaining', Formatters.currency(budget.remainingAmount)),
+              if (overBudget)
+                Padding(
+                  padding: const EdgeInsets.only(top: Spacing.x1),
+                  child: Text('Over budget!',
+                      style: TextStyle(
+                          color: t.danger, fontWeight: TypeScale.semibold)),
+                ),
+            ],
+          ),
+        ),
         const SizedBox(height: Spacing.x4),
-        UiCard(child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const UiSectionHeader(title: 'Utilization'),
-            const SizedBox(height: Spacing.x1),
-            ClipRRect(
-              borderRadius: Radii.pill,
-              child: LinearProgressIndicator(
-                value: (spentPct / 100).clamp(0, 1),
-                minHeight: 8,
-                backgroundColor: t.bgSunken,
-                color: spentPct > 90 ? t.danger : spentPct > 75 ? t.warning : t.primary,
+        UiCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const UiSectionHeader(title: 'Utilization'),
+              const SizedBox(height: Spacing.x1),
+              ClipRRect(
+                borderRadius: Radii.pill,
+                child: LinearProgressIndicator(
+                  value: (spentPct / 100).clamp(0, 1),
+                  minHeight: 8,
+                  backgroundColor: t.bgSunken,
+                  color: spentPct > 90
+                      ? t.danger
+                      : spentPct > 75
+                          ? t.warning
+                          : t.primary,
+                ),
               ),
-            ),
-            const SizedBox(height: Spacing.x1),
-            Text('${spentPct.toStringAsFixed(1)}% of budget used',
-                style: TextStyle(color: t.textSecondary),),
-          ],
-        ),),
+              const SizedBox(height: Spacing.x1),
+              Text(
+                '${spentPct.toStringAsFixed(1)}% of budget used',
+                style: TextStyle(color: t.textSecondary),
+              ),
+            ],
+          ),
+        ),
       ],
     );
   }
@@ -103,10 +120,13 @@ class _Row extends StatelessWidget {
     final t = context.tokens;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: Spacing.x1_5),
-      child: Row(children: [
-        Expanded(child: Text(label, style: TextStyle(color: t.textSecondary))),
-        Text(value, style: Theme.of(context).textTheme.labelLarge),
-      ],),
+      child: Row(
+        children: [
+          Expanded(
+              child: Text(label, style: TextStyle(color: t.textSecondary))),
+          Text(value, style: Theme.of(context).textTheme.labelLarge),
+        ],
+      ),
     );
   }
 }

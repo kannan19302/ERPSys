@@ -43,6 +43,12 @@ import { AdvancedHrWorkforceDeepController } from "./advanced-hr-workforce-deep.
     AdvancedHrBenefitsAdminDeepService,
     AdvancedHrOrgChartDeepService,
     AdvancedHrExitInterviewDeepService,
+    // Was exported without ever being provided, so Nest refused to build the
+    // container: "cannot export a provider that is not part of the currently
+    // processed module". The API could not start at all — invisible to the type
+    // checker, and to every unit test, because module wiring is only validated
+    // when the application actually boots.
+    AdvancedHrWorkforceDeepService,
   ],
   exports: [
     AdvancedHrService,

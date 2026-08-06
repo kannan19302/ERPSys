@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { PeopleCompetenciesService } from "./people-competencies.service";
 import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 
 vi.mock("@unerp/database", () => ({
   prisma: {

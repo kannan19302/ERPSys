@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 // ── Chat Rooms ──
 export const createChatRoomSchema = z.object({
@@ -34,7 +34,9 @@ export const createMessageReactionSchema = z.object({
   messageId: z.string().min(1),
   emoji: z.string().min(1),
 });
-export type CreateMessageReactionInput = z.infer<typeof createMessageReactionSchema>;
+export type CreateMessageReactionInput = z.infer<
+  typeof createMessageReactionSchema
+>;
 
 // ── Typing Indicator ──
 export const typingIndicatorSchema = z.object({
@@ -48,7 +50,9 @@ export const createVideoCallRoomSchema = z.object({
   type: z.string().optional(),
   settings: z.record(z.unknown()).optional(),
 });
-export type CreateVideoCallRoomInput = z.infer<typeof createVideoCallRoomSchema>;
+export type CreateVideoCallRoomInput = z.infer<
+  typeof createVideoCallRoomSchema
+>;
 
 // ── File Shares ──
 export const createFileShareSchema = z.object({
@@ -66,10 +70,14 @@ export const createAnnouncementSchema = z.object({
   content: z.string().min(1),
   priority: z.string().optional(),
   scheduledAt: z.string().datetime().optional(),
-  targets: z.array(z.object({
-    targetType: z.string(),
-    targetId: z.string().optional(),
-  })).optional(),
+  targets: z
+    .array(
+      z.object({
+        targetType: z.string(),
+        targetId: z.string().optional(),
+      }),
+    )
+    .optional(),
 });
 export type CreateAnnouncementInput = z.infer<typeof createAnnouncementSchema>;
 

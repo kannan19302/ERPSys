@@ -23,8 +23,11 @@ class PurchaseRequisitionDetailPage extends ConsumerWidget {
       body: async.when(
         loading: () => const LoadingView(),
         error: (error, _) => FailureView(
-          failure: error is Failure ? error : const ServerFailure('Could not load requisition.'),
-          onRetry: () => ref.invalidate(purchaseRequisitionDetailProvider(requisitionId)),
+          failure: error is Failure
+              ? error
+              : const ServerFailure('Could not load requisition.'),
+          onRetry: () =>
+              ref.invalidate(purchaseRequisitionDetailProvider(requisitionId)),
         ),
         data: (r) => _PurchaseRequisitionDetail(requisition: r),
       ),
@@ -42,68 +45,102 @@ class _PurchaseRequisitionDetail extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.all(Spacing.x4),
       children: [
-        UiCard(child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(children: [
-              Expanded(child: Text(requisition.title, style: Theme.of(context).textTheme.titleLarge)),
-              UiStatusBadge(label: requisition.status, tone: _statusTone(requisition.status)),
-            ],),
-            const SizedBox(height: Spacing.x1),
-            Text('${requisition.department ?? 'No department'} \u00b7 ${requisition.requestedBy ?? 'Unknown'}',
-                style: TextStyle(color: t.textSecondary),),
-          ],
-        ),),
+        UiCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                      child: Text(requisition.title,
+                          style: Theme.of(context).textTheme.titleLarge)),
+                  UiStatusBadge(
+                      label: requisition.status,
+                      tone: _statusTone(requisition.status)),
+                ],
+              ),
+              const SizedBox(height: Spacing.x1),
+              Text(
+                '${requisition.department ?? 'No department'} \u00b7 ${requisition.requestedBy ?? 'Unknown'}',
+                style: TextStyle(color: t.textSecondary),
+              ),
+            ],
+          ),
+        ),
         const SizedBox(height: Spacing.x4),
-        UiCard(child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const UiSectionHeader(title: 'Items'),
-            ...requisition.items.map((item) => Padding(
-              padding: const EdgeInsets.symmetric(vertical: Spacing.x1),
-              child: Row(children: [
-                Expanded(child: Text(item.productName ?? 'Item')),
-                Text('${item.quantity.toStringAsFixed(0)} \u00d7 \$${item.estimatedRate.toStringAsFixed(2)}'),
-              ],),
-            ),),
-            if (requisition.items.isEmpty) Text('No items', style: TextStyle(color: t.textTertiary)),
-            const Divider(height: Spacing.x4),
-            _Row('Total Estimated', Formatters.currency(requisition.totalEstimated)),
-          ],
-        ),),
+        UiCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const UiSectionHeader(title: 'Items'),
+              ...requisition.items.map(
+                (item) => Padding(
+                  padding: const EdgeInsets.symmetric(vertical: Spacing.x1),
+                  child: Row(
+                    children: [
+                      Expanded(child: Text(item.productName ?? 'Item')),
+                      Text(
+                          '${item.quantity.toStringAsFixed(0)} \u00d7 \$${item.estimatedRate.toStringAsFixed(2)}'),
+                    ],
+                  ),
+                ),
+              ),
+              if (requisition.items.isEmpty)
+                Text('No items', style: TextStyle(color: t.textTertiary)),
+              const Divider(height: Spacing.x4),
+              _Row('Total Estimated',
+                  Formatters.currency(requisition.totalEstimated)),
+            ],
+          ),
+        ),
         const SizedBox(height: Spacing.x4),
-        UiCard(child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const UiSectionHeader(title: 'Details'),
-            _Row('Priority', requisition.priority),
-            if (requisition.requisitionNumber != null) _Row('Number', requisition.requisitionNumber!),
-            if (requisition.requiredDate != null) _Row('Required Date', Formatters.date(requisition.requiredDate!)),
-            if (requisition.notes != null && requisition.notes!.isNotEmpty) _Row('Notes', requisition.notes!),
-            if (requisition.createdAt != null) _Row('Created', Formatters.dateTime(requisition.createdAt!)),
-          ],
-        ),),
+        UiCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const UiSectionHeader(title: 'Details'),
+              _Row('Priority', requisition.priority),
+              if (requisition.requisitionNumber != null)
+                _Row('Number', requisition.requisitionNumber!),
+              if (requisition.requiredDate != null)
+                _Row('Required Date',
+                    Formatters.date(requisition.requiredDate!)),
+              if (requisition.notes != null && requisition.notes!.isNotEmpty)
+                _Row('Notes', requisition.notes!),
+              if (requisition.createdAt != null)
+                _Row('Created', Formatters.dateTime(requisition.createdAt!)),
+            ],
+          ),
+        ),
       ],
     );
   }
 
   UiTone _statusTone(String s) => switch (s) {
-        'DRAFT' => UiTone.neutral, 'SUBMITTED' => UiTone.info,
-        'APPROVED' => UiTone.success, 'REJECTED' => UiTone.danger, _ => UiTone.neutral,
+        'DRAFT' => UiTone.neutral,
+        'SUBMITTED' => UiTone.info,
+        'APPROVED' => UiTone.success,
+        'REJECTED' => UiTone.danger,
+        _ => UiTone.neutral,
       };
 }
 
 class _Row extends StatelessWidget {
   const _Row(this.label, this.value);
-  final String label; final String value;
+  final String label;
+  final String value;
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: Spacing.x1_5),
-      child: Row(children: [
-        Expanded(child: Text(label, style: TextStyle(color: context.tokens.textSecondary))),
-        Text(value, style: Theme.of(context).textTheme.labelLarge),
-      ],),
+      child: Row(
+        children: [
+          Expanded(
+              child: Text(label,
+                  style: TextStyle(color: context.tokens.textSecondary))),
+          Text(value, style: Theme.of(context).textTheme.labelLarge),
+        ],
+      ),
     );
   }
 }

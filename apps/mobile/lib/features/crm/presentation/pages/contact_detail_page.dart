@@ -51,7 +51,9 @@ class ContactDetailPage extends ConsumerWidget {
       body: contactAsync.when(
         loading: () => const LoadingView(),
         error: (Object error, StackTrace _) => FailureView(
-          failure: error is Failure ? error : const ServerFailure('Could not load contact.'),
+          failure: error is Failure
+              ? error
+              : const ServerFailure('Could not load contact.'),
           onRetry: () => ref.invalidate(contactDetailProvider(contactId)),
         ),
         data: (Contact contact) => _ContactDetail(contact: contact),
@@ -79,9 +81,7 @@ class ContactDetailPage extends ConsumerWidget {
     );
     if (confirmed != true || !context.mounted) return;
 
-    final result = await ref
-        .read(contactsProvider.notifier)
-        .delete(contactId);
+    final result = await ref.read(contactsProvider.notifier).delete(contactId);
 
     if (!context.mounted) return;
     result.fold(
@@ -116,7 +116,8 @@ class _ContactDetail extends StatelessWidget {
                   CircleAvatar(
                     radius: Spacing.x6,
                     backgroundColor: t.primaryLight,
-                    child: Icon(Icons.person_outline, color: t.primary, size: TypeScale.x2l),
+                    child: Icon(Icons.person_outline,
+                        color: t.primary, size: TypeScale.x2l),
                   ),
                   const SizedBox(width: Spacing.x4),
                   Expanded(

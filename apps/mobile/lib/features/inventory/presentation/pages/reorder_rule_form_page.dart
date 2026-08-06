@@ -175,9 +175,9 @@ class _ReorderRuleFormPageState extends ConsumerState<ReorderRuleFormPage> {
       (_) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(_isEditing
-                ? 'Reorder rule updated'
-                : 'Reorder rule created',),
+            content: Text(
+              _isEditing ? 'Reorder rule updated' : 'Reorder rule created',
+            ),
           ),
         );
         Navigator.of(context).pop();

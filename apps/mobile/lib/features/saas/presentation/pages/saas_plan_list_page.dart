@@ -35,7 +35,8 @@ class _SaasPlanListPageState extends ConsumerState<SaasPlanListPage> {
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
+            padding: const EdgeInsets.fromLTRB(
+                Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
             child: TextField(
               controller: _search,
               onChanged: controller.search,
@@ -47,21 +48,27 @@ class _SaasPlanListPageState extends ConsumerState<SaasPlanListPage> {
                     ? null
                     : IconButton(
                         icon: const Icon(Icons.close),
-                        onPressed: () { _search.clear(); controller.search(''); },
+                        onPressed: () {
+                          _search.clear();
+                          controller.search('');
+                        },
                       ),
               ),
             ),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: Spacing.x4),
-            child: Row(children: [
-              Text(
-                state.isLoading
-                    ? 'Loading...'
-                    : '${state.meta.total} plan${state.meta.total == 1 ? '' : 's'}',
-                style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
-              ),
-            ],),
+            child: Row(
+              children: [
+                Text(
+                  state.isLoading
+                      ? 'Loading...'
+                      : '${state.meta.total} plan${state.meta.total == 1 ? '' : 's'}',
+                  style:
+                      TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
+                ),
+              ],
+            ),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -92,23 +99,32 @@ class _SaasPlanListPageState extends ConsumerState<SaasPlanListPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(children: [
-                Expanded(
-                  child: Text(plan.name,
-                      style: Theme.of(context).textTheme.titleSmall,),
-                ),
-                UiStatusBadge(
-                  label: plan.isActive ? 'ACTIVE' : 'INACTIVE',
-                  tone: plan.isActive ? UiTone.success : UiTone.neutral,
-                ),
-              ],),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      plan.name,
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
+                  ),
+                  UiStatusBadge(
+                    label: plan.isActive ? 'ACTIVE' : 'INACTIVE',
+                    tone: plan.isActive ? UiTone.success : UiTone.neutral,
+                  ),
+                ],
+              ),
               const SizedBox(height: Spacing.x1),
-              Text('\$${plan.price.toStringAsFixed(2)} / ${plan.billingInterval}',
-                  style: TextStyle(color: palette.textSecondary),),
+              Text(
+                '\$${plan.price.toStringAsFixed(2)} / ${plan.billingInterval}',
+                style: TextStyle(color: palette.textSecondary),
+              ),
               if (plan.maxUsers != null) ...[
                 const SizedBox(height: Spacing.x1),
-                Text('Max ${plan.maxUsers} users',
-                    style: TextStyle(fontSize: TypeScale.xs, color: palette.textTertiary),),
+                Text(
+                  'Max ${plan.maxUsers} users',
+                  style: TextStyle(
+                      fontSize: TypeScale.xs, color: palette.textTertiary),
+                ),
               ],
             ],
           ),

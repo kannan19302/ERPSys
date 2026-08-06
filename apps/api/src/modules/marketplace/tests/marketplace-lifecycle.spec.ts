@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { promises as fs } from "fs";
 import { prisma, runWithTenantSession } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 import { BundleStoreService } from "../bundle-store.service";
 import { AppProvisioningService } from "../app-provisioning.service";
 import { VendorService } from "../vendor.service";

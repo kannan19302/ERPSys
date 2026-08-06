@@ -11,15 +11,17 @@ class Cacheable<T> {
 
 abstract class SaasPortalRepository {
   Future<Result<PortalBillingInfo>> getBillingInfo();
-  Future<Result<PortalBillingInfo>> updateBillingInfo(Map<String, dynamic> payload);
+  Future<Result<PortalBillingInfo>> updateBillingInfo(
+      Map<String, dynamic> payload);
 
   Future<Result<Cacheable<Paginated<PortalPlan>>>> listPlans(ListQuery query);
 
-  Future<Result<Cacheable<Paginated<PortalSupportTicket>>>> listSupportTickets(ListQuery query);
+  Future<Result<Cacheable<Paginated<PortalSupportTicket>>>> listSupportTickets(
+      ListQuery query);
   Future<Result<PortalSupportTicket>> getSupportTicket(String id);
-  Future<Result<PortalSupportTicket>> createSupportTicket(Map<String, dynamic> payload);
+  Future<Result<PortalSupportTicket>> createSupportTicket(
+      Map<String, dynamic> payload);
 
-
-  Future<Result<PortalSupportTicket>> updateSupportTicket(String id, Map<String, dynamic> payload);
-
+  Future<Result<PortalSupportTicket>> updateSupportTicket(
+      String id, Map<String, dynamic> payload);
 }

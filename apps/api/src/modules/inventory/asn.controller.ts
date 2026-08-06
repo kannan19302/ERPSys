@@ -12,16 +12,19 @@ import {
 import { AsnService } from "./asn.service";
 import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard";
 import { AsnDiscrepancyType } from "@prisma/client";
+import { Permissions } from "../../common/decorators/permissions.decorator";
+import { RbacGuard } from "../../common/guards/rbac.guard";
 
 interface AuthRequest {
   user: { tenantId: string; userId: string };
 }
 
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RbacGuard)
 @Controller("inventory/asn")
 export class AsnController {
   constructor(private readonly svc: AsnService) {}
 
+  @Permissions("inventory.asn.create")
   @Post()
   createAsn(
     @Request() req: AuthRequest,
@@ -46,6 +49,7 @@ export class AsnController {
     });
   }
 
+  @Permissions("inventory.line-item.create")
   @Post(":id/items")
   addLineItem(
     @Request() req: AuthRequest,
@@ -63,6 +67,7 @@ export class AsnController {
     return this.svc.addLineItem(req.user.tenantId, id, body);
   }
 
+  @Permissions("inventory.in-transit.mark")
   @Patch(":id/in-transit")
   markInTransit(
     @Request() req: AuthRequest,
@@ -72,11 +77,13 @@ export class AsnController {
     return this.svc.markInTransit(req.user.tenantId, id, trackingNumber);
   }
 
+  @Permissions("inventory.arrived.mark")
   @Patch(":id/arrived")
   markArrived(@Request() req: AuthRequest, @Param("id") id: string) {
     return this.svc.markArrived(req.user.tenantId, id);
   }
 
+  @Permissions("inventory.line-item.receive")
   @Patch(":id/items/:itemId/receive")
   receiveLineItem(
     @Request() req: AuthRequest,
@@ -93,11 +100,13 @@ export class AsnController {
     );
   }
 
+  @Permissions("inventory.receiving.finalize")
   @Patch(":id/finalize")
   finalizeReceiving(@Request() req: AuthRequest, @Param("id") id: string) {
     return this.svc.finalizeReceiving(req.user.tenantId, id);
   }
 
+  @Permissions("inventory.asn.cancel")
   @Patch(":id/cancel")
   cancelAsn(@Request() req: AuthRequest, @Param("id") id: string) {
     return this.svc.cancelAsn(req.user.tenantId, id);
@@ -125,6 +134,7 @@ export class AsnController {
     );
   }
 
+  @Permissions("inventory.discrepancy.resolve")
   @Patch("discrepancies/:discrepancyId/resolve")
   resolveDiscrepancy(
     @Request() req: AuthRequest,
@@ -139,6 +149,7 @@ export class AsnController {
     );
   }
 
+  @Permissions("inventory.discrepancy.read")
   @Get("discrepancies")
   listDiscrepancies(
     @Request() req: AuthRequest,
@@ -152,11 +163,13 @@ export class AsnController {
     );
   }
 
+  @Permissions("inventory.dashboard.read")
   @Get("dashboard")
   getDashboard(@Request() req: AuthRequest) {
     return this.svc.getDashboard(req.user.tenantId);
   }
 
+  @Permissions("inventory.asn.read")
   @Get()
   listAsns(
     @Request() req: AuthRequest,
@@ -166,6 +179,7 @@ export class AsnController {
     return this.svc.listAsns(req.user.tenantId, status, vendorId);
   }
 
+  @Permissions("inventory.asn.read")
   @Get(":id")
   getAsn(@Request() req: AuthRequest, @Param("id") id: string) {
     return this.svc.getAsn(req.user.tenantId, id);

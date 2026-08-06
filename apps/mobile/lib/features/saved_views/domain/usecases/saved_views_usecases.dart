@@ -4,7 +4,8 @@ import '../../../../core/usecase/usecase.dart';
 import '../entities/saved_views.dart';
 import '../repositories/saved_views_repository.dart';
 
-class ListSavedViewsUseCase extends UseCase<Cacheable<Paginated<SavedView>>, ListQuery> {
+class ListSavedViewsUseCase
+    extends UseCase<Cacheable<Paginated<SavedView>>, ListQuery> {
   const ListSavedViewsUseCase(this._repository);
   final SavedViewsRepository _repository;
   @override
@@ -44,7 +45,8 @@ class DeleteSavedViewUseCase extends UseCase<void, String> {
   Future<Result<void>> call(String id) => _repository.deleteSavedView(id);
 }
 
-class ListSavedViewSharesUseCase extends UseCase<Cacheable<Paginated<SavedViewShare>>, ListQuery> {
+class ListSavedViewSharesUseCase
+    extends UseCase<Cacheable<Paginated<SavedViewShare>>, ListQuery> {
   const ListSavedViewSharesUseCase(this._repository);
   final SavedViewsRepository _repository;
   @override
@@ -52,7 +54,8 @@ class ListSavedViewSharesUseCase extends UseCase<Cacheable<Paginated<SavedViewSh
       _repository.listShares(params);
 }
 
-class CreateSavedViewShareUseCase extends UseCase<SavedViewShare, Map<String, dynamic>> {
+class CreateSavedViewShareUseCase
+    extends UseCase<SavedViewShare, Map<String, dynamic>> {
   const CreateSavedViewShareUseCase(this._repository);
   final SavedViewsRepository _repository;
   @override

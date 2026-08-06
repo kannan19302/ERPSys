@@ -44,4 +44,6 @@
 .style6 {
   color: var(--color-text);
 }
-.s1 { opacity: 0.4; }
+.s1 {
+  opacity: 0.4;
+}

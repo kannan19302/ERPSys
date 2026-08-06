@@ -27,7 +27,8 @@ class SecureSessionStore {
 
   final FlutterSecureStorage _storage;
 
-  Future<String?> readAccessToken() => _guard(() => _storage.read(key: _kAccessToken));
+  Future<String?> readAccessToken() =>
+      _guard(() => _storage.read(key: _kAccessToken));
 
   Future<void> writeAccessToken(String token) =>
       _guard(() => _storage.write(key: _kAccessToken, value: token));
@@ -38,7 +39,8 @@ class SecureSessionStore {
 
   Future<Map<String, dynamic>?> readTenant() async => _readJson(_kTenant);
 
-  Future<void> writeTenant(Map<String, dynamic> tenant) => _writeJson(_kTenant, tenant);
+  Future<void> writeTenant(Map<String, dynamic> tenant) =>
+      _writeJson(_kTenant, tenant);
 
   Future<List<String>> readPermissions() async {
     final String? raw = await _guard(() => _storage.read(key: _kPermissions));
@@ -48,8 +50,8 @@ class SecureSessionStore {
     return decoded.map((Object? e) => '$e').toList(growable: false);
   }
 
-  Future<void> writePermissions(List<String> permissions) =>
-      _guard(() => _storage.write(key: _kPermissions, value: jsonEncode(permissions)));
+  Future<void> writePermissions(List<String> permissions) => _guard(
+      () => _storage.write(key: _kPermissions, value: jsonEncode(permissions)));
 
   Future<bool> readBiometricEnabled() async =>
       await _guard(() => _storage.read(key: _kBiometricEnabled)) == 'true';

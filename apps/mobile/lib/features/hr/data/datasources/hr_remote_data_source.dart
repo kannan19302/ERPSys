@@ -280,7 +280,8 @@ class HrRemoteDataSourceImpl implements HrRemoteDataSource {
   // ── Payroll ──
 
   @override
-  Future<PayrollRunModel> createPayrollRun(Map<String, dynamic> payload) async =>
+  Future<PayrollRunModel> createPayrollRun(
+          Map<String, dynamic> payload) async =>
       PayrollRunModel.fromJson(
         await _client.post(ApiPaths.payrollRun, body: payload),
       );

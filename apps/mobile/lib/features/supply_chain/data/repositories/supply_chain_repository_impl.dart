@@ -41,7 +41,8 @@ class SupplyChainRepositoryImpl implements SupplyChainRepository {
       final List<Map<String, dynamic>> jsonItems = page.data
           .map((dynamic e) => (e as dynamic).toJson() as Map<String, dynamic>)
           .toList(growable: false);
-      await _cache.write(_tenantId, namespace, query.cacheKey, <String, Object?>{
+      await _cache
+          .write(_tenantId, namespace, query.cacheKey, <String, Object?>{
         'data': jsonItems,
         'meta': page.meta.toJson(),
       });
@@ -49,9 +50,11 @@ class SupplyChainRepositoryImpl implements SupplyChainRepository {
         Cacheable<Paginated<T>>(value: page),
       );
     } on NetworkException catch (error) {
-      final cached = _cache.read<Map<String, dynamic>>(_tenantId, namespace, query.cacheKey);
+      final cached = _cache.read<Map<String, dynamic>>(
+          _tenantId, namespace, query.cacheKey);
       if (cached == null) {
-        return Result<Cacheable<Paginated<T>>>.err(mapExceptionToFailure(error));
+        return Result<Cacheable<Paginated<T>>>.err(
+            mapExceptionToFailure(error));
       }
       return Result<Cacheable<Paginated<T>>>.ok(
         Cacheable<Paginated<T>>(
@@ -93,9 +96,14 @@ class SupplyChainRepositoryImpl implements SupplyChainRepository {
   }
 
   @override
-  Future<Result<Cacheable<Paginated<Shipment>>>> listShipments(ListQuery query) =>
-      _paginated(_shipmentNamespace, query, () => _remote.listShipments(query),
-        ShipmentModel.fromJson,);
+  Future<Result<Cacheable<Paginated<Shipment>>>> listShipments(
+          ListQuery query) =>
+      _paginated(
+        _shipmentNamespace,
+        query,
+        () => _remote.listShipments(query),
+        ShipmentModel.fromJson,
+      );
 
   @override
   Future<Result<Shipment>> getShipment(String id) =>
@@ -123,8 +131,12 @@ class SupplyChainRepositoryImpl implements SupplyChainRepository {
 
   @override
   Future<Result<Cacheable<Paginated<Carrier>>>> listCarriers(ListQuery q) =>
-      _paginated(_carrierNamespace, q, () => _remote.listCarriers(q),
-        CarrierModel.fromJson,);
+      _paginated(
+        _carrierNamespace,
+        q,
+        () => _remote.listCarriers(q),
+        CarrierModel.fromJson,
+      );
 
   @override
   Future<Result<Carrier>> getCarrier(String id) =>
@@ -139,12 +151,18 @@ class SupplyChainRepositoryImpl implements SupplyChainRepository {
       _write(() => _remote.updateCarrier(id, p));
 
   @override
-  Future<Result<Cacheable<Paginated<DemandForecast>>>> listDemandForecasts(ListQuery q) =>
-      _paginated(_forecastNamespace, q, () => _remote.listDemandForecasts(q),
-        DemandForecastModel.fromJson,);
+  Future<Result<Cacheable<Paginated<DemandForecast>>>> listDemandForecasts(
+          ListQuery q) =>
+      _paginated(
+        _forecastNamespace,
+        q,
+        () => _remote.listDemandForecasts(q),
+        DemandForecastModel.fromJson,
+      );
 
   @override
-  Future<Result<DemandForecast>> generateDemandForecast(Map<String, dynamic> p) =>
+  Future<Result<DemandForecast>> generateDemandForecast(
+          Map<String, dynamic> p) =>
       _write(() => _remote.generateDemandForecast(p));
 
   @override
@@ -152,16 +170,21 @@ class SupplyChainRepositoryImpl implements SupplyChainRepository {
       _single(() => _remote.promoteDemandForecast(id));
 
   @override
-  Future<Result<Cacheable<Paginated<ReorderSuggestion>>>> listReorderSuggestions(ListQuery q) =>
-      _paginated(_reorderNamespace, q, () => _remote.listReorderSuggestions(q),
-        ReorderSuggestionModel.fromJson,);
+  Future<Result<Cacheable<Paginated<ReorderSuggestion>>>>
+      listReorderSuggestions(ListQuery q) => _paginated(
+            _reorderNamespace,
+            q,
+            () => _remote.listReorderSuggestions(q),
+            ReorderSuggestionModel.fromJson,
+          );
 
   @override
   Future<Result<ReorderSuggestion>> calculateReorder(Map<String, dynamic> p) =>
       _write(() => _remote.calculateReorder(p));
 
   @override
-  Future<Result<ReorderSuggestion>> generateReorderOrders(Map<String, dynamic> p) =>
+  Future<Result<ReorderSuggestion>> generateReorderOrders(
+          Map<String, dynamic> p) =>
       _write(() => _remote.generateReorderOrders(p));
 
   @override
@@ -169,20 +192,27 @@ class SupplyChainRepositoryImpl implements SupplyChainRepository {
       _single(() => _remote.approveReorderSuggestion(id));
 
   @override
-  Future<Result<Cacheable<Paginated<SupplyChainRoute>>>> listSupplyChainRoutes(ListQuery q) =>
-      _paginated(_routeNamespace, q, () => _remote.listSupplyChainRoutes(q),
-        SupplyChainRouteModel.fromJson,);
+  Future<Result<Cacheable<Paginated<SupplyChainRoute>>>> listSupplyChainRoutes(
+          ListQuery q) =>
+      _paginated(
+        _routeNamespace,
+        q,
+        () => _remote.listSupplyChainRoutes(q),
+        SupplyChainRouteModel.fromJson,
+      );
 
   @override
   Future<Result<SupplyChainRoute>> getSupplyChainRoute(String id) =>
       _single(() => _remote.getSupplyChainRoute(id));
 
   @override
-  Future<Result<SupplyChainRoute>> createSupplyChainRoute(Map<String, dynamic> p) =>
+  Future<Result<SupplyChainRoute>> createSupplyChainRoute(
+          Map<String, dynamic> p) =>
       _write(() => _remote.createSupplyChainRoute(p));
 
   @override
-  Future<Result<SupplyChainRoute>> updateSupplyChainRoute(String id, Map<String, dynamic> p) =>
+  Future<Result<SupplyChainRoute>> updateSupplyChainRoute(
+          String id, Map<String, dynamic> p) =>
       _write(() => _remote.updateSupplyChainRoute(id, p));
 
   @override
@@ -190,20 +220,27 @@ class SupplyChainRepositoryImpl implements SupplyChainRepository {
       _delete(() => _remote.deleteSupplyChainRoute(id));
 
   @override
-  Future<Result<Cacheable<Paginated<DockAppointment>>>> listDockAppointments(ListQuery q) =>
-      _paginated(_dockNamespace, q, () => _remote.listDockAppointments(q),
-        DockAppointmentModel.fromJson,);
+  Future<Result<Cacheable<Paginated<DockAppointment>>>> listDockAppointments(
+          ListQuery q) =>
+      _paginated(
+        _dockNamespace,
+        q,
+        () => _remote.listDockAppointments(q),
+        DockAppointmentModel.fromJson,
+      );
 
   @override
   Future<Result<DockAppointment>> getDockAppointment(String id) =>
       _single(() => _remote.getDockAppointment(id));
 
   @override
-  Future<Result<DockAppointment>> createDockAppointment(Map<String, dynamic> p) =>
+  Future<Result<DockAppointment>> createDockAppointment(
+          Map<String, dynamic> p) =>
       _write(() => _remote.createDockAppointment(p));
 
   @override
-  Future<Result<DockAppointment>> updateDockAppointment(String id, Map<String, dynamic> p) =>
+  Future<Result<DockAppointment>> updateDockAppointment(
+          String id, Map<String, dynamic> p) =>
       _write(() => _remote.updateDockAppointment(id, p));
 
   @override
@@ -219,20 +256,26 @@ class SupplyChainRepositoryImpl implements SupplyChainRepository {
       _single(() => _remote.completeDockAppointment(id));
 
   @override
-  Future<Result<Cacheable<Paginated<WarehouseTransfer>>>> listWarehouseTransfers(ListQuery q) =>
-      _paginated(_transferNamespace, q, () => _remote.listWarehouseTransfers(q),
-        WarehouseTransferModel.fromJson,);
+  Future<Result<Cacheable<Paginated<WarehouseTransfer>>>>
+      listWarehouseTransfers(ListQuery q) => _paginated(
+            _transferNamespace,
+            q,
+            () => _remote.listWarehouseTransfers(q),
+            WarehouseTransferModel.fromJson,
+          );
 
   @override
   Future<Result<WarehouseTransfer>> getWarehouseTransfer(String id) =>
       _single(() => _remote.getWarehouseTransfer(id));
 
   @override
-  Future<Result<WarehouseTransfer>> createWarehouseTransfer(Map<String, dynamic> p) =>
+  Future<Result<WarehouseTransfer>> createWarehouseTransfer(
+          Map<String, dynamic> p) =>
       _write(() => _remote.createWarehouseTransfer(p));
 
   @override
-  Future<Result<WarehouseTransfer>> updateWarehouseTransfer(String id, Map<String, dynamic> p) =>
+  Future<Result<WarehouseTransfer>> updateWarehouseTransfer(
+          String id, Map<String, dynamic> p) =>
       _write(() => _remote.updateWarehouseTransfer(id, p));
 
   @override
@@ -248,9 +291,14 @@ class SupplyChainRepositoryImpl implements SupplyChainRepository {
       _single(() => _remote.completeWarehouseTransfer(id));
 
   @override
-  Future<Result<Cacheable<Paginated<TrackingEvent>>>> listTrackingEvents(ListQuery q) =>
-      _paginated(_trackingNamespace, q, () => _remote.listTrackingEvents(q),
-        TrackingEventModel.fromJson,);
+  Future<Result<Cacheable<Paginated<TrackingEvent>>>> listTrackingEvents(
+          ListQuery q) =>
+      _paginated(
+        _trackingNamespace,
+        q,
+        () => _remote.listTrackingEvents(q),
+        TrackingEventModel.fromJson,
+      );
 
   @override
   Future<Result<TrackingEvent>> createTrackingEvent(Map<String, dynamic> p) =>

@@ -1,10 +1,14 @@
 import React from "react";
-import { prisma } from "@unerp/database";
+import { UniERPClient } from "@unerp/sdk";
 import { notFound } from "next/navigation";
 import { PublicPageRenderer } from "@/components/builder/PublicPageRenderer";
 import { SiteChatWidget } from "@/components/site/SiteChatWidget";
 
 export const dynamic = "force-dynamic";
+
+const sdk = new UniERPClient({
+  baseUrl: process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000",
+});
 
 /**
  * Resolves the active site + published page for a custom domain. Returns null
@@ -14,22 +18,9 @@ export const dynamic = "force-dynamic";
  */
 async function loadSitePage(cleanHost: string, reqPath: string) {
   try {
-    const domain = await prisma.webDomain.findUnique({
-      where: { host: cleanHost },
-      include: { site: true },
-    });
-    const site = domain?.site;
-    if (!site || site.status !== "ACTIVE") return null;
-
-    const page = await prisma.webSitePage.findFirst({
-      where: { siteId: site.id, path: reqPath, status: "PUBLISHED" },
-    });
-    if (!page) return null;
-
-    const chatbot = await prisma.webChatbot.findFirst({
-      where: { siteId: site.id, enabled: true },
-    });
-    return { site, page, chatbot };
+    const res = await sdk.public.getSitePage(cleanHost, reqPath);
+    if (!res.success || !res.data) return null;
+    return res.data;
   } catch (err) {
     console.error(
       "[public-site] lookup failed, serving 404 for",

@@ -12,10 +12,12 @@ class EcommerceProductListPage extends ConsumerStatefulWidget {
   static const String routeName = 'ecommerce-products';
   static const String routePath = '/ecommerce/products';
   @override
-  ConsumerState<EcommerceProductListPage> createState() => _EcommerceProductListPageState();
+  ConsumerState<EcommerceProductListPage> createState() =>
+      _EcommerceProductListPageState();
 }
 
-class _EcommerceProductListPageState extends ConsumerState<EcommerceProductListPage> {
+class _EcommerceProductListPageState
+    extends ConsumerState<EcommerceProductListPage> {
   final TextEditingController _search = TextEditingController();
 
   static const Map<String, String> _sortOptions = <String, String>{
@@ -35,7 +37,8 @@ class _EcommerceProductListPageState extends ConsumerState<EcommerceProductListP
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(ecommerceProductListControllerProvider);
-    final controller = ref.read(ecommerceProductListControllerProvider.notifier);
+    final controller =
+        ref.read(ecommerceProductListControllerProvider.notifier);
     final t = context.tokens;
 
     return Scaffold(
@@ -48,8 +51,12 @@ class _EcommerceProductListPageState extends ConsumerState<EcommerceProductListP
             initialValue: state.query.sort,
             onSelected: controller.applySort,
             itemBuilder: (_) => _sortOptions.entries
-                .map((e) => PopupMenuItem<String>(
-                    value: e.key, child: Text(e.value),),)
+                .map(
+                  (e) => PopupMenuItem<String>(
+                    value: e.key,
+                    child: Text(e.value),
+                  ),
+                )
                 .toList(),
           ),
         ],
@@ -57,7 +64,8 @@ class _EcommerceProductListPageState extends ConsumerState<EcommerceProductListP
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
+            padding: const EdgeInsets.fromLTRB(
+                Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
             child: TextField(
               controller: _search,
               onChanged: controller.search,
@@ -69,21 +77,27 @@ class _EcommerceProductListPageState extends ConsumerState<EcommerceProductListP
                     ? null
                     : IconButton(
                         icon: const Icon(Icons.close),
-                        onPressed: () { _search.clear(); controller.search(''); },
+                        onPressed: () {
+                          _search.clear();
+                          controller.search('');
+                        },
                       ),
               ),
             ),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: Spacing.x4),
-            child: Row(children: [
-              Text(
-                state.isLoading
-                    ? 'Loading...'
-                    : '${state.meta.total} product${state.meta.total == 1 ? '' : 's'}',
-                style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
-              ),
-            ],),
+            child: Row(
+              children: [
+                Text(
+                  state.isLoading
+                      ? 'Loading...'
+                      : '${state.meta.total} product${state.meta.total == 1 ? '' : 's'}',
+                  style:
+                      TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
+                ),
+              ],
+            ),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -91,7 +105,8 @@ class _EcommerceProductListPageState extends ConsumerState<EcommerceProductListP
     );
   }
 
-  Widget _body(EcommerceProductListState state, EcommerceProductListController controller) {
+  Widget _body(EcommerceProductListState state,
+      EcommerceProductListController controller) {
     if (state.isLoading && state.items.isEmpty) return const LoadingView();
     final failure = state.failure;
     if (failure != null && state.items.isEmpty) {
@@ -114,36 +129,56 @@ class _EcommerceProductListPageState extends ConsumerState<EcommerceProductListP
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(children: [
-                Expanded(
-                  child: Text(p.name,
-                      style: Theme.of(context).textTheme.titleSmall,),
-                ),
-                UiStatusBadge(
-                  label: p.status,
-                  tone: p.status == 'ACTIVE' ? UiTone.success : UiTone.neutral,
-                ),
-              ],),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      p.name,
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
+                  ),
+                  UiStatusBadge(
+                    label: p.status,
+                    tone:
+                        p.status == 'ACTIVE' ? UiTone.success : UiTone.neutral,
+                  ),
+                ],
+              ),
               const SizedBox(height: Spacing.x1),
               if (p.sku != null)
-                Text('SKU: ${p.sku}',
-                    style: TextStyle(color: palette.textSecondary, fontSize: TypeScale.xs),),
-              Row(children: [
-                Text('\$${p.price.toStringAsFixed(2)}',
-                    style: Theme.of(context).textTheme.labelLarge,),
-                if (p.comparePrice != null && p.comparePrice! > 0) ...[
-                  const SizedBox(width: Spacing.x2),
-                  Text('\$${p.comparePrice!.toStringAsFixed(2)}',
+                Text(
+                  'SKU: ${p.sku}',
+                  style: TextStyle(
+                      color: palette.textSecondary, fontSize: TypeScale.xs),
+                ),
+              Row(
+                children: [
+                  Text(
+                    '\$${p.price.toStringAsFixed(2)}',
+                    style: Theme.of(context).textTheme.labelLarge,
+                  ),
+                  if (p.comparePrice != null && p.comparePrice! > 0) ...[
+                    const SizedBox(width: Spacing.x2),
+                    Text(
+                      '\$${p.comparePrice!.toStringAsFixed(2)}',
                       style: TextStyle(
                         fontSize: TypeScale.xs,
                         color: palette.textSecondary,
                         decoration: TextDecoration.lineThrough,
-                      ),),
+                      ),
+                    ),
+                  ],
+                  const Spacer(),
+                  Text(
+                    '${p.inventory} in stock',
+                    style: TextStyle(
+                        fontSize: TypeScale.xs,
+                        color: p.inventory > 0
+                            ? palette.textSecondary
+                            : Colors.red),
+                  ),
                 ],
-                const Spacer(),
-                Text('${p.inventory} in stock',
-                    style: TextStyle(fontSize: TypeScale.xs, color: p.inventory > 0 ? palette.textSecondary : Colors.red),),
-              ],),
+              ),
             ],
           ),
         ),
@@ -157,10 +192,12 @@ class EcommerceOrderListPage extends ConsumerStatefulWidget {
   static const String routeName = 'ecommerce-orders';
   static const String routePath = '/ecommerce/orders';
   @override
-  ConsumerState<EcommerceOrderListPage> createState() => _EcommerceOrderListPageState();
+  ConsumerState<EcommerceOrderListPage> createState() =>
+      _EcommerceOrderListPageState();
 }
 
-class _EcommerceOrderListPageState extends ConsumerState<EcommerceOrderListPage> {
+class _EcommerceOrderListPageState
+    extends ConsumerState<EcommerceOrderListPage> {
   final TextEditingController _search = TextEditingController();
 
   @override
@@ -178,7 +215,8 @@ class _EcommerceOrderListPageState extends ConsumerState<EcommerceOrderListPage>
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
+            padding: const EdgeInsets.fromLTRB(
+                Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
             child: TextField(
               controller: _search,
               onChanged: controller.search,
@@ -190,7 +228,10 @@ class _EcommerceOrderListPageState extends ConsumerState<EcommerceOrderListPage>
                     ? null
                     : IconButton(
                         icon: const Icon(Icons.close),
-                        onPressed: () { _search.clear(); controller.search(''); },
+                        onPressed: () {
+                          _search.clear();
+                          controller.search('');
+                        },
                       ),
               ),
             ),
@@ -201,7 +242,8 @@ class _EcommerceOrderListPageState extends ConsumerState<EcommerceOrderListPage>
     );
   }
 
-  Widget _body(EcommerceOrderListState state, EcommerceOrderListController controller) {
+  Widget _body(
+      EcommerceOrderListState state, EcommerceOrderListController controller) {
     if (state.isLoading && state.items.isEmpty) return const LoadingView();
     final failure = state.failure;
     if (failure != null && state.items.isEmpty) {
@@ -224,21 +266,30 @@ class _EcommerceOrderListPageState extends ConsumerState<EcommerceOrderListPage>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(children: [
-                Expanded(
-                  child: Text(o.orderNumber,
-                      style: Theme.of(context).textTheme.titleSmall,),
-                ),
-                UiStatusBadge(label: o.status, tone: _orderStatusTone(o.status)),
-              ],),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      o.orderNumber,
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
+                  ),
+                  UiStatusBadge(
+                      label: o.status, tone: _orderStatusTone(o.status)),
+                ],
+              ),
               if (o.customerName != null) ...[
                 const SizedBox(height: Spacing.x1),
-                Text(o.customerName!,
-                    style: TextStyle(color: palette.textSecondary),),
+                Text(
+                  o.customerName!,
+                  style: TextStyle(color: palette.textSecondary),
+                ),
               ],
               const SizedBox(height: Spacing.x1),
-              Text('\$${o.totalAmount.toStringAsFixed(2)}',
-                  style: Theme.of(context).textTheme.labelLarge,),
+              Text(
+                '\$${o.totalAmount.toStringAsFixed(2)}',
+                style: Theme.of(context).textTheme.labelLarge,
+              ),
             ],
           ),
         ),

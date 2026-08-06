@@ -4,6 +4,7 @@ import {
   BadRequestException,
 } from "@nestjs/common";
 import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 
 export interface HierarchyTreeNode {
   id: string;
@@ -791,7 +792,7 @@ export class CrmAccountManagementService {
     });
     if (!customer) throw new NotFoundException("Customer not found");
 
-    const user = await prisma.user.findFirst({
+    const user = await idpPrisma.user.findFirst({
       where: { id: userId, tenantId },
       select: { firstName: true, lastName: true },
     });

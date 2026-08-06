@@ -37,7 +37,8 @@ class PeopleRepositoryImpl implements PeopleRepository {
       final List<Map<String, dynamic>> jsonItems = page.data
           .map((dynamic e) => (e as dynamic).toJson() as Map<String, dynamic>)
           .toList(growable: false);
-      await _cache.write(_tenantId, namespace, query.cacheKey, <String, Object?>{
+      await _cache
+          .write(_tenantId, namespace, query.cacheKey, <String, Object?>{
         'data': jsonItems,
         'meta': page.meta.toJson(),
       });
@@ -45,9 +46,11 @@ class PeopleRepositoryImpl implements PeopleRepository {
         Cacheable<Paginated<T>>(value: page),
       );
     } on NetworkException catch (error) {
-      final cached = _cache.read<Map<String, dynamic>>(_tenantId, namespace, query.cacheKey);
+      final cached = _cache.read<Map<String, dynamic>>(
+          _tenantId, namespace, query.cacheKey);
       if (cached == null) {
-        return Result<Cacheable<Paginated<T>>>.err(mapExceptionToFailure(error));
+        return Result<Cacheable<Paginated<T>>>.err(
+            mapExceptionToFailure(error));
       }
       return Result<Cacheable<Paginated<T>>>.ok(
         Cacheable<Paginated<T>>(
@@ -90,8 +93,12 @@ class PeopleRepositoryImpl implements PeopleRepository {
 
   @override
   Future<Result<Cacheable<Paginated<Person>>>> listPeople(ListQuery query) =>
-      _paginated(_personNamespace, query, () => _remote.listPeople(query),
-        PersonModel.fromJson,);
+      _paginated(
+        _personNamespace,
+        query,
+        () => _remote.listPeople(query),
+        PersonModel.fromJson,
+      );
 
   @override
   Future<Result<Person>> getPerson(String id) =>
@@ -111,8 +118,12 @@ class PeopleRepositoryImpl implements PeopleRepository {
 
   @override
   Future<Result<Cacheable<Paginated<PeopleTeam>>>> listTeams(ListQuery query) =>
-      _paginated(_teamNamespace, query, () => _remote.listTeams(query),
-        PeopleTeamModel.fromJson,);
+      _paginated(
+        _teamNamespace,
+        query,
+        () => _remote.listTeams(query),
+        PeopleTeamModel.fromJson,
+      );
 
   @override
   Future<Result<PeopleTeam>> getTeam(String id) =>
@@ -131,23 +142,31 @@ class PeopleRepositoryImpl implements PeopleRepository {
       _delete(() => _remote.deleteTeam(id));
 
   @override
-  Future<Result<Cacheable<Paginated<PeopleOnboardingTask>>>> listOnboardingTasks(
-    ListQuery query,) =>
-      _paginated(_taskNamespace, query,
-        () => _remote.listOnboardingTasks(query),
-        PeopleOnboardingTaskModel.fromJson,);
+  Future<Result<Cacheable<Paginated<PeopleOnboardingTask>>>>
+      listOnboardingTasks(
+    ListQuery query,
+  ) =>
+          _paginated(
+            _taskNamespace,
+            query,
+            () => _remote.listOnboardingTasks(query),
+            PeopleOnboardingTaskModel.fromJson,
+          );
 
   @override
   Future<Result<PeopleOnboardingTask>> getOnboardingTask(String id) =>
       _single(() => _remote.getOnboardingTask(id));
 
   @override
-  Future<Result<PeopleOnboardingTask>> createOnboardingTask(Map<String, dynamic> p) =>
+  Future<Result<PeopleOnboardingTask>> createOnboardingTask(
+          Map<String, dynamic> p) =>
       _write(() => _remote.createOnboardingTask(p));
 
   @override
   Future<Result<PeopleOnboardingTask>> updateOnboardingTask(
-    String id, Map<String, dynamic> p,) =>
+    String id,
+    Map<String, dynamic> p,
+  ) =>
       _write(() => _remote.updateOnboardingTask(id, p));
 
   @override
@@ -159,14 +178,20 @@ class PeopleRepositoryImpl implements PeopleRepository {
       _single(() => _remote.completeOnboardingTask(id));
 
   @override
-  Future<Result<Cacheable<Paginated<PeopleRecognitionEntry>>>> listRecognitionEntries(
-    ListQuery query,) =>
-      _paginated(_recognitionNamespace, query,
-        () => _remote.listRecognitionEntries(query),
-        PeopleRecognitionEntryModel.fromJson,);
+  Future<Result<Cacheable<Paginated<PeopleRecognitionEntry>>>>
+      listRecognitionEntries(
+    ListQuery query,
+  ) =>
+          _paginated(
+            _recognitionNamespace,
+            query,
+            () => _remote.listRecognitionEntries(query),
+            PeopleRecognitionEntryModel.fromJson,
+          );
 
   @override
-  Future<Result<PeopleRecognitionEntry>> createRecognitionEntry(Map<String, dynamic> p) =>
+  Future<Result<PeopleRecognitionEntry>> createRecognitionEntry(
+          Map<String, dynamic> p) =>
       _write(() => _remote.createRecognitionEntry(p));
 
   @override

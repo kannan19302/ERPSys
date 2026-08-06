@@ -11,7 +11,7 @@ import {
   BarChart3,
   Settings,
 } from "lucide-react";
-import type { ModuleTab } from "@unerp/ui-layout";
+import type { ModuleTab } from "@unerp/ui/layout";
 
 export {
   ModuleTabLayout as HealthcareTabLayout,
@@ -19,7 +19,7 @@ export {
   type ModuleTabLayoutProps as HealthcareTabLayoutProps,
   SubTabBar,
   type SubTab,
-} from "@unerp/ui-layout";
+} from "@unerp/ui/layout";
 
 export const HEALTHCARE_TABS: ModuleTab[] = [
   {

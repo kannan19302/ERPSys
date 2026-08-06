@@ -12,10 +12,12 @@ class ServiceCatalogListPage extends ConsumerStatefulWidget {
   static const String routeName = 'service-catalogs';
   static const String routePath = '/service-management/catalogs';
   @override
-  ConsumerState<ServiceCatalogListPage> createState() => _ServiceCatalogListPageState();
+  ConsumerState<ServiceCatalogListPage> createState() =>
+      _ServiceCatalogListPageState();
 }
 
-class _ServiceCatalogListPageState extends ConsumerState<ServiceCatalogListPage> {
+class _ServiceCatalogListPageState
+    extends ConsumerState<ServiceCatalogListPage> {
   final TextEditingController _search = TextEditingController();
 
   static const Map<String, String> _sortOptions = <String, String>{
@@ -47,8 +49,12 @@ class _ServiceCatalogListPageState extends ConsumerState<ServiceCatalogListPage>
             initialValue: state.query.sort,
             onSelected: controller.applySort,
             itemBuilder: (_) => _sortOptions.entries
-                .map((e) => PopupMenuItem<String>(
-                    value: e.key, child: Text(e.value),),)
+                .map(
+                  (e) => PopupMenuItem<String>(
+                    value: e.key,
+                    child: Text(e.value),
+                  ),
+                )
                 .toList(),
           ),
         ],
@@ -56,7 +62,8 @@ class _ServiceCatalogListPageState extends ConsumerState<ServiceCatalogListPage>
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
+            padding: const EdgeInsets.fromLTRB(
+                Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
             child: TextField(
               controller: _search,
               onChanged: controller.search,
@@ -68,21 +75,27 @@ class _ServiceCatalogListPageState extends ConsumerState<ServiceCatalogListPage>
                     ? null
                     : IconButton(
                         icon: const Icon(Icons.close),
-                        onPressed: () { _search.clear(); controller.search(''); },
+                        onPressed: () {
+                          _search.clear();
+                          controller.search('');
+                        },
                       ),
               ),
             ),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: Spacing.x4),
-            child: Row(children: [
-              Text(
-                state.isLoading
-                    ? 'Loading...'
-                    : '${state.meta.total} service${state.meta.total == 1 ? '' : 's'}',
-                style: TextStyle(color: palette.textSecondary, fontSize: TypeScale.xs),
-              ),
-            ],),
+            child: Row(
+              children: [
+                Text(
+                  state.isLoading
+                      ? 'Loading...'
+                      : '${state.meta.total} service${state.meta.total == 1 ? '' : 's'}',
+                  style: TextStyle(
+                      color: palette.textSecondary, fontSize: TypeScale.xs),
+                ),
+              ],
+            ),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -90,7 +103,8 @@ class _ServiceCatalogListPageState extends ConsumerState<ServiceCatalogListPage>
     );
   }
 
-  Widget _body(ServiceCatalogListState state, ServiceCatalogListController controller) {
+  Widget _body(
+      ServiceCatalogListState state, ServiceCatalogListController controller) {
     if (state.isLoading && state.items.isEmpty) return const LoadingView();
     final failure = state.failure;
     if (failure != null && state.items.isEmpty) {
@@ -113,27 +127,45 @@ class _ServiceCatalogListPageState extends ConsumerState<ServiceCatalogListPage>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(children: [
-                Expanded(
-                  child: Text(s.name,
-                      style: Theme.of(context).textTheme.titleSmall,),
-                ),
-                UiStatusBadge(label: s.status, tone: s.status == 'ACTIVE' ? UiTone.success : UiTone.neutral),
-              ],),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      s.name,
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
+                  ),
+                  UiStatusBadge(
+                      label: s.status,
+                      tone: s.status == 'ACTIVE'
+                          ? UiTone.success
+                          : UiTone.neutral),
+                ],
+              ),
               if (s.description != null) ...[
                 const SizedBox(height: Spacing.x1),
-                Text(s.description!,
-                    maxLines: 2, overflow: TextOverflow.ellipsis,
-                    style: TextStyle(color: palette.textSecondary, fontSize: TypeScale.xs),),
+                Text(
+                  s.description!,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                      color: palette.textSecondary, fontSize: TypeScale.xs),
+                ),
               ],
               const SizedBox(height: Spacing.x1),
-              Row(children: [
-                Text('\$${s.price.toStringAsFixed(2)}',
-                    style: Theme.of(context).textTheme.labelLarge,),
-                const SizedBox(width: Spacing.x2),
-                if (s.category != null)
-                  Chip(label: Text(s.category!, style: const TextStyle(fontSize: TypeScale.xs))),
-              ],),
+              Row(
+                children: [
+                  Text(
+                    '\$${s.price.toStringAsFixed(2)}',
+                    style: Theme.of(context).textTheme.labelLarge,
+                  ),
+                  const SizedBox(width: Spacing.x2),
+                  if (s.category != null)
+                    Chip(
+                        label: Text(s.category!,
+                            style: const TextStyle(fontSize: TypeScale.xs))),
+                ],
+              ),
             ],
           ),
         ),
@@ -147,10 +179,12 @@ class ServiceRequestListPage extends ConsumerStatefulWidget {
   static const String routeName = 'service-requests';
   static const String routePath = '/service-management/requests';
   @override
-  ConsumerState<ServiceRequestListPage> createState() => _ServiceRequestListPageState();
+  ConsumerState<ServiceRequestListPage> createState() =>
+      _ServiceRequestListPageState();
 }
 
-class _ServiceRequestListPageState extends ConsumerState<ServiceRequestListPage> {
+class _ServiceRequestListPageState
+    extends ConsumerState<ServiceRequestListPage> {
   final TextEditingController _search = TextEditingController();
 
   @override
@@ -168,7 +202,8 @@ class _ServiceRequestListPageState extends ConsumerState<ServiceRequestListPage>
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
+            padding: const EdgeInsets.fromLTRB(
+                Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
             child: TextField(
               controller: _search,
               onChanged: controller.search,
@@ -180,7 +215,10 @@ class _ServiceRequestListPageState extends ConsumerState<ServiceRequestListPage>
                     ? null
                     : IconButton(
                         icon: const Icon(Icons.close),
-                        onPressed: () { _search.clear(); controller.search(''); },
+                        onPressed: () {
+                          _search.clear();
+                          controller.search('');
+                        },
                       ),
               ),
             ),
@@ -191,7 +229,8 @@ class _ServiceRequestListPageState extends ConsumerState<ServiceRequestListPage>
     );
   }
 
-  Widget _body(ServiceRequestListState state, ServiceRequestListController controller) {
+  Widget _body(
+      ServiceRequestListState state, ServiceRequestListController controller) {
     if (state.isLoading && state.items.isEmpty) return const LoadingView();
     final failure = state.failure;
     if (failure != null && state.items.isEmpty) {
@@ -214,22 +253,33 @@ class _ServiceRequestListPageState extends ConsumerState<ServiceRequestListPage>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(children: [
-                Expanded(
-                  child: Text(r.subject,
-                      style: Theme.of(context).textTheme.titleSmall,),
-                ),
-                UiStatusBadge(label: r.status, tone: _requestStatusTone(r.status)),
-              ],),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      r.subject,
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
+                  ),
+                  UiStatusBadge(
+                      label: r.status, tone: _requestStatusTone(r.status)),
+                ],
+              ),
               const SizedBox(height: Spacing.x1),
-              Row(children: [
-                if (r.priority != 'MEDIUM')
-                  UiStatusBadge(label: r.priority, tone: _priorityTone(r.priority)),
-                const SizedBox(width: Spacing.x2),
-                if (r.catalogName != null)
-                  Text(r.catalogName!,
-                      style: TextStyle(color: palette.textSecondary, fontSize: TypeScale.xs),),
-              ],),
+              Row(
+                children: [
+                  if (r.priority != 'MEDIUM')
+                    UiStatusBadge(
+                        label: r.priority, tone: _priorityTone(r.priority)),
+                  const SizedBox(width: Spacing.x2),
+                  if (r.catalogName != null)
+                    Text(
+                      r.catalogName!,
+                      style: TextStyle(
+                          color: palette.textSecondary, fontSize: TypeScale.xs),
+                    ),
+                ],
+              ),
             ],
           ),
         ),

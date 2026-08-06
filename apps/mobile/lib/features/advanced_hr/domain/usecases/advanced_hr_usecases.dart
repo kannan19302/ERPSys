@@ -4,11 +4,13 @@ import '../../../../core/usecase/usecase.dart';
 import '../entities/advanced_hr.dart';
 import '../repositories/advanced_hr_repository.dart';
 
-class ListCompensationBandsUseCase extends UseCase<Cacheable<Paginated<CompensationBand>>, ListQuery> {
+class ListCompensationBandsUseCase
+    extends UseCase<Cacheable<Paginated<CompensationBand>>, ListQuery> {
   const ListCompensationBandsUseCase(this._repository);
   final AdvancedHrRepository _repository;
   @override
-  Future<Result<Cacheable<Paginated<CompensationBand>>>> call(ListQuery params) =>
+  Future<Result<Cacheable<Paginated<CompensationBand>>>> call(
+          ListQuery params) =>
       _repository.listCompensationBands(params);
 }
 
@@ -16,7 +18,8 @@ class GetCompensationBandUseCase extends UseCase<CompensationBand, String> {
   const GetCompensationBandUseCase(this._repository);
   final AdvancedHrRepository _repository;
   @override
-  Future<Result<CompensationBand>> call(String id) => _repository.getCompensationBand(id);
+  Future<Result<CompensationBand>> call(String id) =>
+      _repository.getCompensationBand(id);
 }
 
 class SaveCompensationBandParams {
@@ -25,7 +28,8 @@ class SaveCompensationBandParams {
   final Map<String, dynamic> payload;
 }
 
-class SaveCompensationBandUseCase extends UseCase<CompensationBand, SaveCompensationBandParams> {
+class SaveCompensationBandUseCase
+    extends UseCase<CompensationBand, SaveCompensationBandParams> {
   const SaveCompensationBandUseCase(this._repository);
   final AdvancedHrRepository _repository;
   @override
@@ -41,10 +45,12 @@ class DeleteCompensationBandUseCase extends UseCase<void, String> {
   const DeleteCompensationBandUseCase(this._repository);
   final AdvancedHrRepository _repository;
   @override
-  Future<Result<void>> call(String id) => _repository.deleteCompensationBand(id);
+  Future<Result<void>> call(String id) =>
+      _repository.deleteCompensationBand(id);
 }
 
-class ListBenefitPlansUseCase extends UseCase<Cacheable<Paginated<BenefitPlan>>, ListQuery> {
+class ListBenefitPlansUseCase
+    extends UseCase<Cacheable<Paginated<BenefitPlan>>, ListQuery> {
   const ListBenefitPlansUseCase(this._repository);
   final AdvancedHrRepository _repository;
   @override
@@ -58,7 +64,8 @@ class SaveBenefitPlanParams {
   final Map<String, dynamic> payload;
 }
 
-class SaveBenefitPlanUseCase extends UseCase<BenefitPlan, SaveBenefitPlanParams> {
+class SaveBenefitPlanUseCase
+    extends UseCase<BenefitPlan, SaveBenefitPlanParams> {
   const SaveBenefitPlanUseCase(this._repository);
   final AdvancedHrRepository _repository;
   @override
@@ -77,7 +84,8 @@ class DeleteBenefitPlanUseCase extends UseCase<void, String> {
   Future<Result<void>> call(String id) => _repository.deleteBenefitPlan(id);
 }
 
-class ListSuccessionPlansUseCase extends UseCase<Cacheable<Paginated<SuccessionPlan>>, ListQuery> {
+class ListSuccessionPlansUseCase
+    extends UseCase<Cacheable<Paginated<SuccessionPlan>>, ListQuery> {
   const ListSuccessionPlansUseCase(this._repository);
   final AdvancedHrRepository _repository;
   @override
@@ -85,15 +93,18 @@ class ListSuccessionPlansUseCase extends UseCase<Cacheable<Paginated<SuccessionP
       _repository.listSuccessionPlans(params);
 }
 
-class ListWorkforceAnalyticsUseCase extends UseCase<Cacheable<Paginated<WorkforceAnalytic>>, ListQuery> {
+class ListWorkforceAnalyticsUseCase
+    extends UseCase<Cacheable<Paginated<WorkforceAnalytic>>, ListQuery> {
   const ListWorkforceAnalyticsUseCase(this._repository);
   final AdvancedHrRepository _repository;
   @override
-  Future<Result<Cacheable<Paginated<WorkforceAnalytic>>>> call(ListQuery params) =>
+  Future<Result<Cacheable<Paginated<WorkforceAnalytic>>>> call(
+          ListQuery params) =>
       _repository.listWorkforceAnalytics(params);
 }
 
-class ListLearningPathsUseCase extends UseCase<Cacheable<Paginated<LearningPath>>, ListQuery> {
+class ListLearningPathsUseCase
+    extends UseCase<Cacheable<Paginated<LearningPath>>, ListQuery> {
   const ListLearningPathsUseCase(this._repository);
   final AdvancedHrRepository _repository;
   @override
@@ -101,22 +112,25 @@ class ListLearningPathsUseCase extends UseCase<Cacheable<Paginated<LearningPath>
       _repository.listLearningPaths(params);
 }
 
-
 class SaveLearningPathParams {
   const SaveLearningPathParams({this.id, required this.payload});
   final String? id;
   final Map<String, dynamic> payload;
 }
-class SaveLearningPathUseCase extends UseCase<LearningPath, SaveLearningPathParams> {
+
+class SaveLearningPathUseCase
+    extends UseCase<LearningPath, SaveLearningPathParams> {
   SaveLearningPathUseCase(this.repository);
   final AdvancedHrRepository repository;
   @override
-  Future<Result<LearningPath>> call(SaveLearningPathParams params) async => throw UnimplementedError();
+  Future<Result<LearningPath>> call(SaveLearningPathParams params) async =>
+      throw UnimplementedError();
 }
+
 class GetLearningPathUseCase extends UseCase<LearningPath, String> {
   GetLearningPathUseCase(this.repository);
   final AdvancedHrRepository repository;
   @override
-  Future<Result<LearningPath>> call(String params) async => throw UnimplementedError();
+  Future<Result<LearningPath>> call(String params) async =>
+      throw UnimplementedError();
 }
-

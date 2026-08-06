@@ -70,8 +70,10 @@ import '../../features/hr/presentation/pages/attendance_list_page.dart';
 import '../../features/hr/presentation/pages/attendance_detail_page.dart';
 import '../../features/hr/presentation/pages/attendance_form_page.dart';
 import '../../features/hr/presentation/pages/timesheet_list_page.dart' as hr_ts;
-import '../../features/hr/presentation/pages/timesheet_detail_page.dart' as hr_ts_det;
-import '../../features/hr/presentation/pages/timesheet_form_page.dart' as hr_ts_form;
+import '../../features/hr/presentation/pages/timesheet_detail_page.dart'
+    as hr_ts_det;
+import '../../features/hr/presentation/pages/timesheet_form_page.dart'
+    as hr_ts_form;
 import '../../features/hr/presentation/pages/performance_review_list_page.dart';
 import '../../features/hr/presentation/pages/performance_review_detail_page.dart';
 import '../../features/hr/presentation/pages/performance_review_form_page.dart';
@@ -208,9 +210,12 @@ import '../../features/projects/presentation/pages/milestone_list_page.dart';
 import '../../features/projects/presentation/pages/project_milestone_form_page.dart';
 import '../../features/projects/presentation/pages/task_list_page.dart';
 import '../../features/projects/presentation/pages/project_task_form_page.dart';
-import '../../features/projects/presentation/pages/timesheet_list_page.dart' as proj_ts;
-import '../../features/projects/presentation/pages/timesheet_detail_page.dart' as proj_ts_det;
-import '../../features/projects/presentation/pages/timesheet_form_page.dart' as proj_ts_form;
+import '../../features/projects/presentation/pages/timesheet_list_page.dart'
+    as proj_ts;
+import '../../features/projects/presentation/pages/timesheet_detail_page.dart'
+    as proj_ts_det;
+import '../../features/projects/presentation/pages/timesheet_form_page.dart'
+    as proj_ts_form;
 import '../../features/projects/presentation/pages/project_portfolio_list_page.dart';
 import '../../features/projects/presentation/pages/project_portfolio_detail_page.dart';
 import '../../features/projects/presentation/pages/project_portfolio_form_page.dart';
@@ -373,7 +378,8 @@ import '../../features/saas_portal/presentation/pages/portal_support_ticket_list
 import '../../features/saas_portal/presentation/pages/plan_detail_page.dart';
 import '../../features/subscriptions/presentation/pages/subscription_billing_list_page.dart';
 import '../../features/subscriptions/presentation/pages/subscription_plan_list_page.dart';
-import '../../features/subscriptions/presentation/pages/plan_detail_page.dart' as sub_plan_detail;
+import '../../features/subscriptions/presentation/pages/plan_detail_page.dart'
+    as sub_plan_detail;
 import '../../features/subscriptions/presentation/pages/billing_form_page.dart';
 import '../../features/subscriptions/presentation/pages/plan_form_page.dart';
 import '../../features/subscriptions/presentation/pages/billing_detail_page.dart';
@@ -498,7 +504,7 @@ final Provider<GoRouter> appRouterProvider = Provider<GoRouter>((Ref ref) {
         name: AuthSessionsPage.routeName,
         builder: (_, __) => const AuthSessionsPage(),
       ),
-            GoRoute(
+      GoRoute(
         path: ScheduleFormPage.routePath,
         name: ScheduleFormPage.routeName,
         builder: (_, __) => const ScheduleFormPage(),
@@ -541,7 +547,8 @@ final Provider<GoRouter> appRouterProvider = Provider<GoRouter>((Ref ref) {
       GoRoute(
         path: PrescriptionDetailPage.routePath,
         name: PrescriptionDetailPage.routeName,
-        builder: (_, GoRouterState state) => PrescriptionDetailPage(id: state.pathParameters['id']!),
+        builder: (_, GoRouterState state) =>
+            PrescriptionDetailPage(id: state.pathParameters['id']!),
       ),
       GoRoute(
         path: PrescriptionFormPage.routePath,
@@ -551,12 +558,14 @@ final Provider<GoRouter> appRouterProvider = Provider<GoRouter>((Ref ref) {
       GoRoute(
         path: SaasPortalPlanDetailPage.routePath,
         name: SaasPortalPlanDetailPage.routeName,
-        builder: (_, GoRouterState state) => SaasPortalPlanDetailPage(planId: state.pathParameters['id'] ?? ''),
+        builder: (_, GoRouterState state) =>
+            SaasPortalPlanDetailPage(planId: state.pathParameters['id'] ?? ''),
       ),
       GoRoute(
         path: SaasPortalSupportTicketDetailPage.routePath,
         name: SaasPortalSupportTicketDetailPage.routeName,
-        builder: (_, GoRouterState state) => SaasPortalSupportTicketDetailPage(ticketId: state.pathParameters['id'] ?? ''),
+        builder: (_, GoRouterState state) => SaasPortalSupportTicketDetailPage(
+            ticketId: state.pathParameters['id'] ?? ''),
       ),
       GoRoute(
         path: SaasPortalSupportTicketFormPage.routePath,
@@ -600,7 +609,8 @@ final Provider<GoRouter> appRouterProvider = Provider<GoRouter>((Ref ref) {
                       GoRoute(
                         path: ':id',
                         name: ProductCategoryDetailPage.routeName,
-                        builder: (_, GoRouterState state) => ProductCategoryDetailPage(
+                        builder: (_, GoRouterState state) =>
+                            ProductCategoryDetailPage(
                           categoryId: state.pathParameters['id']!,
                         ),
                       ),
@@ -619,7 +629,8 @@ final Provider<GoRouter> appRouterProvider = Provider<GoRouter>((Ref ref) {
                       GoRoute(
                         path: ':id',
                         name: WarehouseDetailPage.routeName,
-                        builder: (_, GoRouterState state) => WarehouseDetailPage(
+                        builder: (_, GoRouterState state) =>
+                            WarehouseDetailPage(
                           warehouseId: state.pathParameters['id']!,
                         ),
                       ),
@@ -638,7 +649,8 @@ final Provider<GoRouter> appRouterProvider = Provider<GoRouter>((Ref ref) {
                       GoRoute(
                         path: ':id',
                         name: StockLevelDetailPage.routeName,
-                        builder: (_, GoRouterState state) => StockLevelDetailPage(
+                        builder: (_, GoRouterState state) =>
+                            StockLevelDetailPage(
                           stockLevelId: state.pathParameters['id']!,
                         ),
                       ),
@@ -652,7 +664,8 @@ final Provider<GoRouter> appRouterProvider = Provider<GoRouter>((Ref ref) {
                       GoRoute(
                         path: ':id',
                         name: StockMovementDetailPage.routeName,
-                        builder: (_, GoRouterState state) => StockMovementDetailPage(
+                        builder: (_, GoRouterState state) =>
+                            StockMovementDetailPage(
                           movementId: state.pathParameters['id']!,
                         ),
                       ),
@@ -671,7 +684,8 @@ final Provider<GoRouter> appRouterProvider = Provider<GoRouter>((Ref ref) {
                       GoRoute(
                         path: ':id',
                         name: ReorderRuleDetailPage.routeName,
-                        builder: (_, GoRouterState state) => ReorderRuleDetailPage(
+                        builder: (_, GoRouterState state) =>
+                            ReorderRuleDetailPage(
                           ruleId: state.pathParameters['id']!,
                         ),
                       ),
@@ -690,7 +704,8 @@ final Provider<GoRouter> appRouterProvider = Provider<GoRouter>((Ref ref) {
                       GoRoute(
                         path: ':id',
                         name: InventoryAdjustmentDetailPage.routeName,
-                        builder: (_, GoRouterState state) => InventoryAdjustmentDetailPage(
+                        builder: (_, GoRouterState state) =>
+                            InventoryAdjustmentDetailPage(
                           adjustmentId: state.pathParameters['id']!,
                         ),
                       ),
@@ -733,7 +748,8 @@ final Provider<GoRouter> appRouterProvider = Provider<GoRouter>((Ref ref) {
                       GoRoute(
                         path: 'order/:id',
                         name: SalesOrderDetailPage.routeName,
-                        builder: (_, GoRouterState state) => SalesOrderDetailPage(
+                        builder: (_, GoRouterState state) =>
+                            SalesOrderDetailPage(
                           orderId: state.pathParameters['id']!,
                         ),
                       ),
@@ -758,8 +774,8 @@ final Provider<GoRouter> appRouterProvider = Provider<GoRouter>((Ref ref) {
                       ),
                       GoRoute(
                         path: 'new',
-name: CustomerFormPage.routeName,
-                      builder: (_, __) => const CustomerFormPage(),
+                        name: CustomerFormPage.routeName,
+                        builder: (_, __) => const CustomerFormPage(),
                       ),
                     ],
                   ),
@@ -783,7 +799,8 @@ name: CustomerFormPage.routeName,
                       GoRoute(
                         path: ':id',
                         name: OpportunityDetailPage.routeName,
-                        builder: (_, GoRouterState state) => OpportunityDetailPage(
+                        builder: (_, GoRouterState state) =>
+                            OpportunityDetailPage(
                           opportunityId: state.pathParameters['id']!,
                         ),
                       ),
@@ -802,7 +819,8 @@ name: CustomerFormPage.routeName,
                       GoRoute(
                         path: ':id',
                         name: DeliveryNoteDetailPage.routeName,
-                        builder: (_, GoRouterState state) => DeliveryNoteDetailPage(
+                        builder: (_, GoRouterState state) =>
+                            DeliveryNoteDetailPage(
                           deliveryNoteId: state.pathParameters['id']!,
                         ),
                       ),
@@ -821,7 +839,8 @@ name: CustomerFormPage.routeName,
                       GoRoute(
                         path: ':id',
                         name: SalesReturnDetailPage.routeName,
-                        builder: (_, GoRouterState state) => SalesReturnDetailPage(
+                        builder: (_, GoRouterState state) =>
+                            SalesReturnDetailPage(
                           salesReturnId: state.pathParameters['id']!,
                         ),
                       ),
@@ -878,7 +897,8 @@ name: CustomerFormPage.routeName,
                       GoRoute(
                         path: ':id',
                         name: EmailTemplateDetailPage.routeName,
-                        builder: (_, GoRouterState state) => EmailTemplateDetailPage(
+                        builder: (_, GoRouterState state) =>
+                            EmailTemplateDetailPage(
                           templateId: state.pathParameters['id']!,
                         ),
                       ),
@@ -947,7 +967,8 @@ name: CustomerFormPage.routeName,
                       GoRoute(
                         path: ':id',
                         name: PurchaseOrderDetailPage.routeName,
-                        builder: (_, GoRouterState state) => PurchaseOrderDetailPage(
+                        builder: (_, GoRouterState state) =>
+                            PurchaseOrderDetailPage(
                           poId: state.pathParameters['id']!,
                         ),
                       ),
@@ -985,7 +1006,8 @@ name: CustomerFormPage.routeName,
                       GoRoute(
                         path: ':id',
                         name: CreditNoteDetailPage.routeName,
-                        builder: (_, GoRouterState state) => CreditNoteDetailPage(
+                        builder: (_, GoRouterState state) =>
+                            CreditNoteDetailPage(
                           creditNoteId: state.pathParameters['id']!,
                         ),
                       ),
@@ -1004,7 +1026,8 @@ name: CustomerFormPage.routeName,
                       GoRoute(
                         path: ':id',
                         name: JournalEntryDetailPage.routeName,
-                        builder: (_, GoRouterState state) => JournalEntryDetailPage(
+                        builder: (_, GoRouterState state) =>
+                            JournalEntryDetailPage(
                           journalEntryId: state.pathParameters['id']!,
                         ),
                       ),
@@ -1023,7 +1046,8 @@ name: CustomerFormPage.routeName,
                       GoRoute(
                         path: ':id',
                         name: ChartOfAccountDetailPage.routeName,
-                        builder: (_, GoRouterState state) => ChartOfAccountDetailPage(
+                        builder: (_, GoRouterState state) =>
+                            ChartOfAccountDetailPage(
                           accountId: state.pathParameters['id']!,
                         ),
                       ),
@@ -1080,7 +1104,8 @@ name: CustomerFormPage.routeName,
                       GoRoute(
                         path: ':id',
                         name: TaxFilingDetailPage.routeName,
-                        builder: (_, GoRouterState state) => TaxFilingDetailPage(
+                        builder: (_, GoRouterState state) =>
+                            TaxFilingDetailPage(
                           taxFilingId: state.pathParameters['id']!,
                         ),
                       ),
@@ -1099,7 +1124,8 @@ name: CustomerFormPage.routeName,
                       GoRoute(
                         path: ':id',
                         name: BankAccountDetailPage.routeName,
-                        builder: (_, GoRouterState state) => BankAccountDetailPage(
+                        builder: (_, GoRouterState state) =>
+                            BankAccountDetailPage(
                           bankAccountId: state.pathParameters['id']!,
                         ),
                       ),
@@ -1138,7 +1164,8 @@ name: CustomerFormPage.routeName,
                       GoRoute(
                         path: ':id',
                         name: PurchaseReceiptDetailPage.routeName,
-                        builder: (_, GoRouterState state) => PurchaseReceiptDetailPage(
+                        builder: (_, GoRouterState state) =>
+                            PurchaseReceiptDetailPage(
                           receiptId: state.pathParameters['id']!,
                         ),
                       ),
@@ -1157,7 +1184,8 @@ name: CustomerFormPage.routeName,
                       GoRoute(
                         path: ':id',
                         name: PurchaseRequisitionDetailPage.routeName,
-                        builder: (_, GoRouterState state) => PurchaseRequisitionDetailPage(
+                        builder: (_, GoRouterState state) =>
+                            PurchaseRequisitionDetailPage(
                           requisitionId: state.pathParameters['id']!,
                         ),
                       ),
@@ -1176,7 +1204,8 @@ name: CustomerFormPage.routeName,
                       GoRoute(
                         path: ':id',
                         name: SupplierQuotationDetailPage.routeName,
-                        builder: (_, GoRouterState state) => SupplierQuotationDetailPage(
+                        builder: (_, GoRouterState state) =>
+                            SupplierQuotationDetailPage(
                           quotationId: state.pathParameters['id']!,
                         ),
                       ),
@@ -1195,7 +1224,8 @@ name: CustomerFormPage.routeName,
                       GoRoute(
                         path: ':id',
                         name: SupplierContractDetailPage.routeName,
-                        builder: (_, GoRouterState state) => SupplierContractDetailPage(
+                        builder: (_, GoRouterState state) =>
+                            SupplierContractDetailPage(
                           contractId: state.pathParameters['id']!,
                         ),
                       ),
@@ -1220,14 +1250,16 @@ name: CustomerFormPage.routeName,
                           GoRoute(
                             path: ':id',
                             name: FinancialCloseTaskDetailPage.routeName,
-                            builder: (_, GoRouterState state) => FinancialCloseTaskDetailPage(
+                            builder: (_, GoRouterState state) =>
+                                FinancialCloseTaskDetailPage(
                               taskId: state.pathParameters['id']!,
                             ),
                           ),
                           GoRoute(
                             path: 'new',
                             name: FinancialCloseTaskFormPage.routeName,
-                            builder: (_, __) => const FinancialCloseTaskFormPage(),
+                            builder: (_, __) =>
+                                const FinancialCloseTaskFormPage(),
                           ),
                         ],
                       ),
@@ -1239,14 +1271,16 @@ name: CustomerFormPage.routeName,
                           GoRoute(
                             path: ':id',
                             name: MultiCurrencyRateDetailPage.routeName,
-                            builder: (_, GoRouterState state) => MultiCurrencyRateDetailPage(
+                            builder: (_, GoRouterState state) =>
+                                MultiCurrencyRateDetailPage(
                               rateId: state.pathParameters['id']!,
                             ),
                           ),
                           GoRoute(
                             path: 'new',
                             name: MultiCurrencyRateFormPage.routeName,
-                            builder: (_, __) => const MultiCurrencyRateFormPage(),
+                            builder: (_, __) =>
+                                const MultiCurrencyRateFormPage(),
                           ),
                         ],
                       ),
@@ -1306,7 +1340,8 @@ name: CustomerFormPage.routeName,
                       GoRoute(
                         path: ':id',
                         name: LeaveTypeDetailPage.routeName,
-                        builder: (_, GoRouterState state) => LeaveTypeDetailPage(
+                        builder: (_, GoRouterState state) =>
+                            LeaveTypeDetailPage(
                           leaveTypeId: state.pathParameters['id']!,
                         ),
                       ),
@@ -1325,7 +1360,8 @@ name: CustomerFormPage.routeName,
                       GoRoute(
                         path: ':id',
                         name: DepartmentDetailPage.routeName,
-                        builder: (_, GoRouterState state) => DepartmentDetailPage(
+                        builder: (_, GoRouterState state) =>
+                            DepartmentDetailPage(
                           departmentId: state.pathParameters['id']!,
                         ),
                       ),
@@ -1344,7 +1380,8 @@ name: CustomerFormPage.routeName,
                       GoRoute(
                         path: ':id',
                         name: AttendanceDetailPage.routeName,
-                        builder: (_, GoRouterState state) => AttendanceDetailPage(
+                        builder: (_, GoRouterState state) =>
+                            AttendanceDetailPage(
                           attendanceId: state.pathParameters['id']!,
                         ),
                       ),
@@ -1363,14 +1400,16 @@ name: CustomerFormPage.routeName,
                       GoRoute(
                         path: ':id',
                         name: hr_ts_det.TimesheetDetailPage.routeName,
-                        builder: (_, GoRouterState state) => hr_ts_det.TimesheetDetailPage(
+                        builder: (_, GoRouterState state) =>
+                            hr_ts_det.TimesheetDetailPage(
                           timesheetId: state.pathParameters['id']!,
                         ),
                       ),
                       GoRoute(
                         path: 'new',
                         name: hr_ts_form.TimesheetFormPage.routeName,
-                        builder: (_, __) => const hr_ts_form.TimesheetFormPage(),
+                        builder: (_, __) =>
+                            const hr_ts_form.TimesheetFormPage(),
                       ),
                     ],
                   ),
@@ -1382,7 +1421,8 @@ name: CustomerFormPage.routeName,
                       GoRoute(
                         path: ':id',
                         name: PerformanceReviewDetailPage.routeName,
-                        builder: (_, GoRouterState state) => PerformanceReviewDetailPage(
+                        builder: (_, GoRouterState state) =>
+                            PerformanceReviewDetailPage(
                           performanceReviewId: state.pathParameters['id']!,
                         ),
                       ),
@@ -1401,7 +1441,8 @@ name: CustomerFormPage.routeName,
                       GoRoute(
                         path: ':id',
                         name: PayrollRunDetailPage.routeName,
-                        builder: (_, GoRouterState state) => PayrollRunDetailPage(
+                        builder: (_, GoRouterState state) =>
+                            PayrollRunDetailPage(
                           payrollRunId: state.pathParameters['id']!,
                         ),
                       ),
@@ -1413,14 +1454,16 @@ name: CustomerFormPage.routeName,
                       GoRoute(
                         path: ':runId/entries',
                         name: PayrollEntryListPage.routeName,
-                        builder: (_, GoRouterState state) => PayrollEntryListPage(
+                        builder: (_, GoRouterState state) =>
+                            PayrollEntryListPage(
                           payrollRunId: state.pathParameters['runId']!,
                         ),
                         routes: <RouteBase>[
                           GoRoute(
                             path: ':id',
                             name: PayrollEntryDetailPage.routeName,
-                            builder: (_, GoRouterState state) => PayrollEntryDetailPage(
+                            builder: (_, GoRouterState state) =>
+                                PayrollEntryDetailPage(
                               payslipId: state.pathParameters['id']!,
                             ),
                           ),
@@ -1442,14 +1485,16 @@ name: CustomerFormPage.routeName,
                           GoRoute(
                             path: ':id',
                             name: CompensationBandDetailPage.routeName,
-                            builder: (_, GoRouterState state) => CompensationBandDetailPage(
+                            builder: (_, GoRouterState state) =>
+                                CompensationBandDetailPage(
                               bandId: state.pathParameters['id']!,
                             ),
                           ),
                           GoRoute(
                             path: 'new',
                             name: CompensationBandFormPage.routeName,
-                            builder: (_, __) => const CompensationBandFormPage(),
+                            builder: (_, __) =>
+                                const CompensationBandFormPage(),
                           ),
                         ],
                       ),
@@ -1461,7 +1506,8 @@ name: CustomerFormPage.routeName,
                           GoRoute(
                             path: ':id',
                             name: LearningPathDetailPage.routeName,
-                            builder: (_, GoRouterState state) => LearningPathDetailPage(
+                            builder: (_, GoRouterState state) =>
+                                LearningPathDetailPage(
                               pathId: state.pathParameters['id']!,
                             ),
                           ),
@@ -1555,7 +1601,8 @@ name: CustomerFormPage.routeName,
                       GoRoute(
                         path: ':id',
                         name: SupplyChainRouteDetailPage.routeName,
-                        builder: (_, GoRouterState state) => SupplyChainRouteDetailPage(
+                        builder: (_, GoRouterState state) =>
+                            SupplyChainRouteDetailPage(
                           routeId: state.pathParameters['id']!,
                         ),
                       ),
@@ -1574,7 +1621,8 @@ name: CustomerFormPage.routeName,
                       GoRoute(
                         path: ':id',
                         name: DockAppointmentDetailPage.routeName,
-                        builder: (_, GoRouterState state) => DockAppointmentDetailPage(
+                        builder: (_, GoRouterState state) =>
+                            DockAppointmentDetailPage(
                           appointmentId: state.pathParameters['id']!,
                         ),
                       ),
@@ -1593,7 +1641,8 @@ name: CustomerFormPage.routeName,
                       GoRoute(
                         path: ':id',
                         name: WarehouseTransferDetailPage.routeName,
-                        builder: (_, GoRouterState state) => WarehouseTransferDetailPage(
+                        builder: (_, GoRouterState state) =>
+                            WarehouseTransferDetailPage(
                           transferId: state.pathParameters['id']!,
                         ),
                       ),
@@ -1641,7 +1690,8 @@ name: CustomerFormPage.routeName,
                       GoRoute(
                         path: ':id',
                         name: PosRegisterDetailPage.routeName,
-                        builder: (_, GoRouterState state) => PosRegisterDetailPage(
+                        builder: (_, GoRouterState state) =>
+                            PosRegisterDetailPage(
                           id: state.pathParameters['id']!,
                         ),
                       ),
@@ -1679,7 +1729,8 @@ name: CustomerFormPage.routeName,
                       GoRoute(
                         path: ':id',
                         name: 'pos-price-list-detail',
-                        builder: (_, GoRouterState state) => PosPriceListDetailPage(
+                        builder: (_, GoRouterState state) =>
+                            PosPriceListDetailPage(
                           id: state.pathParameters['id']!,
                         ),
                       ),
@@ -1698,7 +1749,8 @@ name: CustomerFormPage.routeName,
                       GoRoute(
                         path: ':id',
                         name: PosDiscountDetailPage.routeName,
-                        builder: (_, GoRouterState state) => PosDiscountDetailPage(
+                        builder: (_, GoRouterState state) =>
+                            PosDiscountDetailPage(
                           id: state.pathParameters['id']!,
                         ),
                       ),
@@ -1717,7 +1769,8 @@ name: CustomerFormPage.routeName,
                       GoRoute(
                         path: ':id',
                         name: 'pos-coupon-detail',
-                        builder: (_, GoRouterState state) => PosCouponDetailPage(
+                        builder: (_, GoRouterState state) =>
+                            PosCouponDetailPage(
                           id: state.pathParameters['id']!,
                         ),
                       ),
@@ -1736,7 +1789,8 @@ name: CustomerFormPage.routeName,
                       GoRoute(
                         path: ':id',
                         name: 'pos-gift-card-detail',
-                        builder: (_, GoRouterState state) => PosGiftCardDetailPage(
+                        builder: (_, GoRouterState state) =>
+                            PosGiftCardDetailPage(
                           id: state.pathParameters['id']!,
                         ),
                       ),
@@ -1755,7 +1809,8 @@ name: CustomerFormPage.routeName,
                       GoRoute(
                         path: ':id',
                         name: 'pos-loyalty-program-detail',
-                        builder: (_, GoRouterState state) => PosLoyaltyProgramDetailPage(
+                        builder: (_, GoRouterState state) =>
+                            PosLoyaltyProgramDetailPage(
                           id: state.pathParameters['id']!,
                         ),
                       ),
@@ -1772,7 +1827,8 @@ name: CustomerFormPage.routeName,
                           GoRoute(
                             path: ':id',
                             name: 'pos-loyalty-member-detail',
-                            builder: (_, GoRouterState state) => PosLoyaltyMemberDetailPage(
+                            builder: (_, GoRouterState state) =>
+                                PosLoyaltyMemberDetailPage(
                               id: state.pathParameters['id']!,
                             ),
                           ),
@@ -1800,7 +1856,8 @@ name: CustomerFormPage.routeName,
                       GoRoute(
                         path: ':id',
                         name: WorkOrderDetailPage.routeName,
-                        builder: (_, GoRouterState state) => WorkOrderDetailPage(
+                        builder: (_, GoRouterState state) =>
+                            WorkOrderDetailPage(
                           id: state.pathParameters['id']!,
                         ),
                       ),
@@ -1857,7 +1914,8 @@ name: CustomerFormPage.routeName,
                       GoRoute(
                         path: ':id',
                         name: WorkstationDetailPage.routeName,
-                        builder: (_, GoRouterState state) => WorkstationDetailPage(
+                        builder: (_, GoRouterState state) =>
+                            WorkstationDetailPage(
                           id: state.pathParameters['id']!,
                         ),
                       ),
@@ -1895,7 +1953,8 @@ name: CustomerFormPage.routeName,
                       GoRoute(
                         path: ':id',
                         name: QualityInspectionDetailPage.routeName,
-                        builder: (_, GoRouterState state) => QualityInspectionDetailPage(
+                        builder: (_, GoRouterState state) =>
+                            QualityInspectionDetailPage(
                           id: state.pathParameters['id']!,
                         ),
                       ),
@@ -1981,7 +2040,8 @@ name: CustomerFormPage.routeName,
                       GoRoute(
                         path: ':id',
                         name: ProjectPortfolioDetailPage.routeName,
-                        builder: (_, GoRouterState state) => ProjectPortfolioDetailPage(
+                        builder: (_, GoRouterState state) =>
+                            ProjectPortfolioDetailPage(
                           portfolioId: state.pathParameters['id']!,
                         ),
                       ),
@@ -2000,7 +2060,8 @@ name: CustomerFormPage.routeName,
                       GoRoute(
                         path: ':id',
                         name: ProjectBudgetDetailPage.routeName,
-                        builder: (_, GoRouterState state) => ProjectBudgetDetailPage(
+                        builder: (_, GoRouterState state) =>
+                            ProjectBudgetDetailPage(
                           budgetId: state.pathParameters['id']!,
                         ),
                       ),
@@ -2019,7 +2080,8 @@ name: CustomerFormPage.routeName,
                       GoRoute(
                         path: ':id',
                         name: ProjectRiskDetailPage.routeName,
-                        builder: (_, GoRouterState state) => ProjectRiskDetailPage(
+                        builder: (_, GoRouterState state) =>
+                            ProjectRiskDetailPage(
                           riskId: state.pathParameters['id']!,
                         ),
                       ),
@@ -2038,14 +2100,16 @@ name: CustomerFormPage.routeName,
                       GoRoute(
                         path: ':id',
                         name: proj_ts_det.TimesheetDetailPage.routeName,
-                        builder: (_, GoRouterState state) => proj_ts_det.TimesheetDetailPage(
+                        builder: (_, GoRouterState state) =>
+                            proj_ts_det.TimesheetDetailPage(
                           timesheetId: state.pathParameters['id']!,
                         ),
                       ),
                       GoRoute(
                         path: 'new',
                         name: proj_ts_form.TimesheetFormPage.routeName,
-                        builder: (_, __) => const proj_ts_form.TimesheetFormPage(),
+                        builder: (_, __) =>
+                            const proj_ts_form.TimesheetFormPage(),
                       ),
                     ],
                   ),
@@ -2088,7 +2152,8 @@ name: CustomerFormPage.routeName,
                       GoRoute(
                         path: ':id',
                         name: 'template-detail',
-                        builder: (_, GoRouterState state) => DocumentTemplateDetailPage(
+                        builder: (_, GoRouterState state) =>
+                            DocumentTemplateDetailPage(
                           templateId: state.pathParameters['id']!,
                         ),
                       ),
@@ -2112,7 +2177,8 @@ name: CustomerFormPage.routeName,
                           GoRoute(
                             path: ':id',
                             name: 'drive-file-detail',
-                            builder: (_, GoRouterState state) => DriveFileDetailPage(
+                            builder: (_, GoRouterState state) =>
+                                DriveFileDetailPage(
                               fileId: state.pathParameters['id']!,
                             ),
                           ),
@@ -2126,7 +2192,8 @@ name: CustomerFormPage.routeName,
                           GoRoute(
                             path: ':id',
                             name: 'drive-folder-detail',
-                            builder: (_, GoRouterState state) => DriveFolderDetailPage(
+                            builder: (_, GoRouterState state) =>
+                                DriveFolderDetailPage(
                               folderId: state.pathParameters['id']!,
                             ),
                           ),
@@ -2292,7 +2359,8 @@ name: CustomerFormPage.routeName,
                           GoRoute(
                             path: ':id',
                             name: 'job-detail',
-                            builder: (_, GoRouterState state) => ReportJobDetailPage(
+                            builder: (_, GoRouterState state) =>
+                                ReportJobDetailPage(
                               jobId: state.pathParameters['id']!,
                             ),
                           ),
@@ -2311,8 +2379,9 @@ name: CustomerFormPage.routeName,
                           GoRoute(
                             path: ':id',
                             name: 'report-template-detail',
-                            builder: (_, GoRouterState state) => TemplateDetailPage(
-                          id: state.pathParameters['id']!,
+                            builder: (_, GoRouterState state) =>
+                                TemplateDetailPage(
+                              id: state.pathParameters['id']!,
                             ),
                           ),
                           GoRoute(
@@ -2358,7 +2427,8 @@ name: CustomerFormPage.routeName,
                       GoRoute(
                         path: ':id',
                         name: 'ai-prediction-detail',
-                        builder: (_, GoRouterState state) => AiPredictionDetailPage(
+                        builder: (_, GoRouterState state) =>
+                            AiPredictionDetailPage(
                           predictionId: state.pathParameters['id']!,
                         ),
                       ),
@@ -2396,7 +2466,8 @@ name: CustomerFormPage.routeName,
                       GoRoute(
                         path: ':id',
                         name: 'ai-training-data-detail',
-                        builder: (_, GoRouterState state) => TrainingDataDetailPage(
+                        builder: (_, GoRouterState state) =>
+                            TrainingDataDetailPage(
                           id: state.pathParameters['id']!,
                         ),
                       ),
@@ -2432,7 +2503,8 @@ name: CustomerFormPage.routeName,
                           GoRoute(
                             path: ':id',
                             name: 'saved-view-detail',
-                            builder: (_, GoRouterState state) => SavedViewDetailPage(
+                            builder: (_, GoRouterState state) =>
+                                SavedViewDetailPage(
                               id: state.pathParameters['id']!,
                             ),
                           ),
@@ -2479,7 +2551,8 @@ name: CustomerFormPage.routeName,
                       GoRoute(
                         path: ':id',
                         name: 'builder-page-detail',
-                        builder: (_, GoRouterState state) => BuilderPageDetailPage(
+                        builder: (_, GoRouterState state) =>
+                            BuilderPageDetailPage(
                           pageId: state.pathParameters['id']!,
                         ),
                       ),
@@ -2559,7 +2632,8 @@ name: CustomerFormPage.routeName,
                   GoRoute(
                     path: ':id',
                     name: EcommerceProductDetailPage.routeName,
-                    builder: (_, GoRouterState state) => EcommerceProductDetailPage(
+                    builder: (_, GoRouterState state) =>
+                        EcommerceProductDetailPage(
                       productId: state.pathParameters['id']!,
                     ),
                   ),
@@ -2581,7 +2655,8 @@ name: CustomerFormPage.routeName,
                       GoRoute(
                         path: ':id',
                         name: EcommerceOrderDetailPage.routeName,
-                        builder: (_, GoRouterState state) => EcommerceOrderDetailPage(
+                        builder: (_, GoRouterState state) =>
+                            EcommerceOrderDetailPage(
                           orderId: state.pathParameters['id']!,
                         ),
                       ),
@@ -2595,7 +2670,8 @@ name: CustomerFormPage.routeName,
                       GoRoute(
                         path: 'submissions',
                         name: MarketplaceSubmissionListPage.routeName,
-                        builder: (_, __) => const MarketplaceSubmissionListPage(),
+                        builder: (_, __) =>
+                            const MarketplaceSubmissionListPage(),
                       ),
                     ],
                   ),
@@ -2631,7 +2707,8 @@ name: CustomerFormPage.routeName,
                       GoRoute(
                         path: ':id',
                         name: 'admin-role-detail',
-                        builder: (_, GoRouterState state) => AdminRoleDetailPage(
+                        builder: (_, GoRouterState state) =>
+                            AdminRoleDetailPage(
                           roleId: state.pathParameters['id']!,
                         ),
                       ),
@@ -2650,7 +2727,8 @@ name: CustomerFormPage.routeName,
                       GoRoute(
                         path: ':id',
                         name: 'admin-tenant-detail',
-                        builder: (_, GoRouterState state) => AdminTenantDetailPage(
+                        builder: (_, GoRouterState state) =>
+                            AdminTenantDetailPage(
                           tenantId: state.pathParameters['id']!,
                         ),
                       ),
@@ -2669,14 +2747,16 @@ name: CustomerFormPage.routeName,
                       GoRoute(
                         path: ':key',
                         name: 'admin-setting-detail',
-                        builder: (_, GoRouterState state) => AdminSettingsDetailPage(
+                        builder: (_, GoRouterState state) =>
+                            AdminSettingsDetailPage(
                           id: state.pathParameters['key']!,
                         ),
                       ),
                       GoRoute(
                         path: ':key/edit',
                         name: 'admin-setting-edit',
-                        builder: (_, GoRouterState state) => AdminSettingEditPage(
+                        builder: (_, GoRouterState state) =>
+                            AdminSettingEditPage(
                           settingKey: state.pathParameters['key']!,
                         ),
                       ),
@@ -2695,7 +2775,8 @@ name: CustomerFormPage.routeName,
                       GoRoute(
                         path: ':id',
                         name: 'admin-api-key-detail',
-                        builder: (_, GoRouterState state) => AdminApiKeyDetailPage(
+                        builder: (_, GoRouterState state) =>
+                            AdminApiKeyDetailPage(
                           apiKeyId: state.pathParameters['id']!,
                         ),
                       ),
@@ -2712,7 +2793,8 @@ name: CustomerFormPage.routeName,
                           GoRoute(
                             path: ':id',
                             name: 'admin-api-key-usage-detail',
-                            builder: (_, GoRouterState state) => UsageLogDetailPage(
+                            builder: (_, GoRouterState state) =>
+                                UsageLogDetailPage(
                               id: state.pathParameters['id']!,
                             ),
                           ),
@@ -2747,7 +2829,8 @@ name: CustomerFormPage.routeName,
                       GoRoute(
                         path: ':id',
                         name: 'push-subscription-detail',
-                        builder: (_, GoRouterState state) => PushSubscriptionDetailPage(
+                        builder: (_, GoRouterState state) =>
+                            PushSubscriptionDetailPage(
                           subscriptionId: state.pathParameters['id']!,
                         ),
                       ),
@@ -2776,7 +2859,8 @@ name: CustomerFormPage.routeName,
                           GoRoute(
                             path: ':id',
                             name: 'api-key-detail',
-                            builder: (_, GoRouterState state) => ApiKeyDetailPage(
+                            builder: (_, GoRouterState state) =>
+                                ApiKeyDetailPage(
                               id: state.pathParameters['id']!,
                             ),
                           ),
@@ -2800,7 +2884,8 @@ name: CustomerFormPage.routeName,
                           GoRoute(
                             path: ':id',
                             name: 'api-usage-log-detail',
-                            builder: (_, GoRouterState state) => UsageLogDetailPage(
+                            builder: (_, GoRouterState state) =>
+                                UsageLogDetailPage(
                               id: state.pathParameters['id']!,
                             ),
                           ),
@@ -2833,7 +2918,8 @@ name: CustomerFormPage.routeName,
                           GoRoute(
                             path: ':id',
                             name: 'storage-file-detail',
-                            builder: (_, GoRouterState state) => StorageFileDetailPage(
+                            builder: (_, GoRouterState state) =>
+                                StorageFileDetailPage(
                               fileId: state.pathParameters['id']!,
                             ),
                           ),
@@ -2875,7 +2961,8 @@ name: CustomerFormPage.routeName,
                       GoRoute(
                         path: ':id',
                         name: SaasSubscriptionDetailPage.routeName,
-                        builder: (_, GoRouterState state) => SaasSubscriptionDetailPage(
+                        builder: (_, GoRouterState state) =>
+                            SaasSubscriptionDetailPage(
                           subscriptionId: state.pathParameters['id']!,
                         ),
                       ),
@@ -2889,7 +2976,8 @@ name: CustomerFormPage.routeName,
                       GoRoute(
                         path: ':id',
                         name: SaasTenantDetailPage.routeName,
-                        builder: (_, GoRouterState state) => SaasTenantDetailPage(
+                        builder: (_, GoRouterState state) =>
+                            SaasTenantDetailPage(
                           tenantId: state.pathParameters['id']!,
                         ),
                       ),
@@ -2908,7 +2996,8 @@ name: CustomerFormPage.routeName,
                       GoRoute(
                         path: ':id',
                         name: PortalPlanDetailPage.routeName,
-                        builder: (_, GoRouterState state) => PortalPlanDetailPage(
+                        builder: (_, GoRouterState state) =>
+                            PortalPlanDetailPage(
                           planId: state.pathParameters['id']!,
                         ),
                       ),
@@ -2920,14 +3009,16 @@ name: CustomerFormPage.routeName,
                           GoRoute(
                             path: ':id',
                             name: 'portal-ticket-detail',
-                            builder: (_, GoRouterState state) => PortalSupportTicketDetailPage(
+                            builder: (_, GoRouterState state) =>
+                                PortalSupportTicketDetailPage(
                               ticketId: state.pathParameters['id']!,
                             ),
                           ),
                           GoRoute(
                             path: 'new',
                             name: 'portal-ticket-new',
-                            builder: (_, __) => const PortalSupportTicketFormPage(),
+                            builder: (_, __) =>
+                                const PortalSupportTicketFormPage(),
                           ),
                         ],
                       ),
@@ -2958,14 +3049,16 @@ name: CustomerFormPage.routeName,
                           GoRoute(
                             path: ':id',
                             name: 'subscription-plan-detail',
-                            builder: (_, GoRouterState state) => sub_plan_detail.PlanDetailPage(
+                            builder: (_, GoRouterState state) =>
+                                sub_plan_detail.PlanDetailPage(
                               id: state.pathParameters['id']!,
                             ),
                           ),
                           GoRoute(
                             path: 'new',
                             name: 'subscription-plan-new',
-                            builder: (_, __) => const SubscriptionPlanFormPage(),
+                            builder: (_, __) =>
+                                const SubscriptionPlanFormPage(),
                           ),
                         ],
                       ),
@@ -2979,7 +3072,8 @@ name: CustomerFormPage.routeName,
                       GoRoute(
                         path: ':id',
                         name: 'contract-detail',
-                        builder: (_, GoRouterState state) => BlockchainContractDetailPage(
+                        builder: (_, GoRouterState state) =>
+                            BlockchainContractDetailPage(
                           id: state.pathParameters['id']!,
                         ),
                       ),
@@ -2991,12 +3085,14 @@ name: CustomerFormPage.routeName,
                       GoRoute(
                         path: 'transactions',
                         name: BlockchainTransactionListPage.routeName,
-                        builder: (_, __) => const BlockchainTransactionListPage(),
+                        builder: (_, __) =>
+                            const BlockchainTransactionListPage(),
                         routes: <RouteBase>[
                           GoRoute(
                             path: ':id',
                             name: 'transaction-detail',
-                            builder: (_, GoRouterState state) => BlockchainTransactionDetailPage(
+                            builder: (_, GoRouterState state) =>
+                                BlockchainTransactionDetailPage(
                               id: state.pathParameters['id']!,
                             ),
                           ),
@@ -3128,7 +3224,8 @@ name: CustomerFormPage.routeName,
                       GoRoute(
                         path: ':id',
                         name: 'technician-detail',
-                        builder: (_, GoRouterState state) => TechnicianDetailPage(
+                        builder: (_, GoRouterState state) =>
+                            TechnicianDetailPage(
                           id: state.pathParameters['id']!,
                         ),
                       ),
@@ -3210,7 +3307,8 @@ name: CustomerFormPage.routeName,
                       GoRoute(
                         path: ':id',
                         name: 'service-request-detail',
-                        builder: (_, GoRouterState state) => ServiceRequestDetailPage(
+                        builder: (_, GoRouterState state) =>
+                            ServiceRequestDetailPage(
                           requestId: state.pathParameters['id']!,
                         ),
                       ),

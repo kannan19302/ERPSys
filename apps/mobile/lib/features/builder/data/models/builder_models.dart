@@ -14,8 +14,12 @@ int asInt(Object? value) => switch (value) {
       _ => 0,
     };
 
-List<T> _parseItems<T>(List<dynamic>? list, T Function(Map<String, dynamic>) fromJson) =>
-    list?.map((e) => fromJson(e as Map<String, dynamic>)).toList(growable: false) ?? const [];
+List<T> _parseItems<T>(
+        List<dynamic>? list, T Function(Map<String, dynamic>) fromJson) =>
+    list
+        ?.map((e) => fromJson(e as Map<String, dynamic>))
+        .toList(growable: false) ??
+    const [];
 
 class BuilderFormModel extends BuilderForm {
   const BuilderFormModel({
@@ -36,7 +40,8 @@ class BuilderFormModel extends BuilderForm {
       id: id,
       title: json['title'] as String? ?? '',
       description: json['description'] as String?,
-      fields: _parseItems(json['fields'] as List<dynamic>?, BuilderFormFieldModel.fromJson),
+      fields: _parseItems(
+          json['fields'] as List<dynamic>?, BuilderFormFieldModel.fromJson),
       status: json['status'] as String? ?? 'DRAFT',
       version: asInt(json['version']),
       createdAt: DateTime.tryParse('${json['createdAt']}'),
@@ -114,7 +119,8 @@ class BuilderPageModel extends BuilderPage {
       title: json['title'] as String? ?? '',
       slug: json['slug'] as String?,
       layout: json['layout'] as String? ?? 'default',
-      sections: _parseItems(json['sections'] as List<dynamic>?, BuilderPageSectionModel.fromJson),
+      sections: _parseItems(
+          json['sections'] as List<dynamic>?, BuilderPageSectionModel.fromJson),
       status: json['status'] as String? ?? 'DRAFT',
       createdAt: DateTime.tryParse('${json['createdAt']}'),
       updatedAt: DateTime.tryParse('${json['updatedAt']}'),
@@ -177,7 +183,8 @@ class BuilderWorkflowModel extends BuilderWorkflow {
       id: id,
       name: json['name'] as String? ?? '',
       description: json['description'] as String?,
-      steps: _parseItems(json['steps'] as List<dynamic>?, BuilderWorkflowStepModel.fromJson),
+      steps: _parseItems(
+          json['steps'] as List<dynamic>?, BuilderWorkflowStepModel.fromJson),
       status: json['status'] as String? ?? 'DRAFT',
       createdAt: DateTime.tryParse('${json['createdAt']}'),
       updatedAt: DateTime.tryParse('${json['updatedAt']}'),

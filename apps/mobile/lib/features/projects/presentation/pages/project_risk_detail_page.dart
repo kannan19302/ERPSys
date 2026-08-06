@@ -22,7 +22,9 @@ class ProjectRiskDetailPage extends ConsumerWidget {
       body: riskAsync.when(
         loading: () => const LoadingView(),
         error: (error, _) => FailureView(
-          failure: error is Failure ? error : const ServerFailure('Could not load risk.'),
+          failure: error is Failure
+              ? error
+              : const ServerFailure('Could not load risk.'),
           onRetry: () => ref.invalidate(projectRiskDetailProvider(riskId)),
         ),
         data: (r) => _RiskDetail(risk: r),
@@ -47,38 +49,49 @@ class _RiskDetail extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.all(Spacing.x4),
       children: [
-        UiCard(child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(children: [
-              Expanded(child: Text(risk.title, style: Theme.of(context).textTheme.titleLarge)),
-              UiStatusBadge(label: risk.status, tone: _statusTone(risk.status)),
-            ],),
-            if (risk.description != null && risk.description!.isNotEmpty) ...[
-              const SizedBox(height: Spacing.x1),
-              Text(risk.description!),
-            ],
-          ],
-        ),),
-        const SizedBox(height: Spacing.x4),
-        UiCard(child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const UiSectionHeader(title: 'Assessment'),
-            _Row('Probability', risk.probability),
-            _Row('Impact', risk.impact),
-            _Row('Severity', '${risk.probability}/${risk.impact}'),
-          ],
-        ),),
-        if (risk.mitigationPlan != null && risk.mitigationPlan!.isNotEmpty) ...[
-          const SizedBox(height: Spacing.x4),
-          UiCard(child: Column(
+        UiCard(
+          child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const UiSectionHeader(title: 'Mitigation Plan'),
-              Text(risk.mitigationPlan!),
+              Row(
+                children: [
+                  Expanded(
+                      child: Text(risk.title,
+                          style: Theme.of(context).textTheme.titleLarge)),
+                  UiStatusBadge(
+                      label: risk.status, tone: _statusTone(risk.status)),
+                ],
+              ),
+              if (risk.description != null && risk.description!.isNotEmpty) ...[
+                const SizedBox(height: Spacing.x1),
+                Text(risk.description!),
+              ],
             ],
-          ),),
+          ),
+        ),
+        const SizedBox(height: Spacing.x4),
+        UiCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const UiSectionHeader(title: 'Assessment'),
+              _Row('Probability', risk.probability),
+              _Row('Impact', risk.impact),
+              _Row('Severity', '${risk.probability}/${risk.impact}'),
+            ],
+          ),
+        ),
+        if (risk.mitigationPlan != null && risk.mitigationPlan!.isNotEmpty) ...[
+          const SizedBox(height: Spacing.x4),
+          UiCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const UiSectionHeader(title: 'Mitigation Plan'),
+                Text(risk.mitigationPlan!),
+              ],
+            ),
+          ),
         ],
       ],
     );
@@ -94,10 +107,13 @@ class _Row extends StatelessWidget {
     final t = context.tokens;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: Spacing.x1_5),
-      child: Row(children: [
-        Expanded(child: Text(label, style: TextStyle(color: t.textSecondary))),
-        Text(value, style: Theme.of(context).textTheme.labelLarge),
-      ],),
+      child: Row(
+        children: [
+          Expanded(
+              child: Text(label, style: TextStyle(color: t.textSecondary))),
+          Text(value, style: Theme.of(context).textTheme.labelLarge),
+        ],
+      ),
     );
   }
 }

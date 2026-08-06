@@ -29,7 +29,8 @@ final Provider<StorageRepository> storageRepositoryProvider =
 class BucketListState extends Equatable {
   const BucketListState({
     this.items = const <StorageBucket>[],
-    this.meta = const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
+    this.meta =
+        const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
     this.query = const ListQuery(sort: '-createdAt'),
     this.isLoading = true,
     this.isLoadingMore = false,
@@ -46,20 +47,36 @@ class BucketListState extends Equatable {
   final Failure? loadMoreFailure;
 
   BucketListState copyWith({
-    List<StorageBucket>? items, PaginationMeta? meta, ListQuery? query,
-    bool? isLoading, bool? isLoadingMore, Failure? failure,
-    Failure? loadMoreFailure, bool clearFailures = false,
+    List<StorageBucket>? items,
+    PaginationMeta? meta,
+    ListQuery? query,
+    bool? isLoading,
+    bool? isLoadingMore,
+    Failure? failure,
+    Failure? loadMoreFailure,
+    bool clearFailures = false,
   }) =>
       BucketListState(
-        items: items ?? this.items, meta: meta ?? this.meta,
-        query: query ?? this.query, isLoading: isLoading ?? this.isLoading,
+        items: items ?? this.items,
+        meta: meta ?? this.meta,
+        query: query ?? this.query,
+        isLoading: isLoading ?? this.isLoading,
         isLoadingMore: isLoadingMore ?? this.isLoadingMore,
         failure: clearFailures ? null : (failure ?? this.failure),
-        loadMoreFailure: clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
+        loadMoreFailure:
+            clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
       );
 
   @override
-  List<Object?> get props => <Object?>[items, meta, query.cacheKey, isLoading, isLoadingMore, failure, loadMoreFailure];
+  List<Object?> get props => <Object?>[
+        items,
+        meta,
+        query.cacheKey,
+        isLoading,
+        isLoadingMore,
+        failure,
+        loadMoreFailure
+      ];
 }
 
 final NotifierProvider<BucketListController, BucketListState>
@@ -89,8 +106,11 @@ class BucketListController extends Notifier<BucketListState> {
     state = result.fold(
       (f) => state.copyWith(isLoading: false, failure: f, items: const []),
       (page) => state.copyWith(
-        items: page.value.data, meta: page.value.meta, query: query,
-        isLoading: false, clearFailures: true,
+        items: page.value.data,
+        meta: page.value.meta,
+        query: query,
+        isLoading: false,
+        clearFailures: true,
       ),
     );
   }
@@ -103,8 +123,11 @@ class BucketListController extends Notifier<BucketListState> {
     state = result.fold(
       (f) => state.copyWith(isLoadingMore: false, loadMoreFailure: f),
       (page) => state.copyWith(
-        items: [...state.items, ...page.value.data], meta: page.value.meta,
-        query: next, isLoadingMore: false, clearFailures: true,
+        items: [...state.items, ...page.value.data],
+        meta: page.value.meta,
+        query: next,
+        isLoadingMore: false,
+        clearFailures: true,
       ),
     );
   }
@@ -112,22 +135,27 @@ class BucketListController extends Notifier<BucketListState> {
   void search(String term) {
     _searchDebounce?.cancel();
     _searchDebounce = Timer(const Duration(milliseconds: 350), () {
-      state = state.copyWith(query: state.query.copyWith(search: term, page: 1));
+      state =
+          state.copyWith(query: state.query.copyWith(search: term, page: 1));
       refresh();
     });
   }
 
   Future<Result<void>> delete(String id) async {
     final result = await DeleteBucketUseCase(
-      ref.read(storageRepositoryProvider),)(id);
+      ref.read(storageRepositoryProvider),
+    )(id);
     if (result.isOk) await refresh();
     return result;
   }
 
-  Future<Result<StorageBucket>> save(Map<String, dynamic> payload, {String? id}) async {
+  Future<Result<StorageBucket>> save(Map<String, dynamic> payload,
+      {String? id}) async {
     final result = await SaveBucketUseCase(
-      ref.read(storageRepositoryProvider),)(
-      SaveBucketParams(id: id, payload: payload),);
+      ref.read(storageRepositoryProvider),
+    )(
+      SaveBucketParams(id: id, payload: payload),
+    );
     if (result.isOk) await refresh();
     return result;
   }
@@ -136,7 +164,8 @@ class BucketListController extends Notifier<BucketListState> {
 class FileListState extends Equatable {
   const FileListState({
     this.items = const <StorageFile>[],
-    this.meta = const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
+    this.meta =
+        const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
     this.query = const ListQuery(sort: '-createdAt'),
     this.isLoading = true,
     this.isLoadingMore = false,
@@ -153,20 +182,36 @@ class FileListState extends Equatable {
   final Failure? loadMoreFailure;
 
   FileListState copyWith({
-    List<StorageFile>? items, PaginationMeta? meta, ListQuery? query,
-    bool? isLoading, bool? isLoadingMore, Failure? failure,
-    Failure? loadMoreFailure, bool clearFailures = false,
+    List<StorageFile>? items,
+    PaginationMeta? meta,
+    ListQuery? query,
+    bool? isLoading,
+    bool? isLoadingMore,
+    Failure? failure,
+    Failure? loadMoreFailure,
+    bool clearFailures = false,
   }) =>
       FileListState(
-        items: items ?? this.items, meta: meta ?? this.meta,
-        query: query ?? this.query, isLoading: isLoading ?? this.isLoading,
+        items: items ?? this.items,
+        meta: meta ?? this.meta,
+        query: query ?? this.query,
+        isLoading: isLoading ?? this.isLoading,
         isLoadingMore: isLoadingMore ?? this.isLoadingMore,
         failure: clearFailures ? null : (failure ?? this.failure),
-        loadMoreFailure: clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
+        loadMoreFailure:
+            clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
       );
 
   @override
-  List<Object?> get props => <Object?>[items, meta, query.cacheKey, isLoading, isLoadingMore, failure, loadMoreFailure];
+  List<Object?> get props => <Object?>[
+        items,
+        meta,
+        query.cacheKey,
+        isLoading,
+        isLoadingMore,
+        failure,
+        loadMoreFailure
+      ];
 }
 
 final NotifierProvider<FileListController, FileListState>
@@ -196,8 +241,11 @@ class FileListController extends Notifier<FileListState> {
     state = result.fold(
       (f) => state.copyWith(isLoading: false, failure: f, items: const []),
       (page) => state.copyWith(
-        items: page.value.data, meta: page.value.meta, query: query,
-        isLoading: false, clearFailures: true,
+        items: page.value.data,
+        meta: page.value.meta,
+        query: query,
+        isLoading: false,
+        clearFailures: true,
       ),
     );
   }
@@ -210,8 +258,11 @@ class FileListController extends Notifier<FileListState> {
     state = result.fold(
       (f) => state.copyWith(isLoadingMore: false, loadMoreFailure: f),
       (page) => state.copyWith(
-        items: [...state.items, ...page.value.data], meta: page.value.meta,
-        query: next, isLoadingMore: false, clearFailures: true,
+        items: [...state.items, ...page.value.data],
+        meta: page.value.meta,
+        query: next,
+        isLoadingMore: false,
+        clearFailures: true,
       ),
     );
   }
@@ -219,22 +270,27 @@ class FileListController extends Notifier<FileListState> {
   void search(String term) {
     _searchDebounce?.cancel();
     _searchDebounce = Timer(const Duration(milliseconds: 350), () {
-      state = state.copyWith(query: state.query.copyWith(search: term, page: 1));
+      state =
+          state.copyWith(query: state.query.copyWith(search: term, page: 1));
       refresh();
     });
   }
 
   Future<Result<void>> delete(String id) async {
     final result = await DeleteFileUseCase(
-      ref.read(storageRepositoryProvider),)(id);
+      ref.read(storageRepositoryProvider),
+    )(id);
     if (result.isOk) await refresh();
     return result;
   }
 
-  Future<Result<StorageFile>> save(Map<String, dynamic> payload, {String? id}) async {
+  Future<Result<StorageFile>> save(Map<String, dynamic> payload,
+      {String? id}) async {
     final result = await SaveFileUseCase(
-      ref.read(storageRepositoryProvider),)(
-      SaveFileParams(id: id, payload: payload),);
+      ref.read(storageRepositoryProvider),
+    )(
+      SaveFileParams(id: id, payload: payload),
+    );
     if (result.isOk) await refresh();
     return result;
   }
@@ -243,14 +299,15 @@ class FileListController extends Notifier<FileListState> {
 final FutureProviderFamily<StorageBucket, String> storageBucketDetailProvider =
     FutureProvider.family<StorageBucket, String>((Ref ref, String id) async {
   final result = await GetBucketUseCase(
-    ref.watch(storageRepositoryProvider),)(id);
+    ref.watch(storageRepositoryProvider),
+  )(id);
   return result.fold((f) => throw f, (v) => v);
 });
 
 final FutureProviderFamily<StorageFile, String> storageFileDetailProvider =
     FutureProvider.family<StorageFile, String>((Ref ref, String id) async {
   final result = await GetFileUseCase(
-    ref.watch(storageRepositoryProvider),)(id);
+    ref.watch(storageRepositoryProvider),
+  )(id);
   return result.fold((f) => throw f, (v) => v);
 });
-

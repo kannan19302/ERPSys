@@ -1,5 +1,5 @@
 .s0 {
-  padding: 8px 16px;
+  padding: var(--space-2) var(--space-4);
   background: var(--color-primary-light);
   color: var(--color-primary);
   border-radius: var(--radius-md);
@@ -11,9 +11,8 @@
 }
 
 .dyn0 {
-  padding: 2px 8px;
-  border-radius: 4px;
+  padding: var(--space-half) var(--space-2);
+  border-radius: var(--radius-sm);
   font-size: 11px;
   font-weight: 600;
 }
-

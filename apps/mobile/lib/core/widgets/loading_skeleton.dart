@@ -192,8 +192,9 @@ class ListSkeleton extends StatelessWidget {
           shrinkWrap: true,
           padding: const EdgeInsets.all(Spacing.x4),
           itemCount: itemCount,
-          separatorBuilder: (_, int __) =>
-              separator ? const SizedBox(height: Spacing.x3) : const SizedBox.shrink(),
+          separatorBuilder: (_, int __) => separator
+              ? const SizedBox(height: Spacing.x3)
+              : const SizedBox.shrink(),
           itemBuilder: (BuildContext context, int index) {
             return SizedBox(
               height: itemHeight,
@@ -202,15 +203,18 @@ class ListSkeleton extends StatelessWidget {
                 children: <Widget>[
                   // Leading circle
                   const Padding(
-                    padding: EdgeInsets.only(right: Spacing.x3, top: Spacing.x1),
-                    child: SkeletonLine(width: 40, height: 40, borderRadius: 20),
+                    padding:
+                        EdgeInsets.only(right: Spacing.x3, top: Spacing.x1),
+                    child:
+                        SkeletonLine(width: 40, height: 40, borderRadius: 20),
                   ),
                   // Lines
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisSize: MainAxisSize.min,
-                      children: List<Widget>.generate(linesPerItem, (int lineIndex) {
+                      children:
+                          List<Widget>.generate(linesPerItem, (int lineIndex) {
                         return Padding(
                           padding: EdgeInsets.only(
                             top: lineIndex == 0 ? Spacing.x1 : Spacing.x2,
@@ -301,7 +305,10 @@ class FormSkeleton extends StatelessWidget {
                   SkeletonLine(width: 80, height: 12),
                   SizedBox(height: Spacing.x2),
                   // Field
-                  SkeletonBlock(height: 48, borderRadius: BorderRadius.all(Radius.circular(Radii.lg))),
+                  SkeletonBlock(
+                      height: 48,
+                      borderRadius:
+                          BorderRadius.all(Radius.circular(Radii.lg))),
                 ],
               ),
             );
@@ -335,14 +342,15 @@ class CardSkeleton extends StatelessWidget {
           ),
           child: SizedBox(
             height: height,
-child: Padding(
+            child: Padding(
               padding: const EdgeInsets.all(Spacing.x4),
               child: Row(
                 children: <Widget>[
                   if (showAvatar)
                     const Padding(
                       padding: EdgeInsets.only(right: Spacing.x3),
-                      child: SkeletonLine(width: 48, height: 48, borderRadius: 24),
+                      child:
+                          SkeletonLine(width: 48, height: 48, borderRadius: 24),
                     ),
                   const Expanded(
                     child: Column(

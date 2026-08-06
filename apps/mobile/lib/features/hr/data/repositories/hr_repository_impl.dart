@@ -61,25 +61,24 @@ class HrRepositoryImpl implements HrRepository {
         Cacheable<Paginated<T>>(
           value: Paginated<T>.fromJson(
             cached.value,
-            (Map<String, dynamic> j) =>
-                (namespace == _empNamespace
-                    ? EmployeeModel.fromJson(j)
-                    : namespace == _deptNamespace
-                        ? DepartmentModel.fromJson(j)
-                        : namespace == _leaveNamespace
-                            ? LeaveRequestModel.fromJson(j)
-                            : namespace == _attNamespace
-                                ? AttendanceModel.fromJson(j)
-                                : namespace == _tsNamespace
-                                    ? TimesheetModel.fromJson(j)
-                                    : namespace == _prNamespace
-                                        ? PayrollRunModel.fromJson(j)
-                                        : namespace == _prNamespacePr
+            (Map<String, dynamic> j) => (namespace == _empNamespace
+                ? EmployeeModel.fromJson(j)
+                : namespace == _deptNamespace
+                    ? DepartmentModel.fromJson(j)
+                    : namespace == _leaveNamespace
+                        ? LeaveRequestModel.fromJson(j)
+                        : namespace == _attNamespace
+                            ? AttendanceModel.fromJson(j)
+                            : namespace == _tsNamespace
+                                ? TimesheetModel.fromJson(j)
+                                : namespace == _prNamespace
+                                    ? PayrollRunModel.fromJson(j)
+                                    : namespace == _prNamespacePr
                                         ? PerformanceReviewModel.fromJson(j)
                                         : namespace == _psNamespace
                                             ? PayslipModel.fromJson(j)
-                                            : SalaryStructureModel.fromJson(j))
-                    as T,
+                                            : SalaryStructureModel.fromJson(
+                                                j)) as T,
           ),
           cachedAt: cached.cachedAt,
         ),
@@ -201,8 +200,7 @@ class HrRepositoryImpl implements HrRepository {
       );
 
   @override
-  Future<Result<Department>> getDepartment(String id) =>
-      _single<Department>(
+  Future<Result<Department>> getDepartment(String id) => _single<Department>(
         () => _remote.getDepartment(id),
         _deptNamespace,
         id,
@@ -395,17 +393,17 @@ class HrRepositoryImpl implements HrRepository {
   // ── Salary structures ─────────────────────────────────────────────────
 
   @override
-  Future<Result<Cacheable<Paginated<SalaryStructure>>>>
-      listSalaryStructures(ListQuery query) =>
-          _paginated<SalaryStructure, SalaryStructureModel>(
-            () => _remote.listSalaryStructures(query),
-            (Paginated<SalaryStructureModel> p) => Paginated<SalaryStructure>(
-              data: p.data,
-              meta: p.meta,
-            ),
-            _ssNamespace,
-            query.cacheKey,
-          );
+  Future<Result<Cacheable<Paginated<SalaryStructure>>>> listSalaryStructures(
+          ListQuery query) =>
+      _paginated<SalaryStructure, SalaryStructureModel>(
+        () => _remote.listSalaryStructures(query),
+        (Paginated<SalaryStructureModel> p) => Paginated<SalaryStructure>(
+          data: p.data,
+          meta: p.meta,
+        ),
+        _ssNamespace,
+        query.cacheKey,
+      );
 
   @override
   Future<Result<SalaryStructure>> createSalaryStructure(
@@ -420,7 +418,8 @@ class HrRepositoryImpl implements HrRepository {
       listPerformanceReviews(ListQuery query) =>
           _paginated<PerformanceReview, PerformanceReviewModel>(
             () => _remote.listPerformanceReviews(query),
-            (Paginated<PerformanceReviewModel> p) => Paginated<PerformanceReview>(
+            (Paginated<PerformanceReviewModel> p) =>
+                Paginated<PerformanceReview>(
               data: p.data,
               meta: p.meta,
             ),

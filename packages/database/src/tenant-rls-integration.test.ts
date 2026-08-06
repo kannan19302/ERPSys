@@ -1,5 +1,51 @@
-import { describe, it, expect, beforeAll } from "vitest";
+import { describe, it, expect, beforeAll, afterAll } from "vitest";
+import { PrismaClient } from "@prisma/client";
 import { prisma, runWithTenantSession } from "./index";
+
+/**
+ * A connection as the APPLICATION role, established by this suite rather than
+ * inherited from however it happened to be invoked.
+ *
+ * This exists because the suite previously proved nothing in the configuration
+ * everyone actually runs. `unerp` — the role that runs migrations, seeds and
+ * (by default) the tests — is a Postgres SUPERUSER, and a superuser bypasses
+ * row-level security outright; `FORCE` does not apply to it. The suite detected
+ * that and responded with `if (isSuperuser) return;` plus a console warning, so
+ * every isolation assertion silently did not run and the suite reported green.
+ *
+ * A test that passes without evaluating its claim is worse than no test: it
+ * would pass against a table with no policy at all, while the file header
+ * describes it as "the only mechanical evidence of tenant isolation". So the
+ * proof now supplies its own non-bypass connection and asserts on that,
+ * independent of the ambient DATABASE_URL.
+ */
+const appRoleUrl =
+  process.env.DATABASE_APP_URL ??
+  process.env.DATABASE_URL?.replace(
+    /\/\/[^:]+:[^@]+@/,
+    "//unerp_api:unerp_api_password@",
+  );
+
+const appPrisma = appRoleUrl
+  ? new PrismaClient({ datasources: { db: { url: appRoleUrl } } })
+  : null;
+
+/** Run a query as the app role with the tenant GUC set, exactly as the API does. */
+async function asTenant<T>(
+  tenantId: string,
+  fn: (
+    tx: Omit<PrismaClient, "$transaction" | "$connect" | "$disconnect">,
+  ) => Promise<T>,
+): Promise<T> {
+  if (!appPrisma) throw new Error("No application-role connection available.");
+  return appPrisma.$transaction(async (tx) => {
+    await tx.$executeRawUnsafe(
+      `SELECT set_config('app.current_tenant_id', $1, true)`,
+      tenantId,
+    );
+    return fn(tx as never);
+  });
+}
 
 /**
  * Track C (#21) — Two-tenant RLS proof suite.
@@ -25,7 +71,50 @@ let testOrgIdA: string;
 let testOrgIdB: string;
 let isSuperuser = false;
 
+/**
+ * These tests prove a database-level guarantee, so they need a live database.
+ * A developer machine usually has none, and previously the suite failed at the
+ * first query in `beforeAll` with PrismaClientInitializationError — turning
+ * `pnpm verify` red for an environmental reason and training people to ignore
+ * a red test run. That is the failure mode this repository cares most about.
+ *
+ * So: skip cleanly when the database is unreachable, and NEVER skip in CI.
+ * This mirrors how scripts/ci/verify.mjs already treats the RLS gate
+ * (`optional: true` locally, a hard blocking job in CI). If the database is
+ * missing in CI, that is an infrastructure failure and must fail loudly rather
+ * than silently pass — otherwise the tenant-isolation proof, which is the only
+ * mechanical evidence of tenant isolation, could evaporate unnoticed.
+ *
+ * The probe runs at module scope, before `describe` registration, so the
+ * suites can be skipped declaratively rather than each test guarding itself.
+ */
+const databaseAvailable = await (async (): Promise<boolean> => {
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+    return true;
+  } catch (error) {
+    if (process.env.CI) {
+      throw new Error(
+        "RLS proof suite requires a database and none was reachable in CI. " +
+          "This suite is the only proof of tenant isolation; refusing to skip it. " +
+          `Underlying error: ${(error as Error).message}`,
+      );
+    }
+    console.warn(
+      "\n  [skip] RLS proof suite — no database reachable.\n" +
+        "         Start one with: docker compose -f docker-compose.dev.yml up -d postgres\n" +
+        "         CI runs this suite as a hard, non-skippable gate.\n",
+    );
+    return false;
+  }
+})();
+
+/** Every suite in this file is database-bound. */
+const describeDb = describe.skipIf(!databaseAvailable);
+
 beforeAll(async () => {
+  if (!databaseAvailable) return;
+
   // Clean up any previous test data (order matters for FK constraints)
   await prisma.$executeRawUnsafe(
     `DELETE FROM "customers" WHERE "tenant_id" IN ($1, $2)`,
@@ -69,7 +158,11 @@ beforeAll(async () => {
   });
 });
 
-describe("RLS: Role and policy baseline", () => {
+afterAll(async () => {
+  await appPrisma?.$disconnect();
+});
+
+describeDb("RLS: Role and policy baseline", () => {
   it("runs under a non-bypass role (unerp_api expected)", async () => {
     const [row] = await prisma.$queryRawUnsafe<
       Array<{ rolsuper: boolean; rolbypassrls: boolean }>
@@ -80,9 +173,33 @@ describe("RLS: Role and policy baseline", () => {
     isSuperuser = row?.rolsuper ?? false;
     if (isSuperuser) {
       console.warn(
-        "WARN: connected as superuser — RLS is bypassed; isolation tests below should fail",
+        "NOTE: the ambient connection is a superuser, so it bypasses RLS. The isolation " +
+          "assertions below do not use it — they use a dedicated unerp_api connection.",
       );
     }
+  });
+
+  it("has a non-bypass connection to prove isolation with", async () => {
+    // The proof is only meaningful over a role that cannot bypass RLS. If no
+    // such connection can be established, the suite must say so rather than
+    // quietly downgrade to asserting nothing.
+    expect(
+      appPrisma,
+      "No application-role connection: set DATABASE_APP_URL to a NOBYPASSRLS role.",
+    ).not.toBeNull();
+
+    const [row] = await appPrisma!.$queryRawUnsafe<
+      Array<{ rolsuper: boolean; rolbypassrls: boolean }>
+    >(
+      `SELECT rolsuper, rolbypassrls FROM pg_roles WHERE rolname = current_user`,
+    );
+
+    expect(row?.rolsuper, "isolation proof must not run as a superuser").toBe(
+      false,
+    );
+    expect(row?.rolbypassrls, "isolation proof must not run as BYPASSRLS").toBe(
+      false,
+    );
   });
 
   it("unerp_api role exists with NOBYPASSRLS", async () => {
@@ -133,7 +250,7 @@ describe("RLS: Role and policy baseline", () => {
   });
 });
 
-describe("RLS: Two-tenant data isolation", () => {
+describeDb("RLS: Two-tenant data isolation", () => {
   it("creates test data for tenant A and tenant B under tenant sessions", async () => {
     await runWithTenantSession(
       { tenantId: TENANT_A, userId: USER_A },
@@ -228,33 +345,38 @@ describe("RLS: Two-tenant data isolation", () => {
   });
 
   it("tenant A cannot read tenant B row by raw SQL", async () => {
-    // Raw SQL bypasses the Prisma extension (no set_config). Under the
-    // non-bypass role (unerp_api), the RLS policy enforces tenant isolation
-    // even on raw SQL — but under superuser, RLS is bypassed and the row
-    // is visible. Skip assertion when superuser.
-    const [role] = await prisma.$queryRawUnsafe<Array<{ rolsuper: boolean }>>(
-      `SELECT rolsuper FROM pg_roles WHERE rolname = current_user`,
+    // This is the assertion that matters most, because raw SQL bypasses the
+    // Prisma extension entirely — there is no application-layer filter to fall
+    // back on, so only the database can be enforcing anything here.
+    //
+    // It previously ran over the ambient connection and returned early when
+    // that was a superuser, which is the default, so in practice it asserted
+    // nothing while reporting green. It now runs over the dedicated
+    // non-bypass connection and always asserts.
+    const rows = await asTenant(TENANT_A, (tx) =>
+      tx.$queryRawUnsafe<Array<{ id: string }>>(
+        `SELECT id FROM "customers" WHERE id = $1`,
+        testCustomerIdB,
+      ),
     );
-    await runWithTenantSession(
-      { tenantId: TENANT_A, userId: USER_A },
-      async () => {
-        const [result] = await prisma.$queryRawUnsafe<Array<{ id: string }>>(
-          `SELECT id FROM "customers" WHERE id = $1`,
-          testCustomerIdB,
-        );
-        if (role?.rolsuper) {
-          console.warn(
-            "SKIP (superuser): raw SQL isolation not enforceable on this connection",
-          );
-          return;
-        }
-        expect(result).toBeUndefined();
-      },
+    expect(rows).toHaveLength(0);
+  });
+
+  it("tenant A sees its own row over the same non-bypass connection", async () => {
+    // The negative assertion above is only meaningful alongside this one:
+    // a policy that hides everything would satisfy "cannot see B's row" while
+    // breaking the product.
+    const rows = await asTenant(TENANT_A, (tx) =>
+      tx.$queryRawUnsafe<Array<{ id: string }>>(
+        `SELECT id FROM "customers" WHERE id = $1`,
+        testCustomerIdA,
+      ),
     );
+    expect(rows).toHaveLength(1);
   });
 });
 
-describe("RLS: No-context returns no rows", () => {
+describeDb("RLS: No-context returns no rows", () => {
   it("returns no rows when querying outside a tenant session", async () => {
     // Without a tenant session, the Prisma extension does NOT set
     // app.current_tenant_id. When connected as the non-bypass role
@@ -276,7 +398,7 @@ describe("RLS: No-context returns no rows", () => {
   });
 });
 
-describe("RLS: Spoofed tenant_id prevented", () => {
+describeDb("RLS: Spoofed tenant_id prevented", () => {
   it("session tenant_id overrides caller-supplied value", async () => {
     await runWithTenantSession(
       { tenantId: TENANT_A, userId: USER_A },
@@ -315,7 +437,7 @@ describe("RLS: Spoofed tenant_id prevented", () => {
   });
 });
 
-describe("RLS: Concurrent tenant isolation", () => {
+describeDb("RLS: Concurrent tenant isolation", () => {
   it("sequential A→B queries use separate tenant contexts", async () => {
     const resultsA: string[] = [];
     const resultsB: string[] = [];
@@ -343,7 +465,7 @@ describe("RLS: Concurrent tenant isolation", () => {
   });
 });
 
-describe("RLS: Write isolation (update and delete)", () => {
+describeDb("RLS: Write isolation (update and delete)", () => {
   it("tenant A cannot update tenant B rows", async () => {
     await runWithTenantSession(
       { tenantId: TENANT_A, userId: USER_A },

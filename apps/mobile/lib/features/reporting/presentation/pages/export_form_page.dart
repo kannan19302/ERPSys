@@ -38,16 +38,20 @@ class _ExportFormPageState extends ConsumerState<ExportFormPage> {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _saving = true);
     final payload = <String, dynamic>{
-      'reportId': _reportIdCtrl.text.trim().isEmpty ? null : _reportIdCtrl.text.trim(),
+      'reportId':
+          _reportIdCtrl.text.trim().isEmpty ? null : _reportIdCtrl.text.trim(),
       'format': _format,
       'status': 'PENDING',
       'filters': _filtersCtrl.text.trim(),
     };
-    final result = await ref.read(reportExportListControllerProvider.notifier).save(payload, id: widget.exportId);
+    final result = await ref
+        .read(reportExportListControllerProvider.notifier)
+        .save(payload, id: widget.exportId);
     if (!context.mounted) return;
     setState(() => _saving = false);
     result.fold(
-      (f) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(f.message))),
+      (f) => ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(f.message))),
       (_) => Navigator.of(context).pop(),
     );
   }
@@ -61,7 +65,10 @@ class _ExportFormPageState extends ConsumerState<ExportFormPage> {
           TextButton(
             onPressed: _saving ? null : _save,
             child: _saving
-                ? const SizedBox(height: Spacing.x5, width: Spacing.x5, child: CircularProgressIndicator(strokeWidth: 2))
+                ? const SizedBox(
+                    height: Spacing.x5,
+                    width: Spacing.x5,
+                    child: CircularProgressIndicator(strokeWidth: 2))
                 : const Text('Export'),
           ),
         ],
@@ -79,7 +86,9 @@ class _ExportFormPageState extends ConsumerState<ExportFormPage> {
                 DropdownMenuItem(value: 'SCHEDULED', child: Text('Scheduled')),
                 DropdownMenuItem(value: 'ON_DEMAND', child: Text('On Demand')),
               ],
-              onChanged: (v) { if (v != null) setState(() => _type = v); },
+              onChanged: (v) {
+                if (v != null) setState(() => _type = v);
+              },
             ),
             const SizedBox(height: Spacing.x4),
             DropdownButtonFormField<String>(
@@ -91,7 +100,9 @@ class _ExportFormPageState extends ConsumerState<ExportFormPage> {
                 DropdownMenuItem(value: 'XLSX', child: Text('Excel')),
                 DropdownMenuItem(value: 'HTML', child: Text('HTML')),
               ],
-              onChanged: (v) { if (v != null) setState(() => _format = v); },
+              onChanged: (v) {
+                if (v != null) setState(() => _format = v);
+              },
             ),
             const SizedBox(height: Spacing.x4),
             TextFormField(
@@ -102,7 +113,10 @@ class _ExportFormPageState extends ConsumerState<ExportFormPage> {
             TextFormField(
               controller: _filtersCtrl,
               maxLines: 3,
-              decoration: const InputDecoration(labelText: 'Filters', helperText: 'JSON filters', alignLabelWithHint: true),
+              decoration: const InputDecoration(
+                  labelText: 'Filters',
+                  helperText: 'JSON filters',
+                  alignLabelWithHint: true),
             ),
           ],
         ),

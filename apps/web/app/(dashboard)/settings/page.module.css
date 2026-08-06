@@ -53,7 +53,7 @@
   text-decoration: none;
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--space-1);
 }
 
 .s9 {
@@ -106,7 +106,7 @@
   font-weight: var(--weight-semibold);
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--space-1);
 }
 
 .s15 {
@@ -155,7 +155,7 @@
   text-decoration: none;
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--space-1);
 }
 
 .s22 {
@@ -241,7 +241,7 @@
 .s34 {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--space-1);
 }
 
 .s35 {

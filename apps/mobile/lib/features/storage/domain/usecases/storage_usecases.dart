@@ -4,7 +4,8 @@ import '../../../../core/usecase/usecase.dart';
 import '../entities/storage.dart';
 import '../repositories/storage_repository.dart';
 
-class ListBucketsUseCase extends UseCase<Cacheable<Paginated<StorageBucket>>, ListQuery> {
+class ListBucketsUseCase
+    extends UseCase<Cacheable<Paginated<StorageBucket>>, ListQuery> {
   const ListBucketsUseCase(this._repository);
   final StorageRepository _repository;
   @override
@@ -44,7 +45,8 @@ class DeleteBucketUseCase extends UseCase<void, String> {
   Future<Result<void>> call(String id) => _repository.deleteBucket(id);
 }
 
-class ListFilesUseCase extends UseCase<Cacheable<Paginated<StorageFile>>, ListQuery> {
+class ListFilesUseCase
+    extends UseCase<Cacheable<Paginated<StorageFile>>, ListQuery> {
   const ListFilesUseCase(this._repository);
   final StorageRepository _repository;
   @override
@@ -84,7 +86,8 @@ class DeleteFileUseCase extends UseCase<void, String> {
   Future<Result<void>> call(String id) => _repository.deleteFile(id);
 }
 
-class ListPoliciesUseCase extends UseCase<Cacheable<Paginated<StoragePolicy>>, ListQuery> {
+class ListPoliciesUseCase
+    extends UseCase<Cacheable<Paginated<StoragePolicy>>, ListQuery> {
   const ListPoliciesUseCase(this._repository);
   final StorageRepository _repository;
   @override

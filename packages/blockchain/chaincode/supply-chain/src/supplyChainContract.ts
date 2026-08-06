@@ -11,18 +11,29 @@
  * Chaincode name: supply-chain-traceability
  */
 
-import { Context, Contract, Info, Returns, Transaction } from 'fabric-contract-api';
+import {
+  Context,
+  Contract,
+  Info,
+  Returns,
+  Transaction,
+} from "fabric-contract-api";
 
 export interface ShipmentRecord {
-  docType: 'ShipmentRecord';
+  docType: "ShipmentRecord";
   shipmentId: string;
   tenantId: string;
   asnId?: string;
   origin: { orgId: string; location: string; country: string };
   destination: { orgId: string; location: string; country: string };
-  goods: Array<{ productId: string; batchId?: string; quantity: number; unit: string }>;
+  goods: Array<{
+    productId: string;
+    batchId?: string;
+    quantity: number;
+    unit: string;
+  }>;
   currentCustodian: string;
-  status: 'CREATED' | 'IN_TRANSIT' | 'DELIVERED' | 'RECALLED';
+  status: "CREATED" | "IN_TRANSIT" | "DELIVERED" | "RECALLED";
   expectedDelivery: string;
   checkpoints: CheckpointEvent[];
   custodyHistory: CustodyTransfer[];
@@ -52,7 +63,7 @@ export interface CustodyTransfer {
 }
 
 export interface RecallRecord {
-  docType: 'RecallRecord';
+  docType: "RecallRecord";
   recallId: string;
   tenantId: string;
   batchId: string;
@@ -66,13 +77,13 @@ export interface RecallRecord {
 }
 
 @Info({
-  title: 'SupplyChainTraceabilityContract',
+  title: "SupplyChainTraceabilityContract",
   description:
-    'UniERP Supply Chain Traceability — end-to-end shipment provenance, custody transfers, and recall management.',
+    "UniERP Supply Chain Traceability — end-to-end shipment provenance, custody transfers, and recall management.",
 })
 export class SupplyChainTraceabilityContract extends Contract {
   constructor() {
-    super('SupplyChainTraceabilityContract');
+    super("SupplyChainTraceabilityContract");
   }
 
   @Transaction()
@@ -82,7 +93,7 @@ export class SupplyChainTraceabilityContract extends Contract {
    * RecordShipment — create a new shipment provenance record.
    */
   @Transaction()
-  @Returns('string')
+  @Returns("string")
   async RecordShipment(ctx: Context, argsJson: string): Promise<string> {
     const args = JSON.parse(argsJson) as {
       tenantId: string;
@@ -90,7 +101,12 @@ export class SupplyChainTraceabilityContract extends Contract {
       asnId?: string;
       origin: { orgId: string; location: string; country: string };
       destination: { orgId: string; location: string; country: string };
-      goods: Array<{ productId: string; batchId?: string; quantity: number; unit: string }>;
+      goods: Array<{
+        productId: string;
+        batchId?: string;
+        quantity: number;
+        unit: string;
+      }>;
       expectedDelivery: string;
       createdBy: string;
       createdAt: string;
@@ -99,14 +115,14 @@ export class SupplyChainTraceabilityContract extends Contract {
     const key = `SHIP~${args.tenantId}~${args.shipmentId}`;
     const existing = await ctx.stub.getState(key);
     if (existing && existing.length > 0) {
-      return existing.toString('utf8'); // Idempotent
+      return existing.toString("utf8"); // Idempotent
     }
 
     const txId = ctx.stub.getTxID();
     const now = new Date().toISOString();
 
     const record: ShipmentRecord = {
-      docType: 'ShipmentRecord',
+      docType: "ShipmentRecord",
       shipmentId: args.shipmentId,
       tenantId: args.tenantId,
       asnId: args.asnId,
@@ -114,7 +130,7 @@ export class SupplyChainTraceabilityContract extends Contract {
       destination: args.destination,
       goods: args.goods,
       currentCustodian: args.origin.orgId,
-      status: 'CREATED',
+      status: "CREATED",
       expectedDelivery: args.expectedDelivery,
       checkpoints: [],
       custodyHistory: [],
@@ -124,9 +140,16 @@ export class SupplyChainTraceabilityContract extends Contract {
     };
 
     await ctx.stub.putState(key, Buffer.from(JSON.stringify(record)));
-    await ctx.stub.setEvent('ShipmentRecorded', Buffer.from(JSON.stringify({
-      tenantId: args.tenantId, shipmentId: args.shipmentId, txId,
-    })));
+    await ctx.stub.setEvent(
+      "ShipmentRecorded",
+      Buffer.from(
+        JSON.stringify({
+          tenantId: args.tenantId,
+          shipmentId: args.shipmentId,
+          txId,
+        }),
+      ),
+    );
 
     return JSON.stringify(record);
   }
@@ -135,7 +158,7 @@ export class SupplyChainTraceabilityContract extends Contract {
    * TransferCustody — record a custody handoff between organizations.
    */
   @Transaction()
-  @Returns('string')
+  @Returns("string")
   async TransferCustody(ctx: Context, argsJson: string): Promise<string> {
     const args = JSON.parse(argsJson) as {
       tenantId: string;
@@ -153,7 +176,7 @@ export class SupplyChainTraceabilityContract extends Contract {
       throw new Error(`Shipment ${args.shipmentId} not found on ledger`);
     }
 
-    const record: ShipmentRecord = JSON.parse(data.toString('utf8'));
+    const record: ShipmentRecord = JSON.parse(data.toString("utf8"));
     const txId = ctx.stub.getTxID();
 
     const transfer: CustodyTransfer = {
@@ -167,12 +190,21 @@ export class SupplyChainTraceabilityContract extends Contract {
 
     record.custodyHistory.push(transfer);
     record.currentCustodian = args.toOrg;
-    record.status = 'IN_TRANSIT';
+    record.status = "IN_TRANSIT";
 
     await ctx.stub.putState(key, Buffer.from(JSON.stringify(record)));
-    await ctx.stub.setEvent('CustodyTransferred', Buffer.from(JSON.stringify({
-      tenantId: args.tenantId, shipmentId: args.shipmentId, fromOrg: args.fromOrg, toOrg: args.toOrg, txId,
-    })));
+    await ctx.stub.setEvent(
+      "CustodyTransferred",
+      Buffer.from(
+        JSON.stringify({
+          tenantId: args.tenantId,
+          shipmentId: args.shipmentId,
+          fromOrg: args.fromOrg,
+          toOrg: args.toOrg,
+          txId,
+        }),
+      ),
+    );
 
     return JSON.stringify(record);
   }
@@ -181,7 +213,7 @@ export class SupplyChainTraceabilityContract extends Contract {
    * RecordCheckpoint — add a transit checkpoint event (location, temp, etc).
    */
   @Transaction()
-  @Returns('string')
+  @Returns("string")
   async RecordCheckpoint(ctx: Context, argsJson: string): Promise<string> {
     const args = JSON.parse(argsJson) as {
       tenantId: string;
@@ -201,7 +233,7 @@ export class SupplyChainTraceabilityContract extends Contract {
       throw new Error(`Shipment ${args.shipmentId} not found on ledger`);
     }
 
-    const record: ShipmentRecord = JSON.parse(data.toString('utf8'));
+    const record: ShipmentRecord = JSON.parse(data.toString("utf8"));
     const txId = ctx.stub.getTxID();
 
     const checkpoint: CheckpointEvent = {
@@ -217,8 +249,8 @@ export class SupplyChainTraceabilityContract extends Contract {
 
     record.checkpoints.push(checkpoint);
 
-    if (args.status === 'DELIVERED') {
-      record.status = 'DELIVERED';
+    if (args.status === "DELIVERED") {
+      record.status = "DELIVERED";
     }
 
     await ctx.stub.putState(key, Buffer.from(JSON.stringify(record)));
@@ -230,7 +262,7 @@ export class SupplyChainTraceabilityContract extends Contract {
    * VerifyProvenance — retrieve the full provenance chain for a product/batch.
    */
   @Transaction(false)
-  @Returns('string')
+  @Returns("string")
   async VerifyProvenance(
     ctx: Context,
     tenantId: string,
@@ -239,16 +271,19 @@ export class SupplyChainTraceabilityContract extends Contract {
   ): Promise<string> {
     // Query all shipments for this tenant
     const prefix = `SHIP~${tenantId}~`;
-    const iterator = await ctx.stub.getStateByRange(prefix, prefix + '\xFF');
+    const iterator = await ctx.stub.getStateByRange(prefix, prefix + "\xFF");
 
     const matchingShipments: ShipmentRecord[] = [];
     let result = await iterator.next();
 
     while (!result.done) {
       if (result.value?.value) {
-        const record: ShipmentRecord = JSON.parse(result.value.value.toString('utf8'));
+        const record: ShipmentRecord = JSON.parse(
+          result.value.value.toString("utf8"),
+        );
         const hasGoods = record.goods.some(
-          (g) => g.productId === productId && (!batchId || g.batchId === batchId),
+          (g) =>
+            g.productId === productId && (!batchId || g.batchId === batchId),
         );
         if (hasGoods) {
           matchingShipments.push(record);
@@ -265,7 +300,7 @@ export class SupplyChainTraceabilityContract extends Contract {
    * IssueRecall — issue a product recall notice propagated across the chain.
    */
   @Transaction()
-  @Returns('string')
+  @Returns("string")
   async IssueRecall(ctx: Context, argsJson: string): Promise<string> {
     const args = JSON.parse(argsJson) as {
       tenantId: string;
@@ -283,20 +318,25 @@ export class SupplyChainTraceabilityContract extends Contract {
 
     // Find all shipments that contain this batch and mark them
     const prefix = `SHIP~${args.tenantId}~`;
-    const iterator = await ctx.stub.getStateByRange(prefix, prefix + '\xFF');
+    const iterator = await ctx.stub.getStateByRange(prefix, prefix + "\xFF");
     const affectedShipments: string[] = [];
 
     let result = await iterator.next();
     while (!result.done) {
       if (result.value?.value) {
-        const shipment: ShipmentRecord = JSON.parse(result.value.value.toString('utf8'));
+        const shipment: ShipmentRecord = JSON.parse(
+          result.value.value.toString("utf8"),
+        );
         const affected = shipment.goods.some(
           (g) => g.batchId === args.batchId && g.productId === args.productId,
         );
-        if (affected && shipment.status !== 'DELIVERED') {
-          shipment.status = 'RECALLED';
+        if (affected && shipment.status !== "DELIVERED") {
+          shipment.status = "RECALLED";
           const shipKey = `SHIP~${args.tenantId}~${shipment.shipmentId}`;
-          await ctx.stub.putState(shipKey, Buffer.from(JSON.stringify(shipment)));
+          await ctx.stub.putState(
+            shipKey,
+            Buffer.from(JSON.stringify(shipment)),
+          );
           affectedShipments.push(shipment.shipmentId);
         }
       }
@@ -305,7 +345,7 @@ export class SupplyChainTraceabilityContract extends Contract {
     await iterator.close();
 
     const recall: RecallRecord = {
-      docType: 'RecallRecord',
+      docType: "RecallRecord",
       recallId,
       tenantId: args.tenantId,
       batchId: args.batchId,
@@ -319,9 +359,18 @@ export class SupplyChainTraceabilityContract extends Contract {
     };
 
     await ctx.stub.putState(key, Buffer.from(JSON.stringify(recall)));
-    await ctx.stub.setEvent('RecallIssued', Buffer.from(JSON.stringify({
-      tenantId: args.tenantId, recallId, batchId: args.batchId, affectedShipments, txId,
-    })));
+    await ctx.stub.setEvent(
+      "RecallIssued",
+      Buffer.from(
+        JSON.stringify({
+          tenantId: args.tenantId,
+          recallId,
+          batchId: args.batchId,
+          affectedShipments,
+          txId,
+        }),
+      ),
+    );
 
     return JSON.stringify(recall);
   }
@@ -330,7 +379,7 @@ export class SupplyChainTraceabilityContract extends Contract {
    * GetShipmentHistory — retrieve a specific shipment's full on-chain record.
    */
   @Transaction(false)
-  @Returns('string')
+  @Returns("string")
   async GetShipmentHistory(
     ctx: Context,
     tenantId: string,
@@ -338,8 +387,8 @@ export class SupplyChainTraceabilityContract extends Contract {
   ): Promise<string> {
     const key = `SHIP~${tenantId}~${shipmentId}`;
     const data = await ctx.stub.getState(key);
-    if (!data || data.length === 0) return '[]';
-    return `[${data.toString('utf8')}]`;
+    if (!data || data.length === 0) return "[]";
+    return `[${data.toString("utf8")}]`;
   }
 }
 

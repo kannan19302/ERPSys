@@ -13,10 +13,12 @@ class WorkflowApprovalListPage extends ConsumerStatefulWidget {
   static const String routeName = 'workflow-approvals';
   static const String routePath = '/workflow/approvals';
   @override
-  ConsumerState<WorkflowApprovalListPage> createState() => _WorkflowApprovalListPageState();
+  ConsumerState<WorkflowApprovalListPage> createState() =>
+      _WorkflowApprovalListPageState();
 }
 
-class _WorkflowApprovalListPageState extends ConsumerState<WorkflowApprovalListPage> {
+class _WorkflowApprovalListPageState
+    extends ConsumerState<WorkflowApprovalListPage> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(workflowTaskListControllerProvider);
@@ -38,7 +40,8 @@ class _WorkflowApprovalListPageState extends ConsumerState<WorkflowApprovalListP
               PopupMenuItem<String>(value: 'PENDING', child: Text('Pending')),
               PopupMenuItem<String>(value: 'APPROVED', child: Text('Approved')),
               PopupMenuItem<String>(value: 'REJECTED', child: Text('Rejected')),
-              PopupMenuItem<String>(value: 'ESCALATED', child: Text('Escalated')),
+              PopupMenuItem<String>(
+                  value: 'ESCALATED', child: Text('Escalated')),
             ],
           ),
         ],
@@ -47,14 +50,17 @@ class _WorkflowApprovalListPageState extends ConsumerState<WorkflowApprovalListP
         children: [
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: Spacing.x4),
-            child: Row(children: [
-              Text(
-                state.isLoading
-                    ? 'Loading...'
-                    : '${state.meta.total} task${state.meta.total == 1 ? '' : 's'}',
-                style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
-              ),
-            ],),
+            child: Row(
+              children: [
+                Text(
+                  state.isLoading
+                      ? 'Loading...'
+                      : '${state.meta.total} task${state.meta.total == 1 ? '' : 's'}',
+                  style:
+                      TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
+                ),
+              ],
+            ),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -62,7 +68,8 @@ class _WorkflowApprovalListPageState extends ConsumerState<WorkflowApprovalListP
     );
   }
 
-  Widget _body(WorkflowTaskListState state, WorkflowTaskListController controller) {
+  Widget _body(
+      WorkflowTaskListState state, WorkflowTaskListController controller) {
     if (state.isLoading && state.items.isEmpty) return const LoadingView();
     final failure = state.failure;
     if (failure != null && state.items.isEmpty) {
@@ -80,12 +87,10 @@ class _WorkflowApprovalListPageState extends ConsumerState<WorkflowApprovalListP
       emptyMessage: 'All caught up — no pending approvals.',
       itemBuilder: (_, WorkflowTask task, __) => _ApprovalTaskTile(
         task: task,
-        onApprove: task.status == 'PENDING'
-            ? () => controller.approve(task.id)
-            : null,
-        onReject: task.status == 'PENDING'
-            ? () => controller.reject(task.id)
-            : null,
+        onApprove:
+            task.status == 'PENDING' ? () => controller.approve(task.id) : null,
+        onReject:
+            task.status == 'PENDING' ? () => controller.reject(task.id) : null,
         onEscalate: task.status == 'PENDING'
             ? () => controller.escalate(task.id)
             : null,
@@ -116,39 +121,53 @@ class _ApprovalTaskTile extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(children: [
-            Expanded(
-              child: Text(
-                task.stepName ?? 'Approval Step',
-                style: Theme.of(context).textTheme.titleSmall,
-              ),
-            ),
-            UiStatusBadge(
-              label: task.status,
-              tone: _statusTone(task.status),
-            ),
-          ],),
-          const SizedBox(height: Spacing.x1),
-          if (task.assignedTo != null)
-            Text('Assigned to: ${task.assignedTo}',
-                style: TextStyle(color: t.textSecondary, fontSize: TypeScale.sm),),
-          const SizedBox(height: Spacing.x1),
-          Row(children: [
-            Text('Created ${Formatters.relative(task.createdAt)}',
-                style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs),),
-            if (task.dueDate != null) ...[
-              const Spacer(),
-              Icon(Icons.access_time, size: 14, color: task.dueDate!.isBefore(DateTime.now()) ? t.danger : t.textTertiary),
-              const SizedBox(width: Spacing.x1),
-              Text(
-                Formatters.date(task.dueDate!),
-                style: TextStyle(
-                  color: task.dueDate!.isBefore(DateTime.now()) ? t.danger : t.textTertiary,
-                  fontSize: TypeScale.xs,
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  task.stepName ?? 'Approval Step',
+                  style: Theme.of(context).textTheme.titleSmall,
                 ),
               ),
+              UiStatusBadge(
+                label: task.status,
+                tone: _statusTone(task.status),
+              ),
             ],
-          ],),
+          ),
+          const SizedBox(height: Spacing.x1),
+          if (task.assignedTo != null)
+            Text(
+              'Assigned to: ${task.assignedTo}',
+              style: TextStyle(color: t.textSecondary, fontSize: TypeScale.sm),
+            ),
+          const SizedBox(height: Spacing.x1),
+          Row(
+            children: [
+              Text(
+                'Created ${Formatters.relative(task.createdAt)}',
+                style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs),
+              ),
+              if (task.dueDate != null) ...[
+                const Spacer(),
+                Icon(Icons.access_time,
+                    size: 14,
+                    color: task.dueDate!.isBefore(DateTime.now())
+                        ? t.danger
+                        : t.textTertiary),
+                const SizedBox(width: Spacing.x1),
+                Text(
+                  Formatters.date(task.dueDate!),
+                  style: TextStyle(
+                    color: task.dueDate!.isBefore(DateTime.now())
+                        ? t.danger
+                        : t.textTertiary,
+                    fontSize: TypeScale.xs,
+                  ),
+                ),
+              ],
+            ],
+          ),
           if (onApprove != null || onReject != null) ...[
             const SizedBox(height: Spacing.x3),
             Row(

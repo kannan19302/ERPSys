@@ -42,11 +42,18 @@ class _LeadFormPageState extends ConsumerState<LeadFormPage> {
   bool get _isEditing => widget.leadId != null;
 
   static const List<String> _salutations = <String>[
-    'Mr.', 'Ms.', 'Mrs.', 'Dr.', 'Prof.',
+    'Mr.',
+    'Ms.',
+    'Mrs.',
+    'Dr.',
+    'Prof.',
   ];
 
   static const List<String> _statuses = <String>[
-    'NEW', 'CONTACTED', 'QUALIFIED', 'DISQUALIFIED',
+    'NEW',
+    'CONTACTED',
+    'QUALIFIED',
+    'DISQUALIFIED',
   ];
 
   @override
@@ -58,9 +65,7 @@ class _LeadFormPageState extends ConsumerState<LeadFormPage> {
   }
 
   Future<void> _loadLead() async {
-    final Lead? lead = ref
-        .read(leadDetailProvider(widget.leadId!))
-        .valueOrNull;
+    final Lead? lead = ref.read(leadDetailProvider(widget.leadId!)).valueOrNull;
     if (lead != null) {
       _salutation = lead.salutation ?? '';
       _firstNameCtrl.text = lead.firstName ?? '';
@@ -103,19 +108,22 @@ class _LeadFormPageState extends ConsumerState<LeadFormPage> {
       'lastName': _lastNameCtrl.text.trim(),
       'email': _emailCtrl.text.trim().isEmpty ? null : _emailCtrl.text.trim(),
       'phone': _phoneCtrl.text.trim().isEmpty ? null : _phoneCtrl.text.trim(),
-      'company': _companyCtrl.text.trim().isEmpty ? null : _companyCtrl.text.trim(),
+      'company':
+          _companyCtrl.text.trim().isEmpty ? null : _companyCtrl.text.trim(),
       'title': _titleCtrl.text.trim().isEmpty ? null : _titleCtrl.text.trim(),
       if (_source.isNotEmpty) 'source': _source,
       'status': _status,
-      'industry': _industryCtrl.text.trim().isEmpty ? null : _industryCtrl.text.trim(),
+      'industry':
+          _industryCtrl.text.trim().isEmpty ? null : _industryCtrl.text.trim(),
       'estimatedRevenue': double.tryParse(_estimatedRevenueCtrl.text),
       'notes': _notesCtrl.text.trim().isEmpty ? null : _notesCtrl.text.trim(),
-      'assignedTo': _assignedToCtrl.text.trim().isEmpty ? null : _assignedToCtrl.text.trim(),
+      'assignedTo': _assignedToCtrl.text.trim().isEmpty
+          ? null
+          : _assignedToCtrl.text.trim(),
     };
 
-    final Result<Lead> result = await ref
-        .read(leadsProvider.notifier)
-        .save(payload, id: widget.leadId);
+    final Result<Lead> result =
+        await ref.read(leadsProvider.notifier).save(payload, id: widget.leadId);
 
     if (!context.mounted) return;
     setState(() => _saving = false);

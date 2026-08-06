@@ -49,11 +49,26 @@ class FixedAsset extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, name, assetCategory, assetTag, serialNumber, location,
-        department, status, purchaseDate, purchaseCost, currentValue,
-        salvageValue, usefulLifeYears, depreciationMethod,
-        accumulatedDepreciation, warrantyExpiry, insurancePolicy, notes,
-        createdAt, updatedAt,
+        id,
+        name,
+        assetCategory,
+        assetTag,
+        serialNumber,
+        location,
+        department,
+        status,
+        purchaseDate,
+        purchaseCost,
+        currentValue,
+        salvageValue,
+        usefulLifeYears,
+        depreciationMethod,
+        accumulatedDepreciation,
+        warrantyExpiry,
+        insurancePolicy,
+        notes,
+        createdAt,
+        updatedAt,
       ];
 }
 
@@ -88,8 +103,17 @@ class AssetDepreciationSchedule extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, assetId, assetName, fiscalYear, period, scheduledAmount,
-        recordedAmount, status, depreciationDate, isCatchUp, notes,
+        id,
+        assetId,
+        assetName,
+        fiscalYear,
+        period,
+        scheduledAmount,
+        recordedAmount,
+        status,
+        depreciationDate,
+        isCatchUp,
+        notes,
         createdAt,
       ];
 }
@@ -131,9 +155,21 @@ class AssetMaintenanceSchedule extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, assetId, assetName, maintenanceType, description, priority,
-        status, scheduledDate, completedDate, assignedTo, estimatedCost,
-        actualCost, notes, createdAt, updatedAt,
+        id,
+        assetId,
+        assetName,
+        maintenanceType,
+        description,
+        priority,
+        status,
+        scheduledDate,
+        completedDate,
+        assignedTo,
+        estimatedCost,
+        actualCost,
+        notes,
+        createdAt,
+        updatedAt,
       ];
 }
 
@@ -176,8 +212,21 @@ class AssetDisposal extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, assetId, assetName, disposalMethod, disposalDate, status,
-        proceedsFromSale, disposalCost, netBookValueAtDisposal, gainOrLoss,
-        approvedBy, approvalDate, reason, notes, createdAt, updatedAt,
+        id,
+        assetId,
+        assetName,
+        disposalMethod,
+        disposalDate,
+        status,
+        proceedsFromSale,
+        disposalCost,
+        netBookValueAtDisposal,
+        gainOrLoss,
+        approvedBy,
+        approvalDate,
+        reason,
+        notes,
+        createdAt,
+        updatedAt,
       ];
 }

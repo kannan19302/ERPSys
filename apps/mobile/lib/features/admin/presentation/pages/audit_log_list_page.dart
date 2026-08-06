@@ -47,15 +47,23 @@ class _AuditLogListPageState extends ConsumerState<AuditLogListPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(children: [
-                Expanded(
-                  child: Text('${log.action} · ${log.entityType}',
-                      style: Theme.of(context).textTheme.titleSmall,),
-                ),
-              ],),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      '${log.action} · ${log.entityType}',
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
+                  ),
+                ],
+              ),
               const SizedBox(height: Spacing.x1),
-              Text('${log.userId} · ${log.entityId}',
-                  style: TextStyle(color: context.tokens.textSecondary, fontSize: TypeScale.xs),),
+              Text(
+                '${log.userId} · ${log.entityId}',
+                style: TextStyle(
+                    color: context.tokens.textSecondary,
+                    fontSize: TypeScale.xs),
+              ),
             ],
           ),
         ),

@@ -1,3 +1,5 @@
+import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { CommunicationService } from "../communication.service";
 
@@ -8,7 +10,12 @@ vi.mock("@prisma/client", () => ({
 }));
 
 vi.mock("@unerp/database", () => {
-  return {
+  // Identity models (user, role, userSession, ...) are read through
+  // `idpPrisma`, not `prisma` — this spec predates that split and stubs
+  // them under `prisma`. Exporting the same stub object under both names
+  // keeps every `vi.mocked(prisma.user.*)` setup pointing at exactly the
+  // function the service calls.
+  const mocked = {
     prisma: {
       user: { findMany: vi.fn(), findFirst: vi.fn() },
       channel: {
@@ -27,6 +34,7 @@ vi.mock("@unerp/database", () => {
       $queryRaw: vi.fn(),
     },
   };
+  return { ...mocked, idpPrisma: mocked.prisma };
 });
 
 describe("CommunicationService — channel management & roles (US-B1/B2/B3)", () => {
@@ -295,7 +303,7 @@ describe("CommunicationService — channel management & roles (US-B1/B2/B3)", ()
     vi.mocked(prisma.channelMember.findFirst)
       .mockResolvedValueOnce({ role: "OWNER" } as never) // requester membership
       .mockResolvedValueOnce(null as never); // target not already a member
-    vi.mocked(prisma.user.findFirst).mockResolvedValue({
+    vi.mocked(idpPrisma.user.findFirst).mockResolvedValue({
       id: "newUser",
       firstName: "Grace",
       lastName: "Hopper",
@@ -327,7 +335,7 @@ describe("CommunicationService — channel management & roles (US-B1/B2/B3)", ()
     vi.mocked(prisma.channelMember.findFirst)
       .mockResolvedValueOnce({ role: "ADMIN" } as never) // requester membership
       .mockResolvedValueOnce({ id: "cm2", role: "MEMBER" } as never); // target membership
-    vi.mocked(prisma.user.findFirst).mockResolvedValue({
+    vi.mocked(idpPrisma.user.findFirst).mockResolvedValue({
       id: "leaver",
       firstName: "Ada",
       lastName: "Lovelace",
@@ -428,7 +436,7 @@ describe("CommunicationService — channel management & roles (US-B1/B2/B3)", ()
       id: "cm1",
       role: "MEMBER",
     } as never);
-    vi.mocked(prisma.user.findFirst).mockResolvedValue({
+    vi.mocked(idpPrisma.user.findFirst).mockResolvedValue({
       id: "u1",
       firstName: "Ada",
       lastName: "Lovelace",

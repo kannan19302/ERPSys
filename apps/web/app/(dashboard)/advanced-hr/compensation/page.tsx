@@ -126,7 +126,11 @@ export default function AdvancedHrCompensationPage() {
         </h3>
         {bands.length === 0 ? (
           <p
-            style={{ color: "#64748b", textAlign: "center", padding: "32px 0" }}
+            style={{
+              color: "var(--color-text-secondary)",
+              textAlign: "center",
+              padding: "32px 0",
+            }}
           >
             No compensation bands defined.
           </p>
@@ -152,13 +156,18 @@ export default function AdvancedHrCompensationPage() {
                   <td style={{ padding: "12px" }}>
                     <Badge variant="info">{b.jobLevel}</Badge>
                   </td>
-                  <td style={{ padding: "12px", color: "#64748b" }}>
+                  <td
+                    style={{
+                      padding: "12px",
+                      color: "var(--color-text-secondary)",
+                    }}
+                  >
                     ${Number(b.minSalary).toLocaleString()}
                   </td>
                   <td style={{ padding: "12px", fontWeight: 600 }}>
                     ${Number(b.midSalary).toLocaleString()}
                   </td>
-                  <td style={{ padding: "12px", color: "#10b981" }}>
+                  <td style={{ padding: "12px", color: "var(--chart-9)" }}>
                     ${Number(b.maxSalary).toLocaleString()}
                   </td>
                 </tr>

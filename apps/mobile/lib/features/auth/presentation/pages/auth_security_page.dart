@@ -34,7 +34,9 @@ class _AuthSecurityPageState extends ConsumerState<AuthSecurityPage> {
       _mfaEnabled = profile['mfaEnabled'] == true;
       _failure = null;
     } on Object catch (e) {
-      _failure = e is Failure ? e : const ServerFailure('Could not load security settings.');
+      _failure = e is Failure
+          ? e
+          : const ServerFailure('Could not load security settings.');
     }
     if (mounted) setState(() => _loading = false);
   }
@@ -56,15 +58,20 @@ class _AuthSecurityPageState extends ConsumerState<AuthSecurityPage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
-                          const _SectionTitle(title: 'Multi-Factor Authentication'),
+                          const _SectionTitle(
+                              title: 'Multi-Factor Authentication'),
                           SwitchListTile(
                             title: const Text('MFA Protection'),
-                            subtitle: const Text('Add an extra layer of security to your account'),
+                            subtitle: const Text(
+                                'Add an extra layer of security to your account'),
                             value: _mfaEnabled,
                             onChanged: (bool v) {
                               setState(() => _mfaEnabled = v);
                               ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text(v ? 'MFA has been enabled' : 'MFA has been disabled')),
+                                SnackBar(
+                                    content: Text(v
+                                        ? 'MFA has been enabled'
+                                        : 'MFA has been disabled')),
                               );
                             },
                             contentPadding: EdgeInsets.zero,
@@ -81,12 +88,15 @@ class _AuthSecurityPageState extends ConsumerState<AuthSecurityPage> {
                           ListTile(
                             leading: Icon(Icons.fingerprint, color: t.primary),
                             title: const Text('Passkeys'),
-                            subtitle: const Text('Sign in with fingerprint, face, or a security key'),
+                            subtitle: const Text(
+                                'Sign in with fingerprint, face, or a security key'),
                             trailing: const Icon(Icons.chevron_right),
                             contentPadding: EdgeInsets.zero,
                             onTap: () {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Passkey management coming soon')),
+                                const SnackBar(
+                                    content:
+                                        Text('Passkey management coming soon')),
                               );
                             },
                           ),
@@ -100,19 +110,22 @@ class _AuthSecurityPageState extends ConsumerState<AuthSecurityPage> {
                         children: <Widget>[
                           const _SectionTitle(title: 'Recent Activity'),
                           ListTile(
-                            leading: Icon(Icons.history, color: t.textSecondary),
+                            leading:
+                                Icon(Icons.history, color: t.textSecondary),
                             title: const Text('Login History'),
                             trailing: const Icon(Icons.chevron_right),
                             contentPadding: EdgeInsets.zero,
                             onTap: () {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Login history coming soon')),
+                                const SnackBar(
+                                    content: Text('Login history coming soon')),
                               );
                             },
                           ),
                           const Divider(),
                           ListTile(
-                            leading: Icon(Icons.devices, color: t.textSecondary),
+                            leading:
+                                Icon(Icons.devices, color: t.textSecondary),
                             title: const Text('Active Sessions'),
                             trailing: const Icon(Icons.chevron_right),
                             contentPadding: EdgeInsets.zero,
@@ -137,8 +150,12 @@ class _SectionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final Palette t = context.tokens;
     return Container(
-      width: double.infinity, padding: const EdgeInsets.all(Spacing.x4),
-      decoration: BoxDecoration(color: t.bgElevated, borderRadius: Radii.card, border: Border.all(color: t.border)),
+      width: double.infinity,
+      padding: const EdgeInsets.all(Spacing.x4),
+      decoration: BoxDecoration(
+          color: t.bgElevated,
+          borderRadius: Radii.card,
+          border: Border.all(color: t.border)),
       child: child,
     );
   }
@@ -149,7 +166,7 @@ class _SectionTitle extends StatelessWidget {
   final String title;
   @override
   Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.only(bottom: Spacing.x3),
-    child: Text(title, style: Theme.of(context).textTheme.titleMedium),
-  );
+        padding: const EdgeInsets.only(bottom: Spacing.x3),
+        child: Text(title, style: Theme.of(context).textTheme.titleMedium),
+      );
 }

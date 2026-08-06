@@ -28,10 +28,14 @@ class DashboardDetailPage extends ConsumerWidget {
       body: dashboardAsync.when(
         loading: () => const LoadingView(),
         error: (Object error, StackTrace _) => FailureView(
-          failure: error is Failure ? error : const ServerFailure('Could not load dashboard.'),
-          onRetry: () => ref.invalidate(analyticsDashboardDetailProvider(dashboardId)),
+          failure: error is Failure
+              ? error
+              : const ServerFailure('Could not load dashboard.'),
+          onRetry: () =>
+              ref.invalidate(analyticsDashboardDetailProvider(dashboardId)),
         ),
-        data: (AnalyticsDashboard dashboard) => _DashboardDetail(dashboard: dashboard),
+        data: (AnalyticsDashboard dashboard) =>
+            _DashboardDetail(dashboard: dashboard),
       ),
     );
   }
@@ -90,7 +94,8 @@ class _DashboardDetail extends StatelessWidget {
               ),
               if (dashboard.description != null) ...<Widget>[
                 const SizedBox(height: Spacing.x2),
-                Text(dashboard.description!, style: TextStyle(color: t.textSecondary)),
+                Text(dashboard.description!,
+                    style: TextStyle(color: t.textSecondary)),
               ],
             ],
           ),
@@ -104,27 +109,36 @@ class _DashboardDetail extends StatelessWidget {
               if (dashboard.widgets.isEmpty)
                 Text('No widgets', style: TextStyle(color: t.textSecondary))
               else
-                ...dashboard.widgets.map((DashboardWidget w) => Padding(
-                      padding: const EdgeInsets.only(bottom: Spacing.x2),
-                      child: Row(
-                        children: <Widget>[
-                          Icon(Icons.widgets_outlined, size: TypeScale.xl, color: t.primary),
-                          const SizedBox(width: Spacing.x2),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: <Widget>[
-                                Text(w.title ?? w.widgetType ?? 'Widget',
-                                    style: Theme.of(context).textTheme.labelLarge,),
-                                if (w.widgetType != null)
-                                  Text(w.widgetType!,
-                                      style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),),
-                              ],
-                            ),
+                ...dashboard.widgets.map(
+                  (DashboardWidget w) => Padding(
+                    padding: const EdgeInsets.only(bottom: Spacing.x2),
+                    child: Row(
+                      children: <Widget>[
+                        Icon(Icons.widgets_outlined,
+                            size: TypeScale.xl, color: t.primary),
+                        const SizedBox(width: Spacing.x2),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: <Widget>[
+                              Text(
+                                w.title ?? w.widgetType ?? 'Widget',
+                                style: Theme.of(context).textTheme.labelLarge,
+                              ),
+                              if (w.widgetType != null)
+                                Text(
+                                  w.widgetType!,
+                                  style: TextStyle(
+                                      color: t.textSecondary,
+                                      fontSize: TypeScale.xs),
+                                ),
+                            ],
                           ),
-                        ],
-                      ),
-                    ),),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
             ],
           ),
         ),
@@ -135,8 +149,16 @@ class _DashboardDetail extends StatelessWidget {
             children: <Widget>[
               const _SectionTitle(title: 'Details'),
               _FieldRow('Status', statusLabel),
-              _FieldRow('Created', dashboard.createdAt != null ? Formatters.dateTime(dashboard.createdAt!) : '—'),
-              _FieldRow('Updated', dashboard.updatedAt != null ? Formatters.dateTime(dashboard.updatedAt!) : '—'),
+              _FieldRow(
+                  'Created',
+                  dashboard.createdAt != null
+                      ? Formatters.dateTime(dashboard.createdAt!)
+                      : '—'),
+              _FieldRow(
+                  'Updated',
+                  dashboard.updatedAt != null
+                      ? Formatters.dateTime(dashboard.updatedAt!)
+                      : '—'),
             ],
           ),
         ),

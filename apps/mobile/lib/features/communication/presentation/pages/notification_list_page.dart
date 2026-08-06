@@ -13,7 +13,8 @@ class NotificationListPage extends ConsumerStatefulWidget {
   static const String routeName = 'notifications';
   static const String routePath = '/communication/notifications';
   @override
-  ConsumerState<NotificationListPage> createState() => _NotificationListPageState();
+  ConsumerState<NotificationListPage> createState() =>
+      _NotificationListPageState();
 }
 
 class _NotificationListPageState extends ConsumerState<NotificationListPage> {
@@ -49,7 +50,8 @@ class _NotificationListPageState extends ConsumerState<NotificationListPage> {
     );
   }
 
-  Widget _body(List<AppNotification> items, NotificationListController controller, Palette t) {
+  Widget _body(List<AppNotification> items,
+      NotificationListController controller, Palette t) {
     if (items.isEmpty) {
       return RefreshIndicator(
         onRefresh: controller.refresh,
@@ -97,11 +99,12 @@ class _NotificationListPageState extends ConsumerState<NotificationListPage> {
                       children: [
                         Text(
                           notification.title,
-                          style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                            fontWeight: notification.isUnread
-                                ? TypeScale.semibold
-                                : TypeScale.normal,
-                          ),
+                          style:
+                              Theme.of(context).textTheme.labelLarge?.copyWith(
+                                    fontWeight: notification.isUnread
+                                        ? TypeScale.semibold
+                                        : TypeScale.normal,
+                                  ),
                         ),
                         const SizedBox(height: Spacing.x1),
                         Text(
@@ -156,7 +159,7 @@ class _NotificationListPageState extends ConsumerState<NotificationListPage> {
       };
 
   Failure _toFailure(Object error) => ServerFailure(
-    error.toString(),
-    code: 'NOTIFICATION_ERROR',
-  );
+        error.toString(),
+        code: 'NOTIFICATION_ERROR',
+      );
 }

@@ -9,7 +9,7 @@ import {
   GitBranch,
   Settings,
 } from "lucide-react";
-import type { ModuleTab } from "@unerp/ui-layout";
+import type { ModuleTab } from "@unerp/ui/layout";
 
 export {
   ModuleTabLayout as AiTabLayout,
@@ -17,7 +17,7 @@ export {
   type ModuleTabLayoutProps as AiTabLayoutProps,
   SubTabBar,
   type SubTab,
-} from "@unerp/ui-layout";
+} from "@unerp/ui/layout";
 
 export const AI_TABS: ModuleTab[] = [
   {

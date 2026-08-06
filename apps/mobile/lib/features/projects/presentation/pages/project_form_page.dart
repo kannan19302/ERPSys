@@ -69,22 +69,28 @@ class _ProjectFormPageState extends ConsumerState<ProjectFormPage> {
     final payload = <String, dynamic>{
       'name': _nameCtrl.text.trim(),
       'description': _descriptionCtrl.text.trim(),
-      'managerName': _managerCtrl.text.trim().isEmpty ? null : _managerCtrl.text.trim(),
+      'managerName':
+          _managerCtrl.text.trim().isEmpty ? null : _managerCtrl.text.trim(),
       'budget': double.tryParse(_budgetCtrl.text) ?? 0,
       'startDate': _startDate?.toIso8601String(),
       'endDate': _endDate?.toIso8601String(),
       'status': _status,
       'priority': _priority,
-      'portfolioId': _portfolioCtrl.text.trim().isEmpty ? null : _portfolioCtrl.text.trim(),
+      'portfolioId': _portfolioCtrl.text.trim().isEmpty
+          ? null
+          : _portfolioCtrl.text.trim(),
     };
 
     final result = await ref.read(projectListControllerProvider.notifier).save(
-      payload, id: widget.projectId,);
+          payload,
+          id: widget.projectId,
+        );
 
     if (!context.mounted) return;
     setState(() => _saving = false);
     result.fold(
-      (f) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(f.message))),
+      (f) => ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(f.message))),
       (_) => Navigator.of(context).pop(),
     );
   }
@@ -98,7 +104,10 @@ class _ProjectFormPageState extends ConsumerState<ProjectFormPage> {
           TextButton(
             onPressed: _saving ? null : _save,
             child: _saving
-                ? const SizedBox(height: Spacing.x5, width: Spacing.x5, child: CircularProgressIndicator(strokeWidth: 2))
+                ? const SizedBox(
+                    height: Spacing.x5,
+                    width: Spacing.x5,
+                    child: CircularProgressIndicator(strokeWidth: 2))
                 : const Text('Save'),
           ),
         ],
@@ -111,13 +120,15 @@ class _ProjectFormPageState extends ConsumerState<ProjectFormPage> {
             TextFormField(
               controller: _nameCtrl,
               decoration: const InputDecoration(labelText: 'Name *'),
-              validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,
+              validator: (v) =>
+                  v == null || v.trim().isEmpty ? 'Required' : null,
             ),
             const SizedBox(height: Spacing.x4),
             TextFormField(
               controller: _descriptionCtrl,
               maxLines: 3,
-              decoration: const InputDecoration(labelText: 'Description', alignLabelWithHint: true),
+              decoration: const InputDecoration(
+                  labelText: 'Description', alignLabelWithHint: true),
             ),
             const SizedBox(height: Spacing.x4),
             TextFormField(
@@ -136,13 +147,19 @@ class _ProjectFormPageState extends ConsumerState<ProjectFormPage> {
                   child: InkWell(
                     onTap: () async {
                       final picked = await showDatePicker(
-                        context: context, initialDate: _startDate ?? DateTime.now(),
-                        firstDate: DateTime(2020), lastDate: DateTime(2030),);
+                        context: context,
+                        initialDate: _startDate ?? DateTime.now(),
+                        firstDate: DateTime(2020),
+                        lastDate: DateTime(2030),
+                      );
                       if (picked != null) setState(() => _startDate = picked);
                     },
                     child: InputDecorator(
-                      decoration: const InputDecoration(labelText: 'Start Date'),
-                      child: Text(_startDate != null ? Formatters.date(_startDate!) : 'Select'),
+                      decoration:
+                          const InputDecoration(labelText: 'Start Date'),
+                      child: Text(_startDate != null
+                          ? Formatters.date(_startDate!)
+                          : 'Select'),
                     ),
                   ),
                 ),
@@ -151,13 +168,19 @@ class _ProjectFormPageState extends ConsumerState<ProjectFormPage> {
                   child: InkWell(
                     onTap: () async {
                       final picked = await showDatePicker(
-                        context: context, initialDate: _endDate ?? DateTime.now().add(const Duration(days: 30)),
-                        firstDate: DateTime(2020), lastDate: DateTime(2030),);
+                        context: context,
+                        initialDate: _endDate ??
+                            DateTime.now().add(const Duration(days: 30)),
+                        firstDate: DateTime(2020),
+                        lastDate: DateTime(2030),
+                      );
                       if (picked != null) setState(() => _endDate = picked);
                     },
                     child: InputDecorator(
                       decoration: const InputDecoration(labelText: 'End Date'),
-                      child: Text(_endDate != null ? Formatters.date(_endDate!) : 'Select'),
+                      child: Text(_endDate != null
+                          ? Formatters.date(_endDate!)
+                          : 'Select'),
                     ),
                   ),
                 ),
@@ -166,26 +189,39 @@ class _ProjectFormPageState extends ConsumerState<ProjectFormPage> {
             const SizedBox(height: Spacing.x4),
             TextFormField(
               controller: _budgetCtrl,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
               decoration: const InputDecoration(labelText: 'Budget'),
             ),
             const SizedBox(height: Spacing.x4),
             DropdownButtonFormField<String>(
               initialValue: _status,
               decoration: const InputDecoration(labelText: 'Status'),
-              items: ['PLANNING', 'IN_PROGRESS', 'ON_HOLD', 'COMPLETED', 'CANCELLED']
-                  .map((v) => DropdownMenuItem<String>(value: v, child: Text(v)))
+              items: [
+                'PLANNING',
+                'IN_PROGRESS',
+                'ON_HOLD',
+                'COMPLETED',
+                'CANCELLED'
+              ]
+                  .map(
+                      (v) => DropdownMenuItem<String>(value: v, child: Text(v)))
                   .toList(),
-              onChanged: (v) { if (v != null) setState(() => _status = v); },
+              onChanged: (v) {
+                if (v != null) setState(() => _status = v);
+              },
             ),
             const SizedBox(height: Spacing.x4),
             DropdownButtonFormField<String>(
               initialValue: _priority,
               decoration: const InputDecoration(labelText: 'Priority'),
               items: ['LOW', 'MEDIUM', 'HIGH', 'URGENT']
-                  .map((v) => DropdownMenuItem<String>(value: v, child: Text(v)))
+                  .map(
+                      (v) => DropdownMenuItem<String>(value: v, child: Text(v)))
                   .toList(),
-              onChanged: (v) { if (v != null) setState(() => _priority = v); },
+              onChanged: (v) {
+                if (v != null) setState(() => _priority = v);
+              },
             ),
           ],
         ),

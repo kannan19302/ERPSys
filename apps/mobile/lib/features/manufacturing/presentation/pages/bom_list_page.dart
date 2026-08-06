@@ -1,9 +1,8 @@
-
 import 'package:flutter/material.dart';
 
 class BomListPage extends StatelessWidget {
   const BomListPage({super.key});
-  
+
   static const String routeName = 'boms';
   static const String routePath = '/manufacturing/boms';
   @override

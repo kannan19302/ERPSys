@@ -29,8 +29,17 @@ class SaasPlan extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, name, description, price, billingInterval, features,
-        isActive, maxUsers, maxStorage, createdAt, updatedAt,
+        id,
+        name,
+        description,
+        price,
+        billingInterval,
+        features,
+        isActive,
+        maxUsers,
+        maxStorage,
+        createdAt,
+        updatedAt,
       ];
 }
 
@@ -65,9 +74,18 @@ class SaasSubscription extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, tenantId, planId, planName, status, currentPeriodStart,
-        currentPeriodEnd, cancelAtPeriodEnd, trialEndsAt,
-        stripeSubscriptionId, createdAt, updatedAt,
+        id,
+        tenantId,
+        planId,
+        planName,
+        status,
+        currentPeriodStart,
+        currentPeriodEnd,
+        cancelAtPeriodEnd,
+        trialEndsAt,
+        stripeSubscriptionId,
+        createdAt,
+        updatedAt,
       ];
 }
 
@@ -98,8 +116,16 @@ class SaasInvoice extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, subscriptionId, amount, currency, status, invoiceNumber,
-        paidAt, stripeInvoiceId, invoicePdf, createdAt,
+        id,
+        subscriptionId,
+        amount,
+        currency,
+        status,
+        invoiceNumber,
+        paidAt,
+        stripeInvoiceId,
+        invoicePdf,
+        createdAt,
       ];
 }
 
@@ -119,7 +145,8 @@ class SaasUsageRecord extends Equatable {
   final DateTime? recordedAt;
 
   @override
-  List<Object?> get props => <Object?>[id, tenantId, metric, quantity, recordedAt];
+  List<Object?> get props =>
+      <Object?>[id, tenantId, metric, quantity, recordedAt];
 }
 
 class SaasQuota extends Equatable {
@@ -140,7 +167,8 @@ class SaasQuota extends Equatable {
   final DateTime? resetAt;
 
   @override
-  List<Object?> get props => <Object?>[id, tenantId, metric, limit, used, resetAt];
+  List<Object?> get props =>
+      <Object?>[id, tenantId, metric, limit, used, resetAt];
 }
 
 class SaasTenant extends Equatable {
@@ -170,7 +198,15 @@ class SaasTenant extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, organizationName, domain, status, planId, planName,
-        userCount, storageUsed, createdAt, updatedAt,
+        id,
+        organizationName,
+        domain,
+        status,
+        planId,
+        planName,
+        userCount,
+        storageUsed,
+        createdAt,
+        updatedAt,
       ];
 }

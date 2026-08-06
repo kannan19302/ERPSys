@@ -19,7 +19,8 @@ class EmailTemplateListPage extends ConsumerStatefulWidget {
   static const String routePath = '/crm/email-templates';
 
   @override
-  ConsumerState<EmailTemplateListPage> createState() => _EmailTemplateListPageState();
+  ConsumerState<EmailTemplateListPage> createState() =>
+      _EmailTemplateListPageState();
 }
 
 class _EmailTemplateListPageState extends ConsumerState<EmailTemplateListPage> {
@@ -62,7 +63,10 @@ class _EmailTemplateListPageState extends ConsumerState<EmailTemplateListPage> {
         children: <Widget>[
           Padding(
             padding: const EdgeInsets.fromLTRB(
-              Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2,
+              Spacing.x4,
+              Spacing.x3,
+              Spacing.x4,
+              Spacing.x2,
             ),
             child: TextField(
               controller: _search,
@@ -104,7 +108,8 @@ class _EmailTemplateListPageState extends ConsumerState<EmailTemplateListPage> {
                   underline: const SizedBox.shrink(),
                   items: _categoryFilters.entries
                       .map(
-                        (MapEntry<String, String> e) => DropdownMenuItem<String>(
+                        (MapEntry<String, String> e) =>
+                            DropdownMenuItem<String>(
                           value: e.key,
                           child: Text(e.value),
                         ),
@@ -115,7 +120,8 @@ class _EmailTemplateListPageState extends ConsumerState<EmailTemplateListPage> {
                     if (value == null) {
                       controller.applyFilters(const <String, String>{});
                     } else {
-                      controller.applyFilters(<String, String>{'category': value});
+                      controller
+                          .applyFilters(<String, String>{'category': value});
                     }
                   },
                 ),

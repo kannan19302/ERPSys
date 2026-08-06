@@ -67,10 +67,10 @@
   padding: var(--space-3) var(--space-4);
   border-bottom: 1px solid var(--color-border);
   font-family: monospace;
-  font-size: 12px;
+  font-size: var(--text-xs);
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--space-1);
 }
 
 .s9 {
@@ -85,13 +85,13 @@
   background: none;
   border: 1px solid var(--color-success);
   color: var(--color-success);
-  padding: 2px 8px;
+  padding: var(--space-half) var(--space-2);
   border-radius: var(--radius-md);
   cursor: pointer;
   font-size: 10px;
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--space-1);
 }
 
 .s11 {
@@ -130,9 +130,8 @@
   z-index: 1000;
   padding: var(--space-3) var(--space-5);
   border-radius: var(--radius-md);
-  color: #fff;
+  color: var(--color-text-inverse);
   font-weight: var(--weight-semibold);
   font-size: var(--text-sm);
   box-shadow: var(--shadow-lg);
 }
-

@@ -58,7 +58,7 @@ export class OutboxGeneratedController {
   @Permissions("outbox.outboxEntity1.create")
   async createOutboxEntity1(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createOutboxEntity1(req.user.tenantId, body);
   }
@@ -69,7 +69,7 @@ export class OutboxGeneratedController {
   async updateOutboxEntity1(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateOutboxEntity1(req.user.tenantId, id, body);
   }
@@ -107,7 +107,7 @@ export class OutboxGeneratedController {
   @Permissions("outbox.outboxEntity2.create")
   async createOutboxEntity2(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createOutboxEntity2(req.user.tenantId, body);
   }
@@ -118,7 +118,7 @@ export class OutboxGeneratedController {
   async updateOutboxEntity2(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateOutboxEntity2(req.user.tenantId, id, body);
   }
@@ -156,7 +156,7 @@ export class OutboxGeneratedController {
   @Permissions("outbox.outboxEntity3.create")
   async createOutboxEntity3(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createOutboxEntity3(req.user.tenantId, body);
   }
@@ -167,7 +167,7 @@ export class OutboxGeneratedController {
   async updateOutboxEntity3(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateOutboxEntity3(req.user.tenantId, id, body);
   }
@@ -205,7 +205,7 @@ export class OutboxGeneratedController {
   @Permissions("outbox.outboxEntity4.create")
   async createOutboxEntity4(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createOutboxEntity4(req.user.tenantId, body);
   }
@@ -216,7 +216,7 @@ export class OutboxGeneratedController {
   async updateOutboxEntity4(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateOutboxEntity4(req.user.tenantId, id, body);
   }
@@ -254,7 +254,7 @@ export class OutboxGeneratedController {
   @Permissions("outbox.outboxEntity5.create")
   async createOutboxEntity5(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createOutboxEntity5(req.user.tenantId, body);
   }
@@ -265,7 +265,7 @@ export class OutboxGeneratedController {
   async updateOutboxEntity5(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateOutboxEntity5(req.user.tenantId, id, body);
   }
@@ -303,7 +303,7 @@ export class OutboxGeneratedController {
   @Permissions("outbox.outboxEntity6.create")
   async createOutboxEntity6(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createOutboxEntity6(req.user.tenantId, body);
   }
@@ -314,7 +314,7 @@ export class OutboxGeneratedController {
   async updateOutboxEntity6(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateOutboxEntity6(req.user.tenantId, id, body);
   }
@@ -352,7 +352,7 @@ export class OutboxGeneratedController {
   @Permissions("outbox.outboxEntity7.create")
   async createOutboxEntity7(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createOutboxEntity7(req.user.tenantId, body);
   }
@@ -363,7 +363,7 @@ export class OutboxGeneratedController {
   async updateOutboxEntity7(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateOutboxEntity7(req.user.tenantId, id, body);
   }
@@ -401,7 +401,7 @@ export class OutboxGeneratedController {
   @Permissions("outbox.outboxEntity8.create")
   async createOutboxEntity8(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createOutboxEntity8(req.user.tenantId, body);
   }
@@ -412,7 +412,7 @@ export class OutboxGeneratedController {
   async updateOutboxEntity8(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateOutboxEntity8(req.user.tenantId, id, body);
   }
@@ -450,7 +450,7 @@ export class OutboxGeneratedController {
   @Permissions("outbox.outboxEntity9.create")
   async createOutboxEntity9(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createOutboxEntity9(req.user.tenantId, body);
   }
@@ -461,7 +461,7 @@ export class OutboxGeneratedController {
   async updateOutboxEntity9(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateOutboxEntity9(req.user.tenantId, id, body);
   }
@@ -499,7 +499,7 @@ export class OutboxGeneratedController {
   @Permissions("outbox.outboxEntity10.create")
   async createOutboxEntity10(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createOutboxEntity10(req.user.tenantId, body);
   }
@@ -510,7 +510,7 @@ export class OutboxGeneratedController {
   async updateOutboxEntity10(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateOutboxEntity10(req.user.tenantId, id, body);
   }
@@ -548,7 +548,7 @@ export class OutboxGeneratedController {
   @Permissions("outbox.outboxEntity11.create")
   async createOutboxEntity11(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createOutboxEntity11(req.user.tenantId, body);
   }
@@ -559,7 +559,7 @@ export class OutboxGeneratedController {
   async updateOutboxEntity11(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateOutboxEntity11(req.user.tenantId, id, body);
   }
@@ -597,7 +597,7 @@ export class OutboxGeneratedController {
   @Permissions("outbox.outboxEntity12.create")
   async createOutboxEntity12(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createOutboxEntity12(req.user.tenantId, body);
   }
@@ -608,7 +608,7 @@ export class OutboxGeneratedController {
   async updateOutboxEntity12(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateOutboxEntity12(req.user.tenantId, id, body);
   }
@@ -646,7 +646,7 @@ export class OutboxGeneratedController {
   @Permissions("outbox.outboxEntity13.create")
   async createOutboxEntity13(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createOutboxEntity13(req.user.tenantId, body);
   }
@@ -657,7 +657,7 @@ export class OutboxGeneratedController {
   async updateOutboxEntity13(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateOutboxEntity13(req.user.tenantId, id, body);
   }
@@ -695,7 +695,7 @@ export class OutboxGeneratedController {
   @Permissions("outbox.outboxEntity14.create")
   async createOutboxEntity14(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createOutboxEntity14(req.user.tenantId, body);
   }
@@ -706,7 +706,7 @@ export class OutboxGeneratedController {
   async updateOutboxEntity14(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateOutboxEntity14(req.user.tenantId, id, body);
   }
@@ -744,7 +744,7 @@ export class OutboxGeneratedController {
   @Permissions("outbox.outboxEntity15.create")
   async createOutboxEntity15(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createOutboxEntity15(req.user.tenantId, body);
   }
@@ -755,7 +755,7 @@ export class OutboxGeneratedController {
   async updateOutboxEntity15(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateOutboxEntity15(req.user.tenantId, id, body);
   }
@@ -793,7 +793,7 @@ export class OutboxGeneratedController {
   @Permissions("outbox.outboxEntity16.create")
   async createOutboxEntity16(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createOutboxEntity16(req.user.tenantId, body);
   }
@@ -804,7 +804,7 @@ export class OutboxGeneratedController {
   async updateOutboxEntity16(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateOutboxEntity16(req.user.tenantId, id, body);
   }
@@ -842,7 +842,7 @@ export class OutboxGeneratedController {
   @Permissions("outbox.outboxEntity17.create")
   async createOutboxEntity17(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createOutboxEntity17(req.user.tenantId, body);
   }
@@ -853,7 +853,7 @@ export class OutboxGeneratedController {
   async updateOutboxEntity17(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateOutboxEntity17(req.user.tenantId, id, body);
   }
@@ -891,7 +891,7 @@ export class OutboxGeneratedController {
   @Permissions("outbox.outboxEntity18.create")
   async createOutboxEntity18(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createOutboxEntity18(req.user.tenantId, body);
   }
@@ -902,7 +902,7 @@ export class OutboxGeneratedController {
   async updateOutboxEntity18(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateOutboxEntity18(req.user.tenantId, id, body);
   }
@@ -940,7 +940,7 @@ export class OutboxGeneratedController {
   @Permissions("outbox.outboxEntity19.create")
   async createOutboxEntity19(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createOutboxEntity19(req.user.tenantId, body);
   }
@@ -951,7 +951,7 @@ export class OutboxGeneratedController {
   async updateOutboxEntity19(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateOutboxEntity19(req.user.tenantId, id, body);
   }
@@ -989,7 +989,7 @@ export class OutboxGeneratedController {
   @Permissions("outbox.outboxEntity20.create")
   async createOutboxEntity20(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createOutboxEntity20(req.user.tenantId, body);
   }
@@ -1000,7 +1000,7 @@ export class OutboxGeneratedController {
   async updateOutboxEntity20(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateOutboxEntity20(req.user.tenantId, id, body);
   }
@@ -1038,7 +1038,7 @@ export class OutboxGeneratedController {
   @Permissions("outbox.outboxEntity21.create")
   async createOutboxEntity21(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createOutboxEntity21(req.user.tenantId, body);
   }
@@ -1049,7 +1049,7 @@ export class OutboxGeneratedController {
   async updateOutboxEntity21(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateOutboxEntity21(req.user.tenantId, id, body);
   }
@@ -1087,7 +1087,7 @@ export class OutboxGeneratedController {
   @Permissions("outbox.outboxEntity22.create")
   async createOutboxEntity22(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createOutboxEntity22(req.user.tenantId, body);
   }
@@ -1098,7 +1098,7 @@ export class OutboxGeneratedController {
   async updateOutboxEntity22(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateOutboxEntity22(req.user.tenantId, id, body);
   }
@@ -1136,7 +1136,7 @@ export class OutboxGeneratedController {
   @Permissions("outbox.outboxEntity23.create")
   async createOutboxEntity23(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createOutboxEntity23(req.user.tenantId, body);
   }
@@ -1147,7 +1147,7 @@ export class OutboxGeneratedController {
   async updateOutboxEntity23(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateOutboxEntity23(req.user.tenantId, id, body);
   }
@@ -1185,7 +1185,7 @@ export class OutboxGeneratedController {
   @Permissions("outbox.outboxEntity24.create")
   async createOutboxEntity24(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createOutboxEntity24(req.user.tenantId, body);
   }
@@ -1196,7 +1196,7 @@ export class OutboxGeneratedController {
   async updateOutboxEntity24(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateOutboxEntity24(req.user.tenantId, id, body);
   }
@@ -1234,7 +1234,7 @@ export class OutboxGeneratedController {
   @Permissions("outbox.outboxEntity25.create")
   async createOutboxEntity25(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createOutboxEntity25(req.user.tenantId, body);
   }
@@ -1245,7 +1245,7 @@ export class OutboxGeneratedController {
   async updateOutboxEntity25(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateOutboxEntity25(req.user.tenantId, id, body);
   }
@@ -1283,7 +1283,7 @@ export class OutboxGeneratedController {
   @Permissions("outbox.outboxEntity26.create")
   async createOutboxEntity26(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createOutboxEntity26(req.user.tenantId, body);
   }
@@ -1294,7 +1294,7 @@ export class OutboxGeneratedController {
   async updateOutboxEntity26(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateOutboxEntity26(req.user.tenantId, id, body);
   }
@@ -1332,7 +1332,7 @@ export class OutboxGeneratedController {
   @Permissions("outbox.outboxEntity27.create")
   async createOutboxEntity27(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createOutboxEntity27(req.user.tenantId, body);
   }
@@ -1343,7 +1343,7 @@ export class OutboxGeneratedController {
   async updateOutboxEntity27(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateOutboxEntity27(req.user.tenantId, id, body);
   }
@@ -1381,7 +1381,7 @@ export class OutboxGeneratedController {
   @Permissions("outbox.outboxEntity28.create")
   async createOutboxEntity28(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createOutboxEntity28(req.user.tenantId, body);
   }
@@ -1392,7 +1392,7 @@ export class OutboxGeneratedController {
   async updateOutboxEntity28(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateOutboxEntity28(req.user.tenantId, id, body);
   }
@@ -1430,7 +1430,7 @@ export class OutboxGeneratedController {
   @Permissions("outbox.outboxEntity29.create")
   async createOutboxEntity29(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createOutboxEntity29(req.user.tenantId, body);
   }
@@ -1441,7 +1441,7 @@ export class OutboxGeneratedController {
   async updateOutboxEntity29(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateOutboxEntity29(req.user.tenantId, id, body);
   }
@@ -1479,7 +1479,7 @@ export class OutboxGeneratedController {
   @Permissions("outbox.outboxEntity30.create")
   async createOutboxEntity30(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createOutboxEntity30(req.user.tenantId, body);
   }
@@ -1490,7 +1490,7 @@ export class OutboxGeneratedController {
   async updateOutboxEntity30(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateOutboxEntity30(req.user.tenantId, id, body);
   }
@@ -1528,7 +1528,7 @@ export class OutboxGeneratedController {
   @Permissions("outbox.outboxEntity31.create")
   async createOutboxEntity31(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createOutboxEntity31(req.user.tenantId, body);
   }
@@ -1539,7 +1539,7 @@ export class OutboxGeneratedController {
   async updateOutboxEntity31(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateOutboxEntity31(req.user.tenantId, id, body);
   }
@@ -1577,7 +1577,7 @@ export class OutboxGeneratedController {
   @Permissions("outbox.outboxEntity32.create")
   async createOutboxEntity32(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createOutboxEntity32(req.user.tenantId, body);
   }
@@ -1588,7 +1588,7 @@ export class OutboxGeneratedController {
   async updateOutboxEntity32(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateOutboxEntity32(req.user.tenantId, id, body);
   }
@@ -1626,7 +1626,7 @@ export class OutboxGeneratedController {
   @Permissions("outbox.outboxEntity33.create")
   async createOutboxEntity33(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createOutboxEntity33(req.user.tenantId, body);
   }
@@ -1637,7 +1637,7 @@ export class OutboxGeneratedController {
   async updateOutboxEntity33(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateOutboxEntity33(req.user.tenantId, id, body);
   }
@@ -1675,7 +1675,7 @@ export class OutboxGeneratedController {
   @Permissions("outbox.outboxEntity34.create")
   async createOutboxEntity34(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createOutboxEntity34(req.user.tenantId, body);
   }
@@ -1686,7 +1686,7 @@ export class OutboxGeneratedController {
   async updateOutboxEntity34(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateOutboxEntity34(req.user.tenantId, id, body);
   }
@@ -1724,7 +1724,7 @@ export class OutboxGeneratedController {
   @Permissions("outbox.outboxEntity35.create")
   async createOutboxEntity35(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createOutboxEntity35(req.user.tenantId, body);
   }
@@ -1735,7 +1735,7 @@ export class OutboxGeneratedController {
   async updateOutboxEntity35(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateOutboxEntity35(req.user.tenantId, id, body);
   }
@@ -1773,7 +1773,7 @@ export class OutboxGeneratedController {
   @Permissions("outbox.outboxEntity36.create")
   async createOutboxEntity36(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createOutboxEntity36(req.user.tenantId, body);
   }
@@ -1784,7 +1784,7 @@ export class OutboxGeneratedController {
   async updateOutboxEntity36(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateOutboxEntity36(req.user.tenantId, id, body);
   }
@@ -1822,7 +1822,7 @@ export class OutboxGeneratedController {
   @Permissions("outbox.outboxEntity37.create")
   async createOutboxEntity37(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createOutboxEntity37(req.user.tenantId, body);
   }
@@ -1833,7 +1833,7 @@ export class OutboxGeneratedController {
   async updateOutboxEntity37(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateOutboxEntity37(req.user.tenantId, id, body);
   }
@@ -1871,7 +1871,7 @@ export class OutboxGeneratedController {
   @Permissions("outbox.outboxEntity38.create")
   async createOutboxEntity38(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createOutboxEntity38(req.user.tenantId, body);
   }
@@ -1882,7 +1882,7 @@ export class OutboxGeneratedController {
   async updateOutboxEntity38(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateOutboxEntity38(req.user.tenantId, id, body);
   }
@@ -1920,7 +1920,7 @@ export class OutboxGeneratedController {
   @Permissions("outbox.outboxEntity39.create")
   async createOutboxEntity39(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createOutboxEntity39(req.user.tenantId, body);
   }
@@ -1931,7 +1931,7 @@ export class OutboxGeneratedController {
   async updateOutboxEntity39(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateOutboxEntity39(req.user.tenantId, id, body);
   }
@@ -1969,7 +1969,7 @@ export class OutboxGeneratedController {
   @Permissions("outbox.outboxEntity40.create")
   async createOutboxEntity40(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createOutboxEntity40(req.user.tenantId, body);
   }
@@ -1980,7 +1980,7 @@ export class OutboxGeneratedController {
   async updateOutboxEntity40(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateOutboxEntity40(req.user.tenantId, id, body);
   }

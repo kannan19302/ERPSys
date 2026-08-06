@@ -20,7 +20,8 @@ class OpportunityListPage extends ConsumerStatefulWidget {
   static const String routePath = '/sales/opportunities';
 
   @override
-  ConsumerState<OpportunityListPage> createState() => _OpportunityListPageState();
+  ConsumerState<OpportunityListPage> createState() =>
+      _OpportunityListPageState();
 }
 
 class _OpportunityListPageState extends ConsumerState<OpportunityListPage> {
@@ -89,7 +90,10 @@ class _OpportunityListPageState extends ConsumerState<OpportunityListPage> {
         children: <Widget>[
           Padding(
             padding: const EdgeInsets.fromLTRB(
-              Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2,
+              Spacing.x4,
+              Spacing.x3,
+              Spacing.x4,
+              Spacing.x2,
             ),
             child: TextField(
               controller: _search,
@@ -131,7 +135,8 @@ class _OpportunityListPageState extends ConsumerState<OpportunityListPage> {
                   underline: const SizedBox.shrink(),
                   items: _stageFilters.entries
                       .map(
-                        (MapEntry<String, String> e) => DropdownMenuItem<String>(
+                        (MapEntry<String, String> e) =>
+                            DropdownMenuItem<String>(
                           value: e.key,
                           child: Text(e.value),
                         ),

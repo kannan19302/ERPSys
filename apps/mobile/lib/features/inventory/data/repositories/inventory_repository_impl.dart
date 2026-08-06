@@ -54,7 +54,8 @@ class InventoryRepositoryImpl implements InventoryRepository {
         query.cacheKey,
         <String, Object?>{
           'data': (page.data as List<Object>)
-              .map((Object item) => (item as dynamic).toJson() as Map<String, dynamic>)
+              .map((Object item) =>
+                  (item as dynamic).toJson() as Map<String, dynamic>)
               .toList(),
           'meta': page.meta.toJson(),
         },

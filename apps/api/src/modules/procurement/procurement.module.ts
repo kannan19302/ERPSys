@@ -20,7 +20,6 @@ import { ProcurementAnalyticsService } from "./procurement-analytics.service";
 import { ProcurementApprovalsService } from "./procurement-approvals.service";
 import { ProcurementSourcingService } from "./procurement-sourcing.service";
 import { ProcurementSourcingController } from "./procurement-sourcing.controller";
-import { ProcurementDeepExpansionBulkController } from "./procurement-deep-expansion-bulk.controller";
 import { ProcurementSettingsController } from "./settings.controller";
 import { ProcurementEnterpriseController } from "./procurement-enterprise.controller";
 import { ProcurementEnterpriseService } from "./procurement-enterprise.service";
@@ -39,7 +38,6 @@ import { ProcurementSupplierPerformanceController } from "./procurement-supplier
     ProcurementIntelligenceController,
     ProcurementSchedulingController,
     ProcurementSourcingController,
-    ProcurementDeepExpansionBulkController,
     ProcurementSettingsController,
     ProcurementEnterpriseController,
     ProcurementSupplierPerformanceController,

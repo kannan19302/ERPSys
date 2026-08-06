@@ -74,7 +74,7 @@
   background: none;
   cursor: pointer;
   color: var(--color-danger);
-  padding: 2px;
+  padding: var(--space-half);
 }
 
 .style12 {
@@ -143,6 +143,20 @@
   gap: var(--space-3);
   padding-top: var(--space-2);
 }
-.s1 { align-items: center; border-radius: var(--radius-md); display: flex; height: 44px; justify-content: center; opacity: 0.12; position: relative; width: 44px; }
-.s2 { position: absolute; }
-.s3 { height: 70px; padding: var(--space-2) var(--space-3); }
+.s1 {
+  align-items: center;
+  border-radius: var(--radius-md);
+  display: flex;
+  height: 44px;
+  justify-content: center;
+  opacity: 0.12;
+  position: relative;
+  width: 44px;
+}
+.s2 {
+  position: absolute;
+}
+.s3 {
+  height: 70px;
+  padding: var(--space-2) var(--space-3);
+}

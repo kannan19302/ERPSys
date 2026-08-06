@@ -11,6 +11,7 @@ import { MarketplaceEnterpriseModule } from "./marketplace-enterprise.module";
 import { StorefrontController } from "./storefront.controller";
 import { StorefrontService } from "./storefront.service";
 import { VendorService } from "./vendor.service";
+import { PayoutService } from "./payout.service";
 
 @Module({
   imports: [ExtensionGatewayClientModule, MarketplaceEnterpriseModule],
@@ -21,6 +22,7 @@ import { VendorService } from "./vendor.service";
     StorefrontController,
   ],
   providers: [
+    PayoutService,
     BundleStoreService,
     AppProvisioningService,
     VendorService,

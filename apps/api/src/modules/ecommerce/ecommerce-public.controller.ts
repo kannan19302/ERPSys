@@ -31,6 +31,7 @@ import {
   CheckoutDto,
 } from "./dto/ecommerce.dto";
 import { ZodBody } from "../../common/decorators/zod-body.decorator";
+import { Public } from "../../common/decorators/public.decorator";
 
 /**
  * ================================================================
@@ -62,6 +63,9 @@ export class EcommercePublicController {
     private readonly checkoutService: EcommerceCheckoutService,
   ) {}
 
+  @Public(
+    "Anonymous storefront: serves external customers who have no UniERP account. Tenant is resolved from :tenantSlug by PublicTenantResolverGuard, not from a session. Documented exception — see the controller header.",
+  )
   @Get("config")
   @ApiOperation({
     summary: "[PUBLIC] Get storefront branding info (name, logo, currency)",
@@ -70,12 +74,18 @@ export class EcommercePublicController {
     return this.publicService.getPublicConfig(req.storefrontConfig!.tenantId);
   }
 
+  @Public(
+    "Anonymous storefront: serves external customers who have no UniERP account. Tenant is resolved from :tenantSlug by PublicTenantResolverGuard, not from a session. Documented exception — see the controller header.",
+  )
   @Get("categories")
   @ApiOperation({ summary: "[PUBLIC] List storefront categories" })
   async getCategories(@Req() req: Request & StorefrontRequest) {
     return this.publicService.getCategories(req.storefrontConfig!.tenantId);
   }
 
+  @Public(
+    "Anonymous storefront: serves external customers who have no UniERP account. Tenant is resolved from :tenantSlug by PublicTenantResolverGuard, not from a session. Documented exception — see the controller header.",
+  )
   @Get("products")
   @ApiOperation({
     summary:
@@ -99,6 +109,9 @@ export class EcommercePublicController {
     );
   }
 
+  @Public(
+    "Anonymous storefront: serves external customers who have no UniERP account. Tenant is resolved from :tenantSlug by PublicTenantResolverGuard, not from a session. Documented exception — see the controller header.",
+  )
   @Get("products/:listingId")
   @ApiOperation({ summary: "[PUBLIC] Get a single published product listing" })
   async getProductByListingId(
@@ -111,6 +124,9 @@ export class EcommercePublicController {
     );
   }
 
+  @Public(
+    "Anonymous storefront: serves external customers who have no UniERP account. Tenant is resolved from :tenantSlug by PublicTenantResolverGuard, not from a session. Documented exception — see the controller header.",
+  )
   @Post("cart")
   @ApiOperation({
     summary: "[PUBLIC] Create a new anonymous cart, returns a sessionToken",
@@ -126,6 +142,9 @@ export class EcommercePublicController {
     );
   }
 
+  @Public(
+    "Anonymous storefront: serves external customers who have no UniERP account. Tenant is resolved from :tenantSlug by PublicTenantResolverGuard, not from a session. Documented exception — see the controller header.",
+  )
   @Get("cart/:sessionToken")
   @ApiOperation({
     summary: "[PUBLIC] Get a cart and its items by sessionToken",
@@ -140,6 +159,9 @@ export class EcommercePublicController {
     );
   }
 
+  @Public(
+    "Anonymous storefront: serves external customers who have no UniERP account. Tenant is resolved from :tenantSlug by PublicTenantResolverGuard, not from a session. Documented exception — see the controller header.",
+  )
   @Post("cart/:sessionToken/items")
   @ApiOperation({
     summary:
@@ -157,6 +179,9 @@ export class EcommercePublicController {
     );
   }
 
+  @Public(
+    "Anonymous storefront: serves external customers who have no UniERP account. Tenant is resolved from :tenantSlug by PublicTenantResolverGuard, not from a session. Documented exception — see the controller header.",
+  )
   @Patch("cart/:sessionToken/items/:itemId")
   @ApiOperation({ summary: "[PUBLIC] Update a cart item's quantity" })
   async updateCartItem(
@@ -173,6 +198,9 @@ export class EcommercePublicController {
     );
   }
 
+  @Public(
+    "Anonymous storefront: serves external customers who have no UniERP account. Tenant is resolved from :tenantSlug by PublicTenantResolverGuard, not from a session. Documented exception — see the controller header.",
+  )
   @Delete("cart/:sessionToken/items/:itemId")
   @ApiOperation({ summary: "[PUBLIC] Remove an item from the cart" })
   async removeCartItem(
@@ -187,6 +215,9 @@ export class EcommercePublicController {
     );
   }
 
+  @Public(
+    "Anonymous storefront: serves external customers who have no UniERP account. Tenant is resolved from :tenantSlug by PublicTenantResolverGuard, not from a session. Documented exception — see the controller header.",
+  )
   @Post("checkout")
   @ApiOperation({
     summary:
@@ -205,6 +236,9 @@ export class EcommercePublicController {
     );
   }
 
+  @Public(
+    "Anonymous storefront: serves external customers who have no UniERP account. Tenant is resolved from :tenantSlug by PublicTenantResolverGuard, not from a session. Documented exception — see the controller header.",
+  )
   @Get("checkout/:sessionToken/status")
   @ApiOperation({
     summary:
@@ -225,6 +259,9 @@ export class EcommercePublicController {
     return state;
   }
 
+  @Public(
+    "Anonymous storefront: serves external customers who have no UniERP account. Tenant is resolved from :tenantSlug by PublicTenantResolverGuard, not from a session. Documented exception — see the controller header.",
+  )
   @Post("webhooks/stripe")
   @ApiOperation({
     summary: "[PUBLIC] Stripe Webhook receiver for order payment completions",

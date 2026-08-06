@@ -61,10 +61,14 @@ class _StockMovementListPageState extends ConsumerState<StockMovementListPage> {
       ),
       body: Column(
         children: <Widget>[
-          if (state.cachedAt != null) StaleDataBanner(cachedAt: state.cachedAt!),
+          if (state.cachedAt != null)
+            StaleDataBanner(cachedAt: state.cachedAt!),
           Padding(
             padding: const EdgeInsets.fromLTRB(
-              Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2,
+              Spacing.x4,
+              Spacing.x3,
+              Spacing.x4,
+              Spacing.x2,
             ),
             child: TextField(
               controller: _search,
@@ -176,8 +180,7 @@ class _MovementTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final Palette t = context.tokens;
 
-    final (IconData icon, Color color, String label) =
-        switch (movement.type) {
+    final (IconData icon, Color color, String label) = switch (movement.type) {
       'IN' => (Icons.arrow_downward, t.success, 'In'),
       'OUT' => (Icons.arrow_upward, t.danger, 'Out'),
       'TRANSFER' => (Icons.swap_horiz, t.info, 'Transfer'),

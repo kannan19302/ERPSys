@@ -6,7 +6,7 @@
  * it. Changing this shape is a sealed-contract change (roadmap § 12b — ADR
  * required).
  */
-import { z } from 'zod';
+import { z } from "zod";
 
 /** Canonical, stable error codes. Add codes; never repurpose existing ones. */
 export const ERROR_CODES = {
@@ -37,15 +37,15 @@ export type ErrorCode = keyof typeof ERROR_CODES;
 /** Default code for an HTTP status when nothing more specific applies. */
 export function codeForStatus(status: number): string {
   const map: Record<number, ErrorCode> = {
-    400: 'BAD_REQUEST',
-    401: 'UNAUTHORIZED',
-    403: 'FORBIDDEN',
-    404: 'NOT_FOUND',
-    409: 'CONFLICT',
-    422: 'UNPROCESSABLE_ENTITY',
-    429: 'RATE_LIMITED',
+    400: "BAD_REQUEST",
+    401: "UNAUTHORIZED",
+    403: "FORBIDDEN",
+    404: "NOT_FOUND",
+    409: "CONFLICT",
+    422: "UNPROCESSABLE_ENTITY",
+    429: "RATE_LIMITED",
   };
-  return map[status] ?? (status >= 500 ? 'INTERNAL_ERROR' : 'ERROR');
+  return map[status] ?? (status >= 500 ? "INTERNAL_ERROR" : "ERROR");
 }
 
 export const errorEnvelopeSchema = z.object({

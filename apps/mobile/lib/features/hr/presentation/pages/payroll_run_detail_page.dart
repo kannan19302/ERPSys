@@ -43,8 +43,7 @@ class PayrollRunDetailPage extends ConsumerWidget {
           failure: error is Failure
               ? error
               : const ServerFailure('Could not load payroll run.'),
-          onRetry: () =>
-              ref.invalidate(payrollRunDetailProvider(payrollRunId)),
+          onRetry: () => ref.invalidate(payrollRunDetailProvider(payrollRunId)),
         ),
         data: (PayrollRun run) => _PayrollRunDetail(run: run),
       ),
@@ -85,8 +84,10 @@ class _PayrollRunDetail extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: Spacing.x3),
-              _Row('Period',
-                  '${Formatters.date(run.periodStart)} – ${Formatters.date(run.periodEnd)}',),
+              _Row(
+                'Period',
+                '${Formatters.date(run.periodStart)} – ${Formatters.date(run.periodEnd)}',
+              ),
               _Row('Employees', '${run.totalEmployees}'),
               _Row('Total Salary', Formatters.currency(run.totalSalary)),
               if (run.runDate != null)

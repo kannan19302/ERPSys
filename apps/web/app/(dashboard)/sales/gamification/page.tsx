@@ -69,17 +69,19 @@ export default function SalesGamificationPage() {
               alignItems: "center",
             }}
           >
-            <span style={{ fontSize: "14px", color: "#64748b" }}>
+            <span
+              style={{ fontSize: "14px", color: "var(--color-text-secondary)" }}
+            >
               Current Leader
             </span>
-            <Trophy size={20} color="#f59e0b" />
+            <Trophy size={20} color="var(--chart-3)" />
           </div>
           <div
             style={{ fontSize: "24px", fontWeight: "bold", marginTop: "8px" }}
           >
             {leaderboards[0]?.name || "N/A"}
           </div>
-          <span style={{ fontSize: "13px", color: "#10b981" }}>
+          <span style={{ fontSize: "13px", color: "var(--chart-9)" }}>
             ${(leaderboards[0]?.score || 0).toLocaleString()} booked
           </span>
         </Card>
@@ -91,17 +93,21 @@ export default function SalesGamificationPage() {
               alignItems: "center",
             }}
           >
-            <span style={{ fontSize: "14px", color: "#64748b" }}>
+            <span
+              style={{ fontSize: "14px", color: "var(--color-text-secondary)" }}
+            >
               Top Deal Streak
             </span>
-            <Flame size={20} color="#ef4444" />
+            <Flame size={20} color="var(--chart-4)" />
           </div>
           <div
             style={{ fontSize: "24px", fontWeight: "bold", marginTop: "8px" }}
           >
             {leaderboardData?.streakData?.streakCount || 0} Deals
           </div>
-          <span style={{ fontSize: "13px", color: "#64748b" }}>
+          <span
+            style={{ fontSize: "13px", color: "var(--color-text-secondary)" }}
+          >
             Rep: {leaderboardData?.streakData?.currentTopStreakRep}
           </span>
         </Card>
@@ -113,10 +119,12 @@ export default function SalesGamificationPage() {
               alignItems: "center",
             }}
           >
-            <span style={{ fontSize: "14px", color: "#64748b" }}>
+            <span
+              style={{ fontSize: "14px", color: "var(--color-text-secondary)" }}
+            >
               Active Period
             </span>
-            <Target size={20} color="#3b82f6" />
+            <Target size={20} color="var(--color-primary)" />
           </div>
           <div
             style={{ fontSize: "20px", fontWeight: "bold", marginTop: "8px" }}
@@ -163,7 +171,7 @@ export default function SalesGamificationPage() {
                 <td
                   style={{
                     padding: "12px 16px",
-                    color: "#10b981",
+                    color: "var(--chart-9)",
                     fontWeight: 600,
                   }}
                 >

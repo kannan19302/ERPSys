@@ -10,7 +10,7 @@ import {
   type Column,
   Spinner,
 } from "@unerp/ui";
-import { SubTabBar, type SubTab } from "@unerp/ui-layout";
+import { SubTabBar, type SubTab } from "@unerp/ui/layout";
 import { DollarSign, BarChart3 } from "lucide-react";
 import { RouteGuard, useApiClient } from "@unerp/framework";
 

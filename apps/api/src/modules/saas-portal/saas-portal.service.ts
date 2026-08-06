@@ -1,12 +1,13 @@
 import { Injectable } from "@nestjs/common";
 import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 
 @Injectable()
 export class SaasPortalService {
   async getPlatformOverview() {
     const [tenants, users, apps, revenue] = await Promise.all([
       prisma.tenant.count(),
-      prisma.user.count(),
+      idpPrisma.user.count(),
       prisma.marketplaceApp.count(),
       prisma.invoice.aggregate({ _sum: { totalAmount: true } }),
     ]);

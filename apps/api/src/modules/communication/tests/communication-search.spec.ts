@@ -3,17 +3,34 @@ import { CommunicationSearchService } from "../services/communication-search.ser
 
 vi.mock("@unerp/database", () => ({
   prisma: {
-    message: { findMany: vi.fn() },
-    knowledgeArticle: { findMany: vi.fn(), count: vi.fn() },
-    document: { findMany: vi.fn() },
+    helpdeskTicket: { findMany: vi.fn().mockResolvedValue([]) },
+    channel: { findMany: vi.fn().mockResolvedValue([]) },
+    synonymDictionary: {
+      findMany: vi.fn().mockResolvedValue([]),
+      create: vi.fn(),
+    },
+    message: { findMany: vi.fn().mockResolvedValue([]) },
+    knowledgeArticle: {
+      findMany: vi.fn().mockResolvedValue([]),
+      count: vi.fn().mockResolvedValue(0),
+    },
+    document: { findMany: vi.fn().mockResolvedValue([]) },
     savedSearch: {
       create: vi.fn(),
-      findMany: vi.fn(),
-      findFirst: vi.fn(),
+      findMany: vi.fn().mockResolvedValue([]),
+      findFirst: vi.fn().mockResolvedValue(null),
       delete: vi.fn(),
     },
-    searchHistory: { create: vi.fn(), findMany: vi.fn() },
-    searchSynonym: { findMany: vi.fn(), create: vi.fn() },
+    searchHistory: {
+      create: vi.fn(),
+      findMany: vi.fn().mockResolvedValue([]),
+      count: vi.fn().mockResolvedValue(0),
+      groupBy: vi.fn().mockResolvedValue([]),
+    },
+    synonymDictionary: {
+      findMany: vi.fn().mockResolvedValue([]),
+      create: vi.fn(),
+    },
   },
 }));
 
@@ -42,8 +59,10 @@ describe("CommunicationSearchService", () => {
       page: 1,
       limit: 20,
     });
-    expect(res).toHaveLength(1);
-    expect(res[0].type).toBe("message");
+    // fullTextSearch returns a paginated envelope, not a bare array.
+    expect(res.data).toHaveLength(1);
+    expect(res.total).toBe(1);
+    expect(res.data[0].type).toBe("message");
   });
 
   it("saves a search query", async () => {
@@ -88,7 +107,7 @@ describe("CommunicationSearchService", () => {
       userId: "other",
     } as never);
     await expect(svc.deleteSavedSearch("t1", "u1", "s1")).rejects.toThrow(
-      "Not found",
+      "Saved search not found",
     );
   });
 
@@ -110,7 +129,7 @@ describe("CommunicationSearchService", () => {
 
   it("lists synonyms", async () => {
     const { prisma } = await import("@unerp/database");
-    vi.mocked(prisma.searchSynonym.findMany).mockResolvedValue([
+    vi.mocked(prisma.synonymDictionary.findMany).mockResolvedValue([
       { term: "bug", synonyms: ["issue", "defect"] },
     ] as never);
     const res = await svc.getSynonyms("t1");
@@ -119,7 +138,7 @@ describe("CommunicationSearchService", () => {
 
   it("creates a synonym", async () => {
     const { prisma } = await import("@unerp/database");
-    vi.mocked(prisma.searchSynonym.create).mockResolvedValue({
+    vi.mocked(prisma.synonymDictionary.create).mockResolvedValue({
       id: "syn1",
       term: "bug",
       synonyms: ["issue"],

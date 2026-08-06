@@ -131,8 +131,8 @@ export default function PortalCaseDetailPage() {
                 style={{
                   background:
                     c.authorType === "PORTAL"
-                      ? "var(--surface-secondary, #eef2ff)"
-                      : "var(--surface-tertiary, #f4f4f5)",
+                      ? "var(--surface-secondary)"
+                      : "var(--surface-tertiary)",
                   alignSelf:
                     c.authorType === "PORTAL" ? "flex-end" : "flex-start",
                 }}

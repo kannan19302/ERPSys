@@ -15,7 +15,8 @@ import '../../domain/entities/communication.dart';
 import '../../domain/repositories/communication_repository.dart';
 import '../../domain/usecases/communication_usecases.dart';
 
-final Provider<CommunicationRemoteDataSource> communicationRemoteDataSourceProvider =
+final Provider<CommunicationRemoteDataSource>
+    communicationRemoteDataSourceProvider =
     Provider<CommunicationRemoteDataSource>(
   (Ref ref) => CommunicationRemoteDataSourceImpl(ref.watch(apiClientProvider)),
 );
@@ -34,7 +35,8 @@ final Provider<CommunicationRepository> communicationRepositoryProvider =
 class ChannelListState extends Equatable {
   const ChannelListState({
     this.items = const <Channel>[],
-    this.meta = const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
+    this.meta =
+        const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
     this.query = const ListQuery(sort: '-createdAt'),
     this.isLoading = true,
     this.isLoadingMore = false,
@@ -71,13 +73,21 @@ class ChannelListState extends Equatable {
         isLoading: isLoading ?? this.isLoading,
         isLoadingMore: isLoadingMore ?? this.isLoadingMore,
         failure: clearFailures ? null : (failure ?? this.failure),
-        loadMoreFailure: clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
+        loadMoreFailure:
+            clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
         cachedAt: clearCachedAt ? null : (cachedAt ?? this.cachedAt),
       );
 
   @override
   List<Object?> get props => <Object?>[
-        items, meta, query.cacheKey, isLoading, isLoadingMore, failure, loadMoreFailure, cachedAt,
+        items,
+        meta,
+        query.cacheKey,
+        isLoading,
+        isLoadingMore,
+        failure,
+        loadMoreFailure,
+        cachedAt,
       ];
 }
 
@@ -108,8 +118,12 @@ class ChannelListController extends Notifier<ChannelListState> {
     state = result.fold(
       (f) => state.copyWith(isLoading: false, failure: f, items: const []),
       (page) => state.copyWith(
-        items: page.value.data, meta: page.value.meta, query: query,
-        isLoading: false, clearFailures: true, cachedAt: page.cachedAt,
+        items: page.value.data,
+        meta: page.value.meta,
+        query: query,
+        isLoading: false,
+        clearFailures: true,
+        cachedAt: page.cachedAt,
         clearCachedAt: !page.isFromCache,
       ),
     );
@@ -123,8 +137,11 @@ class ChannelListController extends Notifier<ChannelListState> {
     state = result.fold(
       (f) => state.copyWith(isLoadingMore: false, loadMoreFailure: f),
       (page) => state.copyWith(
-        items: [...state.items, ...page.value.data], meta: page.value.meta,
-        query: next, isLoadingMore: false, clearFailures: true,
+        items: [...state.items, ...page.value.data],
+        meta: page.value.meta,
+        query: next,
+        isLoadingMore: false,
+        clearFailures: true,
       ),
     );
   }
@@ -132,21 +149,25 @@ class ChannelListController extends Notifier<ChannelListState> {
   void search(String term) {
     _searchDebounce?.cancel();
     _searchDebounce = Timer(const Duration(milliseconds: 350), () {
-      state = state.copyWith(query: state.query.copyWith(search: term, page: 1));
+      state =
+          state.copyWith(query: state.query.copyWith(search: term, page: 1));
       refresh();
     });
   }
 
   Future<Result<void>> deleteChannel(String id) async {
     final result = await DeleteChannelUseCase(
-      ref.read(communicationRepositoryProvider),)(id);
+      ref.read(communicationRepositoryProvider),
+    )(id);
     if (result.isOk) await refresh();
     return result;
   }
 
-  Future<Result<Channel>> saveChannel(Map<String, dynamic> payload, {String? id}) async {
+  Future<Result<Channel>> saveChannel(Map<String, dynamic> payload,
+      {String? id}) async {
     final result = await SaveChannelUseCase(
-      ref.read(communicationRepositoryProvider),)(
+      ref.read(communicationRepositoryProvider),
+    )(
       SaveChannelParams(id: id, payload: payload),
     );
     if (result.isOk) await refresh();
@@ -170,7 +191,8 @@ class MessageListState extends Equatable {
   const MessageListState({
     required this.channelId,
     this.items = const <Message>[],
-    this.meta = const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
+    this.meta =
+        const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
     this.query = const ListQuery(sort: '-createdAt'),
     this.isLoading = true,
     this.isLoadingMore = false,
@@ -206,12 +228,20 @@ class MessageListState extends Equatable {
         isLoading: isLoading ?? this.isLoading,
         isLoadingMore: isLoadingMore ?? this.isLoadingMore,
         failure: clearFailures ? null : (failure ?? this.failure),
-        loadMoreFailure: clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
+        loadMoreFailure:
+            clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
       );
 
   @override
   List<Object?> get props => <Object?>[
-        channelId, items, meta, query.cacheKey, isLoading, isLoadingMore, failure, loadMoreFailure,
+        channelId,
+        items,
+        meta,
+        query.cacheKey,
+        isLoading,
+        isLoadingMore,
+        failure,
+        loadMoreFailure,
       ];
 }
 
@@ -231,15 +261,21 @@ class MessageListController extends FamilyNotifier<MessageListState, String> {
 
   Future<void> _load(String channelId) async {
     final query = state.query.copyWith(page: 1);
-    state = state.copyWith(channelId: channelId, isLoading: true, clearFailures: true);
+    state = state.copyWith(
+        channelId: channelId, isLoading: true, clearFailures: true);
     final result = await ListChannelMessagesUseCase(
-      ref.read(communicationRepositoryProvider),)(
-      ListChannelMessagesParams(channelId: channelId, query: query),);
+      ref.read(communicationRepositoryProvider),
+    )(
+      ListChannelMessagesParams(channelId: channelId, query: query),
+    );
     state = result.fold(
       (f) => state.copyWith(isLoading: false, failure: f),
       (page) => state.copyWith(
-        items: page.value.data, meta: page.value.meta, query: query,
-        isLoading: false, clearFailures: true,
+        items: page.value.data,
+        meta: page.value.meta,
+        query: query,
+        isLoading: false,
+        clearFailures: true,
       ),
     );
   }
@@ -251,20 +287,26 @@ class MessageListController extends FamilyNotifier<MessageListState, String> {
     state = state.copyWith(isLoadingMore: true, clearFailures: true);
     final next = state.query.copyWith(page: state.meta.page + 1);
     final result = await ListChannelMessagesUseCase(
-      ref.read(communicationRepositoryProvider),)(
-      ListChannelMessagesParams(channelId: state.channelId, query: next),);
+      ref.read(communicationRepositoryProvider),
+    )(
+      ListChannelMessagesParams(channelId: state.channelId, query: next),
+    );
     state = result.fold(
       (f) => state.copyWith(isLoadingMore: false, loadMoreFailure: f),
       (page) => state.copyWith(
-        items: [...state.items, ...page.value.data], meta: page.value.meta,
-        query: next, isLoadingMore: false, clearFailures: true,
+        items: [...state.items, ...page.value.data],
+        meta: page.value.meta,
+        query: next,
+        isLoadingMore: false,
+        clearFailures: true,
       ),
     );
   }
 
   Future<void> sendMessage(Map<String, dynamic> payload) async {
     final result = await SendMessageUseCase(
-      ref.read(communicationRepositoryProvider),)(payload);
+      ref.read(communicationRepositoryProvider),
+    )(payload);
     if (result.isOk) await refresh();
   }
 }
@@ -274,7 +316,8 @@ class MessageListController extends FamilyNotifier<MessageListState, String> {
 class MeetingListState extends Equatable {
   const MeetingListState({
     this.items = const <Meeting>[],
-    this.meta = const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
+    this.meta =
+        const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
     this.query = const ListQuery(sort: '-startTime'),
     this.isLoading = true,
     this.isLoadingMore = false,
@@ -291,21 +334,35 @@ class MeetingListState extends Equatable {
   final Failure? loadMoreFailure;
 
   MeetingListState copyWith({
-    List<Meeting>? items, PaginationMeta? meta, ListQuery? query,
-    bool? isLoading, bool? isLoadingMore, Failure? failure,
-    Failure? loadMoreFailure, bool clearFailures = false,
+    List<Meeting>? items,
+    PaginationMeta? meta,
+    ListQuery? query,
+    bool? isLoading,
+    bool? isLoadingMore,
+    Failure? failure,
+    Failure? loadMoreFailure,
+    bool clearFailures = false,
   }) =>
       MeetingListState(
-        items: items ?? this.items, meta: meta ?? this.meta,
-        query: query ?? this.query, isLoading: isLoading ?? this.isLoading,
+        items: items ?? this.items,
+        meta: meta ?? this.meta,
+        query: query ?? this.query,
+        isLoading: isLoading ?? this.isLoading,
         isLoadingMore: isLoadingMore ?? this.isLoadingMore,
         failure: clearFailures ? null : (failure ?? this.failure),
-        loadMoreFailure: clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
+        loadMoreFailure:
+            clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
       );
 
   @override
   List<Object?> get props => <Object?>[
-        items, meta, query.cacheKey, isLoading, isLoadingMore, failure, loadMoreFailure,
+        items,
+        meta,
+        query.cacheKey,
+        isLoading,
+        isLoadingMore,
+        failure,
+        loadMoreFailure,
       ];
 }
 
@@ -333,8 +390,11 @@ class MeetingListController extends Notifier<MeetingListState> {
     state = result.fold(
       (f) => state.copyWith(isLoading: false, failure: f, items: const []),
       (page) => state.copyWith(
-        items: page.value.data, meta: page.value.meta, query: query,
-        isLoading: false, clearFailures: true,
+        items: page.value.data,
+        meta: page.value.meta,
+        query: query,
+        isLoading: false,
+        clearFailures: true,
       ),
     );
   }
@@ -347,8 +407,11 @@ class MeetingListController extends Notifier<MeetingListState> {
     state = result.fold(
       (f) => state.copyWith(isLoadingMore: false, loadMoreFailure: f),
       (page) => state.copyWith(
-        items: [...state.items, ...page.value.data], meta: page.value.meta,
-        query: next, isLoadingMore: false, clearFailures: true,
+        items: [...state.items, ...page.value.data],
+        meta: page.value.meta,
+        query: next,
+        isLoadingMore: false,
+        clearFailures: true,
       ),
     );
   }
@@ -360,7 +423,8 @@ class MeetingListController extends Notifier<MeetingListState> {
 
   Future<Result<Meeting>> saveMeeting(Map<String, dynamic> payload) async {
     final result = await CreateMeetingUseCase(
-      ref.read(communicationRepositoryProvider),)(payload);
+      ref.read(communicationRepositoryProvider),
+    )(payload);
     if (result.isOk) await refresh();
     return result;
   }
@@ -369,31 +433,36 @@ class MeetingListController extends Notifier<MeetingListState> {
 final FutureProviderFamily<Channel, String> channelDetailProvider =
     FutureProvider.family<Channel, String>((Ref ref, String id) async {
   final result = await GetChannelUseCase(
-    ref.watch(communicationRepositoryProvider),)(id);
+    ref.watch(communicationRepositoryProvider),
+  )(id);
   return result.fold((f) => throw f, (c) => c);
 });
 
 final FutureProviderFamily<Message, String> messageDetailProvider =
     FutureProvider.family<Message, String>((Ref ref, String id) async {
   final result = await GetMessageUseCase(
-    ref.watch(communicationRepositoryProvider),)(id);
+    ref.watch(communicationRepositoryProvider),
+  )(id);
   return result.fold((f) => throw f, (m) => m);
 });
 
 final FutureProviderFamily<Meeting, String> meetingDetailProvider =
     FutureProvider.family<Meeting, String>((Ref ref, String id) async {
   final result = await GetMeetingUseCase(
-    ref.watch(communicationRepositoryProvider),)(id);
+    ref.watch(communicationRepositoryProvider),
+  )(id);
   return result.fold((f) => throw f, (m) => m);
 });
 
 // ── Notification List (delegates to notifications module) ──────────────────
 
-final NotifierProvider<NotificationListController, AsyncValue<List<AppNotification>>>
-    notificationListControllerProvider = NotifierProvider<NotificationListController,
+final NotifierProvider<NotificationListController,
+        AsyncValue<List<AppNotification>>> notificationListControllerProvider =
+    NotifierProvider<NotificationListController,
         AsyncValue<List<AppNotification>>>(NotificationListController.new);
 
-class NotificationListController extends Notifier<AsyncValue<List<AppNotification>>> {
+class NotificationListController
+    extends Notifier<AsyncValue<List<AppNotification>>> {
   @override
   AsyncValue<List<AppNotification>> build() {
     ref.watch(activeTenantIdProvider);

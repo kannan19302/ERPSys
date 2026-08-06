@@ -4,13 +4,13 @@
    Import this file in the root layout.
    ───────────────────────────────────────────────── */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap");
 
-@import '../tokens/design-tokens.css';
+@import "../tokens/design-tokens.css";
 
 /* Import stylesheets */
-@import './layers/reset.css';
-@import './layers/base.css';
-@import './layers/components.css';
-@import './layers/utilities.css';
-@import './layers/overrides.css';
+@import "./layers/reset.css";
+@import "./layers/base.css";
+@import "./layers/components.css";
+@import "./layers/utilities.css";
+@import "./layers/overrides.css";

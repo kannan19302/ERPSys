@@ -4,7 +4,8 @@ import '../../../../core/usecase/usecase.dart';
 import '../entities/builder.dart';
 import '../repositories/builder_repository.dart';
 
-class ListBuilderFormsUseCase extends UseCase<Cacheable<Paginated<BuilderForm>>, ListQuery> {
+class ListBuilderFormsUseCase
+    extends UseCase<Cacheable<Paginated<BuilderForm>>, ListQuery> {
   const ListBuilderFormsUseCase(this._repository);
   final BuilderRepository _repository;
   @override
@@ -25,7 +26,8 @@ class SaveBuilderFormParams {
   final Map<String, dynamic> payload;
 }
 
-class SaveBuilderFormUseCase extends UseCase<BuilderForm, SaveBuilderFormParams> {
+class SaveBuilderFormUseCase
+    extends UseCase<BuilderForm, SaveBuilderFormParams> {
   const SaveBuilderFormUseCase(this._repository);
   final BuilderRepository _repository;
   @override
@@ -44,7 +46,8 @@ class DeleteBuilderFormUseCase extends UseCase<void, String> {
   Future<Result<void>> call(String id) => _repository.deleteForm(id);
 }
 
-class ListBuilderPagesUseCase extends UseCase<Cacheable<Paginated<BuilderPage>>, ListQuery> {
+class ListBuilderPagesUseCase
+    extends UseCase<Cacheable<Paginated<BuilderPage>>, ListQuery> {
   const ListBuilderPagesUseCase(this._repository);
   final BuilderRepository _repository;
   @override
@@ -65,7 +68,8 @@ class SaveBuilderPageParams {
   final Map<String, dynamic> payload;
 }
 
-class SaveBuilderPageUseCase extends UseCase<BuilderPage, SaveBuilderPageParams> {
+class SaveBuilderPageUseCase
+    extends UseCase<BuilderPage, SaveBuilderPageParams> {
   const SaveBuilderPageUseCase(this._repository);
   final BuilderRepository _repository;
   @override
@@ -84,11 +88,13 @@ class DeleteBuilderPageUseCase extends UseCase<void, String> {
   Future<Result<void>> call(String id) => _repository.deletePage(id);
 }
 
-class ListBuilderWorkflowsUseCase extends UseCase<Cacheable<Paginated<BuilderWorkflow>>, ListQuery> {
+class ListBuilderWorkflowsUseCase
+    extends UseCase<Cacheable<Paginated<BuilderWorkflow>>, ListQuery> {
   const ListBuilderWorkflowsUseCase(this._repository);
   final BuilderRepository _repository;
   @override
-  Future<Result<Cacheable<Paginated<BuilderWorkflow>>>> call(ListQuery params) =>
+  Future<Result<Cacheable<Paginated<BuilderWorkflow>>>> call(
+          ListQuery params) =>
       _repository.listWorkflows(params);
 }
 
@@ -96,7 +102,8 @@ class GetBuilderWorkflowUseCase extends UseCase<BuilderWorkflow, String> {
   const GetBuilderWorkflowUseCase(this._repository);
   final BuilderRepository _repository;
   @override
-  Future<Result<BuilderWorkflow>> call(String id) => _repository.getWorkflow(id);
+  Future<Result<BuilderWorkflow>> call(String id) =>
+      _repository.getWorkflow(id);
 }
 
 class SaveBuilderWorkflowParams {
@@ -105,7 +112,8 @@ class SaveBuilderWorkflowParams {
   final Map<String, dynamic> payload;
 }
 
-class SaveBuilderWorkflowUseCase extends UseCase<BuilderWorkflow, SaveBuilderWorkflowParams> {
+class SaveBuilderWorkflowUseCase
+    extends UseCase<BuilderWorkflow, SaveBuilderWorkflowParams> {
   const SaveBuilderWorkflowUseCase(this._repository);
   final BuilderRepository _repository;
   @override
@@ -124,11 +132,13 @@ class DeleteBuilderWorkflowUseCase extends UseCase<void, String> {
   Future<Result<void>> call(String id) => _repository.deleteWorkflow(id);
 }
 
-class ListBuilderTemplatesUseCase extends UseCase<Cacheable<Paginated<BuilderTemplate>>, ListQuery> {
+class ListBuilderTemplatesUseCase
+    extends UseCase<Cacheable<Paginated<BuilderTemplate>>, ListQuery> {
   const ListBuilderTemplatesUseCase(this._repository);
   final BuilderRepository _repository;
   @override
-  Future<Result<Cacheable<Paginated<BuilderTemplate>>>> call(ListQuery params) =>
+  Future<Result<Cacheable<Paginated<BuilderTemplate>>>> call(
+          ListQuery params) =>
       _repository.listTemplates(params);
 }
 
@@ -136,7 +146,8 @@ class GetBuilderTemplateUseCase extends UseCase<BuilderTemplate, String> {
   const GetBuilderTemplateUseCase(this._repository);
   final BuilderRepository _repository;
   @override
-  Future<Result<BuilderTemplate>> call(String id) => _repository.getTemplate(id);
+  Future<Result<BuilderTemplate>> call(String id) =>
+      _repository.getTemplate(id);
 }
 
 class SaveBuilderTemplateParams {
@@ -145,7 +156,8 @@ class SaveBuilderTemplateParams {
   final Map<String, dynamic> payload;
 }
 
-class SaveBuilderTemplateUseCase extends UseCase<BuilderTemplate, SaveBuilderTemplateParams> {
+class SaveBuilderTemplateUseCase
+    extends UseCase<BuilderTemplate, SaveBuilderTemplateParams> {
   const SaveBuilderTemplateUseCase(this._repository);
   final BuilderRepository _repository;
   @override

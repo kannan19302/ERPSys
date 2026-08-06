@@ -1,22 +1,31 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { CrmForecastGovernanceService } from "../crm-forecast-governance.service";
 
-vi.mock("@unerp/database", () => ({
-  prisma: {
-    opportunity: { findMany: vi.fn(), findFirst: vi.fn() },
-    user: { findMany: vi.fn(), findFirst: vi.fn() },
-    salesTarget: { findMany: vi.fn(), findFirst: vi.fn() },
-    forecastAdjustment: { create: vi.fn(), findMany: vi.fn() },
-    forecastTeamRollup: {
-      findMany: vi.fn(),
-      create: vi.fn(),
-      findFirst: vi.fn(),
-      update: vi.fn(),
+vi.mock("@unerp/database", () => {
+  // Identity models (user, role, userSession, ...) are read through
+  // `idpPrisma`, not `prisma` — this spec predates that split and stubs
+  // them under `prisma`. Exporting the same stub object under both names
+  // keeps every `vi.mocked(prisma.user.*)` setup pointing at exactly the
+  // function the service calls.
+  const mocked = {
+    prisma: {
+      opportunity: { findMany: vi.fn(), findFirst: vi.fn() },
+      user: { findMany: vi.fn(), findFirst: vi.fn() },
+      salesTarget: { findMany: vi.fn(), findFirst: vi.fn() },
+      forecastAdjustment: { create: vi.fn(), findMany: vi.fn() },
+      forecastTeamRollup: {
+        findMany: vi.fn(),
+        create: vi.fn(),
+        findFirst: vi.fn(),
+        update: vi.fn(),
+      },
     },
-  },
-}));
+  };
+  return { ...mocked, idpPrisma: mocked.prisma };
+});
 
 import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 
 const TENANT = "tenant-1";
 const ORG = "org-1";
@@ -67,7 +76,7 @@ describe("CrmForecastGovernanceService", () => {
 
   describe("getManagerForecastRollup", () => {
     it("returns team forecast rollup with totals", async () => {
-      (prisma.user.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([
+      (idpPrisma.user.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([
         { id: "user-1", firstName: "Alice", lastName: "A" },
         { id: "user-2", firstName: "Bob", lastName: "B" },
       ]);
@@ -97,7 +106,9 @@ describe("CrmForecastGovernanceService", () => {
     });
 
     it("returns empty when manager has no team", async () => {
-      (prisma.user.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([]);
+      (idpPrisma.user.findMany as ReturnType<typeof vi.fn>).mockResolvedValue(
+        [],
+      );
 
       const result = await service.getManagerForecastRollup(
         TENANT,
@@ -184,7 +195,7 @@ describe("CrmForecastGovernanceService", () => {
       (
         prisma.opportunity.findMany as ReturnType<typeof vi.fn>
       ).mockResolvedValue([{ assignedToId: "user-1", amount: 250000 }]);
-      (prisma.user.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([
+      (idpPrisma.user.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([
         { id: "user-1", firstName: "Alice", lastName: "A" },
       ]);
 
@@ -222,7 +233,7 @@ describe("CrmForecastGovernanceService", () => {
           { assignedToId: "user-1", probability: 90, amount: 80000 },
         ])
         .mockResolvedValueOnce([]);
-      (prisma.user.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([
+      (idpPrisma.user.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([
         { id: "user-1", firstName: "Alice", lastName: "A" },
       ]);
 

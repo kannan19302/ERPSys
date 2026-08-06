@@ -94,8 +94,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                         labelText: 'Work email',
                         prefixIcon: Icon(Icons.mail_outline),
                       ),
-                      onChanged: (_) =>
-                          ref.read(authControllerProvider.notifier).clearError(),
+                      onChanged: (_) => ref
+                          .read(authControllerProvider.notifier)
+                          .clearError(),
                       validator: (String? value) {
                         final String email = (value ?? '').trim();
                         if (email.isEmpty) return 'Enter your email address';
@@ -138,12 +139,14 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                         textCapitalization: TextCapitalization.none,
                         decoration: const InputDecoration(
                           labelText: 'Organisation slug',
-                          helperText: 'This email is used by several organisations.',
+                          helperText:
+                              'This email is used by several organisations.',
                           prefixIcon: Icon(Icons.apartment_outlined),
                         ),
-                        validator: (String? value) => (value ?? '').trim().isEmpty
-                            ? 'Enter your organisation slug'
-                            : null,
+                        validator: (String? value) =>
+                            (value ?? '').trim().isEmpty
+                                ? 'Enter your organisation slug'
+                                : null,
                       ),
                     ],
 
@@ -180,8 +183,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     ),
                     const SizedBox(height: Spacing.x3),
                     TextButton(
-                      onPressed: () => context.pushNamed(RegisterPage.routeName),
-                      child: const Text("Don't have an organisation? Create one"),
+                      onPressed: () =>
+                          context.pushNamed(RegisterPage.routeName),
+                      child:
+                          const Text("Don't have an organisation? Create one"),
                     ),
                     const SizedBox(height: Spacing.x3),
                     Text(
@@ -239,7 +244,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     // The endpoint never reveals whether the address exists, and neither do we.
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('If that address has an account, a reset link is on its way.'),
+        content:
+            Text('If that address has an account, a reset link is on its way.'),
       ),
     );
   }

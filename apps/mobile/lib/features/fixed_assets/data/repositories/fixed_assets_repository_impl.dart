@@ -37,7 +37,8 @@ class FixedAssetsRepositoryImpl implements FixedAssetsRepository {
       final List<Map<String, dynamic>> jsonItems = page.data
           .map((dynamic e) => (e as dynamic).toJson() as Map<String, dynamic>)
           .toList(growable: false);
-      await _cache.write(_tenantId, namespace, query.cacheKey, <String, Object?>{
+      await _cache
+          .write(_tenantId, namespace, query.cacheKey, <String, Object?>{
         'data': jsonItems,
         'meta': page.meta.toJson(),
       });
@@ -45,9 +46,11 @@ class FixedAssetsRepositoryImpl implements FixedAssetsRepository {
         Cacheable<Paginated<T>>(value: page),
       );
     } on NetworkException catch (error) {
-      final cached = _cache.read<Map<String, dynamic>>(_tenantId, namespace, query.cacheKey);
+      final cached = _cache.read<Map<String, dynamic>>(
+          _tenantId, namespace, query.cacheKey);
       if (cached == null) {
-        return Result<Cacheable<Paginated<T>>>.err(mapExceptionToFailure(error));
+        return Result<Cacheable<Paginated<T>>>.err(
+            mapExceptionToFailure(error));
       }
       return Result<Cacheable<Paginated<T>>>.ok(
         Cacheable<Paginated<T>>(
@@ -89,9 +92,14 @@ class FixedAssetsRepositoryImpl implements FixedAssetsRepository {
   }
 
   @override
-  Future<Result<Cacheable<Paginated<FixedAsset>>>> listFixedAssets(ListQuery query) =>
-      _paginated(_assetNamespace, query, () => _remote.listFixedAssets(query),
-        FixedAssetModel.fromJson,);
+  Future<Result<Cacheable<Paginated<FixedAsset>>>> listFixedAssets(
+          ListQuery query) =>
+      _paginated(
+        _assetNamespace,
+        query,
+        () => _remote.listFixedAssets(query),
+        FixedAssetModel.fromJson,
+      );
 
   @override
   Future<Result<FixedAsset>> getFixedAsset(String id) =>
@@ -102,7 +110,8 @@ class FixedAssetsRepositoryImpl implements FixedAssetsRepository {
       _write(() => _remote.createFixedAsset(p));
 
   @override
-  Future<Result<FixedAsset>> updateFixedAsset(String id, Map<String, dynamic> p) =>
+  Future<Result<FixedAsset>> updateFixedAsset(
+          String id, Map<String, dynamic> p) =>
       _write(() => _remote.updateFixedAsset(id, p));
 
   @override
@@ -110,26 +119,32 @@ class FixedAssetsRepositoryImpl implements FixedAssetsRepository {
       _delete(() => _remote.deleteFixedAsset(id));
 
   @override
-  Future<Result<FixedAsset>> disposeFixedAsset(String id, Map<String, dynamic> p) =>
+  Future<Result<FixedAsset>> disposeFixedAsset(
+          String id, Map<String, dynamic> p) =>
       _single(() => _remote.disposeFixedAsset(id, p));
 
   @override
   Future<Result<Cacheable<Paginated<AssetDepreciationSchedule>>>>
-      listDepreciationSchedules(ListQuery query) =>
-          _paginated(_depreciationNamespace, query,
+      listDepreciationSchedules(ListQuery query) => _paginated(
+            _depreciationNamespace,
+            query,
             () => _remote.listDepreciationSchedules(query),
-            AssetDepreciationScheduleModel.fromJson,);
+            AssetDepreciationScheduleModel.fromJson,
+          );
 
   @override
-  Future<Result<AssetDepreciationSchedule>> recordDepreciation(Map<String, dynamic> p) =>
+  Future<Result<AssetDepreciationSchedule>> recordDepreciation(
+          Map<String, dynamic> p) =>
       _write(() => _remote.recordDepreciation(p));
 
   @override
   Future<Result<Cacheable<Paginated<AssetMaintenanceSchedule>>>>
-      listMaintenanceSchedules(ListQuery query) =>
-          _paginated(_maintenanceNamespace, query,
+      listMaintenanceSchedules(ListQuery query) => _paginated(
+            _maintenanceNamespace,
+            query,
             () => _remote.listMaintenanceSchedules(query),
-            AssetMaintenanceScheduleModel.fromJson,);
+            AssetMaintenanceScheduleModel.fromJson,
+          );
 
   @override
   Future<Result<AssetMaintenanceSchedule>> getMaintenanceSchedule(String id) =>
@@ -137,12 +152,15 @@ class FixedAssetsRepositoryImpl implements FixedAssetsRepository {
 
   @override
   Future<Result<AssetMaintenanceSchedule>> createMaintenanceSchedule(
-    Map<String, dynamic> p,) =>
+    Map<String, dynamic> p,
+  ) =>
       _write(() => _remote.createMaintenanceSchedule(p));
 
   @override
   Future<Result<AssetMaintenanceSchedule>> updateMaintenanceSchedule(
-    String id, Map<String, dynamic> p,) =>
+    String id,
+    Map<String, dynamic> p,
+  ) =>
       _write(() => _remote.updateMaintenanceSchedule(id, p));
 
   @override
@@ -150,13 +168,19 @@ class FixedAssetsRepositoryImpl implements FixedAssetsRepository {
       _delete(() => _remote.deleteMaintenanceSchedule(id));
 
   @override
-  Future<Result<AssetMaintenanceSchedule>> completeMaintenanceSchedule(String id) =>
+  Future<Result<AssetMaintenanceSchedule>> completeMaintenanceSchedule(
+          String id) =>
       _single(() => _remote.completeMaintenanceSchedule(id));
 
   @override
-  Future<Result<Cacheable<Paginated<AssetDisposal>>>> listDisposals(ListQuery query) =>
-      _paginated(_disposalNamespace, query, () => _remote.listDisposals(query),
-        AssetDisposalModel.fromJson,);
+  Future<Result<Cacheable<Paginated<AssetDisposal>>>> listDisposals(
+          ListQuery query) =>
+      _paginated(
+        _disposalNamespace,
+        query,
+        () => _remote.listDisposals(query),
+        AssetDisposalModel.fromJson,
+      );
 
   @override
   Future<Result<AssetDisposal>> getDisposal(String id) =>
@@ -175,6 +199,7 @@ class FixedAssetsRepositoryImpl implements FixedAssetsRepository {
       _delete(() => _remote.deleteDisposal(id));
 
   @override
-  Future<Result<AssetDisposal>> updateDisposal(String id, Map<String, dynamic> p) async => throw UnimplementedError();
-
+  Future<Result<AssetDisposal>> updateDisposal(
+          String id, Map<String, dynamic> p) async =>
+      throw UnimplementedError();
 }

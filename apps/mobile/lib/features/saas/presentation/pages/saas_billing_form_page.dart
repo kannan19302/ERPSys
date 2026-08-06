@@ -12,7 +12,8 @@ class SaasBillingFormPage extends ConsumerStatefulWidget {
   final String? invoiceId;
 
   @override
-  ConsumerState<SaasBillingFormPage> createState() => _SaasBillingFormPageState();
+  ConsumerState<SaasBillingFormPage> createState() =>
+      _SaasBillingFormPageState();
 }
 
 class _SaasBillingFormPageState extends ConsumerState<SaasBillingFormPage> {
@@ -40,11 +41,14 @@ class _SaasBillingFormPageState extends ConsumerState<SaasBillingFormPage> {
       'status': _status,
       'periodEnd': _periodCtrl.text.trim(),
     };
-    final result = await ref.read(saasInvoiceListControllerProvider.notifier).save(payload, id: widget.invoiceId);
+    final result = await ref
+        .read(saasInvoiceListControllerProvider.notifier)
+        .save(payload, id: widget.invoiceId);
     if (!context.mounted) return;
     setState(() => _saving = false);
     result.fold(
-      (f) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(f.message))),
+      (f) => ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(f.message))),
       (_) => Navigator.of(context).pop(),
     );
   }
@@ -58,7 +62,10 @@ class _SaasBillingFormPageState extends ConsumerState<SaasBillingFormPage> {
           TextButton(
             onPressed: _saving ? null : _save,
             child: _saving
-                ? const SizedBox(height: Spacing.x5, width: Spacing.x5, child: CircularProgressIndicator(strokeWidth: 2))
+                ? const SizedBox(
+                    height: Spacing.x5,
+                    width: Spacing.x5,
+                    child: CircularProgressIndicator(strokeWidth: 2))
                 : const Text('Save'),
           ),
         ],
@@ -71,7 +78,8 @@ class _SaasBillingFormPageState extends ConsumerState<SaasBillingFormPage> {
             TextFormField(
               controller: _tenantIdCtrl,
               decoration: const InputDecoration(labelText: 'Tenant ID *'),
-              validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,
+              validator: (v) =>
+                  v == null || v.trim().isEmpty ? 'Required' : null,
             ),
             const SizedBox(height: Spacing.x4),
             TextFormField(
@@ -82,7 +90,8 @@ class _SaasBillingFormPageState extends ConsumerState<SaasBillingFormPage> {
             const SizedBox(height: Spacing.x4),
             TextFormField(
               controller: _periodCtrl,
-              decoration: const InputDecoration(labelText: 'Period', helperText: 'e.g. 2026-08'),
+              decoration: const InputDecoration(
+                  labelText: 'Period', helperText: 'e.g. 2026-08'),
             ),
             const SizedBox(height: Spacing.x4),
             DropdownButtonFormField<String>(
@@ -94,7 +103,9 @@ class _SaasBillingFormPageState extends ConsumerState<SaasBillingFormPage> {
                 DropdownMenuItem(value: 'OVERDUE', child: Text('Overdue')),
                 DropdownMenuItem(value: 'CANCELED', child: Text('Canceled')),
               ],
-              onChanged: (v) { if (v != null) setState(() => _status = v); },
+              onChanged: (v) {
+                if (v != null) setState(() => _status = v);
+              },
             ),
           ],
         ),

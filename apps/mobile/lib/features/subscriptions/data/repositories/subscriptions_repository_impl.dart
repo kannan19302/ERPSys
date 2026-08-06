@@ -36,7 +36,8 @@ class SubscriptionsRepositoryImpl implements SubscriptionsRepository {
       final List<Map<String, dynamic>> jsonItems = page.data
           .map((dynamic e) => (e as dynamic).toJson() as Map<String, dynamic>)
           .toList(growable: false);
-      await _cache.write(_tenantId, namespace, query.cacheKey, <String, Object?>{
+      await _cache
+          .write(_tenantId, namespace, query.cacheKey, <String, Object?>{
         'data': jsonItems,
         'meta': page.meta.toJson(),
       });
@@ -44,9 +45,11 @@ class SubscriptionsRepositoryImpl implements SubscriptionsRepository {
         Cacheable<Paginated<T>>(value: page),
       );
     } on NetworkException catch (error) {
-      final cached = _cache.read<Map<String, dynamic>>(_tenantId, namespace, query.cacheKey);
+      final cached = _cache.read<Map<String, dynamic>>(
+          _tenantId, namespace, query.cacheKey);
       if (cached == null) {
-        return Result<Cacheable<Paginated<T>>>.err(mapExceptionToFailure(error));
+        return Result<Cacheable<Paginated<T>>>.err(
+            mapExceptionToFailure(error));
       }
       return Result<Cacheable<Paginated<T>>>.ok(
         Cacheable<Paginated<T>>(
@@ -78,42 +81,58 @@ class SubscriptionsRepositoryImpl implements SubscriptionsRepository {
   }
 
   @override
-  Future<Result<Cacheable<Paginated<SubscriptionPlan>>>> listPlans(ListQuery query) =>
-      _paginated(_planNamespace, query, () => _remote.listPlans(query), SubscriptionPlanModel.fromJson);
+  Future<Result<Cacheable<Paginated<SubscriptionPlan>>>> listPlans(
+          ListQuery query) =>
+      _paginated(_planNamespace, query, () => _remote.listPlans(query),
+          SubscriptionPlanModel.fromJson);
 
   @override
   Future<Result<SubscriptionPlan>> getPlan(String id) =>
       _single(() => _remote.getPlan(id));
 
   @override
-  Future<Result<Cacheable<Paginated<SubscriptionBillingCycle>>>> listBillingCycles(ListQuery query) =>
-      _paginated(_billingNamespace, query, () => _remote.listBillingCycles(query), SubscriptionBillingCycleModel.fromJson);
+  Future<Result<Cacheable<Paginated<SubscriptionBillingCycle>>>>
+      listBillingCycles(ListQuery query) => _paginated(
+          _billingNamespace,
+          query,
+          () => _remote.listBillingCycles(query),
+          SubscriptionBillingCycleModel.fromJson);
 
   @override
   Future<Result<SubscriptionBillingCycle>> getBillingCycle(String id) =>
       _single(() => _remote.getBillingCycle(id));
 
   @override
-  Future<Result<Cacheable<Paginated<SubscriptionUsageRecord>>>> listUsage(ListQuery query) =>
-      _paginated(_usageNamespace, query, () => _remote.listUsage(query), SubscriptionUsageRecordModel.fromJson);
+  Future<Result<Cacheable<Paginated<SubscriptionUsageRecord>>>> listUsage(
+          ListQuery query) =>
+      _paginated(_usageNamespace, query, () => _remote.listUsage(query),
+          SubscriptionUsageRecordModel.fromJson);
 
   @override
-  Future<Result<ChurnSurveyResponse>> submitChurnSurvey(Map<String, dynamic> payload) =>
+  Future<Result<ChurnSurveyResponse>> submitChurnSurvey(
+          Map<String, dynamic> payload) =>
       _write(() => _remote.submitChurnSurvey(payload));
 
   @override
-  Future<Result<SubscriptionBillingCycle>> createBillingCycle(Map<String, dynamic> p) async => throw UnimplementedError();
+  Future<Result<SubscriptionBillingCycle>> createBillingCycle(
+          Map<String, dynamic> p) async =>
+      throw UnimplementedError();
 
   @override
-  Future<Result<SubscriptionPlan>> createPlan(Map<String, dynamic> p) async => throw UnimplementedError();
+  Future<Result<SubscriptionPlan>> createPlan(Map<String, dynamic> p) async =>
+      throw UnimplementedError();
 
   @override
-  Future<Result<void>> deletePlan(String id) async => throw UnimplementedError();
+  Future<Result<void>> deletePlan(String id) async =>
+      throw UnimplementedError();
 
   @override
-  Future<Result<SubscriptionBillingCycle>> updateBillingCycle(String id, Map<String, dynamic> p) async => throw UnimplementedError();
+  Future<Result<SubscriptionBillingCycle>> updateBillingCycle(
+          String id, Map<String, dynamic> p) async =>
+      throw UnimplementedError();
 
   @override
-  Future<Result<SubscriptionPlan>> updatePlan(String id, Map<String, dynamic> p) async => throw UnimplementedError();
-
+  Future<Result<SubscriptionPlan>> updatePlan(
+          String id, Map<String, dynamic> p) async =>
+      throw UnimplementedError();
 }

@@ -118,19 +118,19 @@ export default function TaxFilingSummaryPage() {
                   label: "Tax Liability",
                   value: fmt(summary.totalTaxLiability),
                   icon: <DollarSign size={20} />,
-                  color: "#ef4444",
+                  color: "var(--chart-4)",
                 },
                 {
                   label: "Tax Paid",
                   value: fmt(summary.totalTaxPaid),
                   icon: <CheckCircle2 size={20} />,
-                  color: "#22c55e",
+                  color: "var(--chart-2)",
                 },
                 {
                   label: "Pending Filings",
                   value: String(summary.pendingFilings),
                   icon: <AlertCircle size={20} />,
-                  color: "#f59e0b",
+                  color: "var(--chart-3)",
                 },
               ]}
             />
@@ -164,7 +164,10 @@ export default function TaxFilingSummaryPage() {
                       render: (v) => (
                         <span
                           style={{
-                            color: (v as number) > 0 ? "#ef4444" : "#22c55e",
+                            color:
+                              (v as number) > 0
+                                ? "var(--chart-4)"
+                                : "var(--chart-2)",
                           }}
                           className={styles.s3}
                         >
@@ -183,7 +186,9 @@ export default function TaxFilingSummaryPage() {
                                 ? "rgba(34,197,94,0.1)"
                                 : "rgba(245,158,11,0.1)",
                             color:
-                              (v as string) === "FILED" ? "#16a34a" : "#d97706",
+                              (v as string) === "FILED"
+                                ? "var(--color-success-hover)"
+                                : "var(--color-warning-hover)",
                           }}
                           className={styles.s4}
                         >

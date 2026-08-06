@@ -18,10 +18,12 @@ class ChartOfAccountListPage extends ConsumerStatefulWidget {
   static const String routePath = '/finance/chart-of-accounts';
 
   @override
-  ConsumerState<ChartOfAccountListPage> createState() => _ChartOfAccountListPageState();
+  ConsumerState<ChartOfAccountListPage> createState() =>
+      _ChartOfAccountListPageState();
 }
 
-class _ChartOfAccountListPageState extends ConsumerState<ChartOfAccountListPage> {
+class _ChartOfAccountListPageState
+    extends ConsumerState<ChartOfAccountListPage> {
   final TextEditingController _search = TextEditingController();
 
   static const Map<String, String> _sortOptions = <String, String>{
@@ -40,8 +42,10 @@ class _ChartOfAccountListPageState extends ConsumerState<ChartOfAccountListPage>
 
   @override
   Widget build(BuildContext context) {
-    final FinanceListState<ChartOfAccount> state = ref.watch(chartOfAccountsProvider);
-    final ChartOfAccountsController controller = ref.read(chartOfAccountsProvider.notifier);
+    final FinanceListState<ChartOfAccount> state =
+        ref.watch(chartOfAccountsProvider);
+    final ChartOfAccountsController controller =
+        ref.read(chartOfAccountsProvider.notifier);
     final Palette t = context.tokens;
 
     return Scaffold(
@@ -68,7 +72,10 @@ class _ChartOfAccountListPageState extends ConsumerState<ChartOfAccountListPage>
         children: <Widget>[
           Padding(
             padding: const EdgeInsets.fromLTRB(
-              Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2,
+              Spacing.x4,
+              Spacing.x3,
+              Spacing.x4,
+              Spacing.x2,
             ),
             child: TextField(
               controller: _search,
@@ -112,7 +119,8 @@ class _ChartOfAccountListPageState extends ConsumerState<ChartOfAccountListPage>
     );
   }
 
-  Widget _body(FinanceListState<ChartOfAccount> state, ChartOfAccountsController controller) {
+  Widget _body(FinanceListState<ChartOfAccount> state,
+      ChartOfAccountsController controller) {
     if (state.isLoading && state.items.isEmpty) {
       return const LoadingView();
     }

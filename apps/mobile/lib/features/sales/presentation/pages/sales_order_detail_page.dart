@@ -71,8 +71,7 @@ class SalesOrderDetailPage extends ConsumerWidget {
     );
     if (confirmed != true || !context.mounted) return;
 
-    final result =
-        await ref.read(salesOrdersProvider.notifier).delete(orderId);
+    final result = await ref.read(salesOrdersProvider.notifier).delete(orderId);
 
     if (!context.mounted) return;
     result.fold(

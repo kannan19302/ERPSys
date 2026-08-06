@@ -1,32 +1,32 @@
-import http from 'k6/http';
-import { check, sleep, group } from 'k6';
-import { SharedArray } from 'k6/data';
-import { baseOptions } from '../config/options.js';
-import { env } from '../helpers/env.js';
+import http from "k6/http";
+import { check, sleep, group } from "k6";
+import { SharedArray } from "k6/data";
+import { baseOptions } from "../config/options.js";
+import { env } from "../helpers/env.js";
 
-const tenants = new SharedArray('tenants', () => {
+const tenants = new SharedArray("tenants", () => {
   return [
-    { slug: 'acme-corp', email: 'admin@unerp.dev', password: 'admin123' },
-    { slug: 'globex', email: 'admin@unerp.dev', password: 'admin123' },
-    { slug: 'initech', email: 'admin@unerp.dev', password: 'admin123' },
-    { slug: 'umbrella', email: 'admin@unerp.dev', password: 'admin123' },
-    { slug: 'wonka', email: 'admin@unerp.dev', password: 'admin123' },
+    { slug: "acme-corp", email: "admin@unerp.dev", password: "admin123" },
+    { slug: "globex", email: "admin@unerp.dev", password: "admin123" },
+    { slug: "initech", email: "admin@unerp.dev", password: "admin123" },
+    { slug: "umbrella", email: "admin@unerp.dev", password: "admin123" },
+    { slug: "wonka", email: "admin@unerp.dev", password: "admin123" },
   ];
 });
 
 export const options = baseOptions({
   scenarios: {
     tenant_isolation: {
-      executor: 'per-vu-iterations',
+      executor: "per-vu-iterations",
       vus: 10,
       iterations: 20,
-      maxDuration: '3m',
-      tags: { scenario: 'tenant_isolation' },
+      maxDuration: "3m",
+      tags: { scenario: "tenant_isolation" },
     },
   },
   thresholds: {
-    http_req_duration: ['p(95)<3000'],
-    http_req_failed: ['rate<0.02'],
+    http_req_duration: ["p(95)<3000"],
+    http_req_failed: ["rate<0.02"],
   },
 });
 
@@ -39,10 +39,10 @@ function loginAsTenant(tenant) {
   });
   const res = http.post(url, payload, {
     headers: {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
+      "Content-Type": "application/json",
+      Accept: "application/json",
     },
-    tags: { name: 'tenant_login', tenant: tenant.slug },
+    tags: { name: "tenant_login", tenant: tenant.slug },
   });
 
   check(res, {
@@ -71,14 +71,17 @@ export default function () {
   }
 
   const headers = {
-    'Content-Type': 'application/json',
-    'Accept': 'application/json',
-    'Authorization': `Bearer ${token}`,
+    "Content-Type": "application/json",
+    Accept: "application/json",
+    Authorization: `Bearer ${token}`,
   };
 
   group(`tenant isolation: ${tenant.slug}`, () => {
     const url = `${env.API_URL}/inventory/products?page=1&limit=20`;
-    const res = http.get(url, { headers, tags: { name: 'tenant_list', tenant: tenant.slug } });
+    const res = http.get(url, {
+      headers,
+      tags: { name: "tenant_list", tenant: tenant.slug },
+    });
 
     check(res, {
       [`${tenant.slug} list 200`]: (r) => r.status === 200,
@@ -90,7 +93,11 @@ export default function () {
           if (Array.isArray(data)) {
             return data.every((item) => {
               const tid = item.tenantId || item.tenant_id;
-              return tid === undefined || tid === tenant.slug || typeof tid !== 'string';
+              return (
+                tid === undefined ||
+                tid === tenant.slug ||
+                typeof tid !== "string"
+              );
             });
           }
           return true;

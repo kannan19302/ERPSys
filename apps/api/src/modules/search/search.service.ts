@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 
 import { EventEmitter2 } from "@nestjs/event-emitter";
 
@@ -20,7 +21,7 @@ export class SearchService {
   constructor(private readonly eventEmitter: EventEmitter2) {}
 
   private async resolvePermissions(userId: string): Promise<string[]> {
-    const userRoles = await prisma.userRole.findMany({
+    const userRoles = await idpPrisma.userRole.findMany({
       where: { userId },
       include: { role: true },
     });

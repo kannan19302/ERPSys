@@ -87,12 +87,18 @@ export class NumberingService {
 
     const seq = await tx.documentSequence.findUnique({
       where: {
-        tenantId_series_organizationId: { tenantId, series, organizationId: orgId },
+        tenantId_series_organizationId: {
+          tenantId,
+          series,
+          organizationId: orgId,
+        },
       },
     });
 
     if (!seq) {
-      throw new Error(`DocumentSequence not found for (${tenantId}, ${series}, ${orgId})`);
+      throw new Error(
+        `DocumentSequence not found for (${tenantId}, ${series}, ${orgId})`,
+      );
     }
 
     const { number, nextResetPeriod } = this.prepareNextNumber(seq, opts?.now);
@@ -130,12 +136,18 @@ export class NumberingService {
 
     const seq = await tx.documentSequence.findUnique({
       where: {
-        tenantId_series_organizationId: { tenantId, series, organizationId: orgId },
+        tenantId_series_organizationId: {
+          tenantId,
+          series,
+          organizationId: orgId,
+        },
       },
     });
 
     if (!seq) {
-      throw new Error(`DocumentSequence not found for (${tenantId}, ${series}, ${orgId})`);
+      throw new Error(
+        `DocumentSequence not found for (${tenantId}, ${series}, ${orgId})`,
+      );
     }
 
     const { number } = this.prepareNextNumber(seq, opts?.now);
@@ -161,12 +173,18 @@ export class NumberingService {
 
     const exists = await tx.documentSequence.findUnique({
       where: {
-        tenantId_series_organizationId: { tenantId, series, organizationId: orgId },
+        tenantId_series_organizationId: {
+          tenantId,
+          series,
+          organizationId: orgId,
+        },
       },
     });
 
     if (!exists) {
-      throw new Error(`DocumentSequence not found for (${tenantId}, ${series}, ${orgId})`);
+      throw new Error(
+        `DocumentSequence not found for (${tenantId}, ${series}, ${orgId})`,
+      );
     }
 
     await tx.documentSequence.update({
@@ -187,11 +205,11 @@ export class NumberingService {
     seq: { prefix: string; suffix: string; padding: number; format: string },
     number: number,
   ): string {
-    const padded = String(number).padStart(seq.padding, '0');
+    const padded = String(number).padStart(seq.padding, "0");
     return seq.format
-      .replace('{prefix}', seq.prefix)
-      .replace('{number}', padded)
-      .replace('{suffix}', seq.suffix);
+      .replace("{prefix}", seq.prefix)
+      .replace("{number}", padded)
+      .replace("{suffix}", seq.suffix);
   }
 
   // ── Internal ──
@@ -206,17 +224,17 @@ export class NumberingService {
     seq: DocumentSequenceRow,
     now?: Date,
   ): { number: number; nextResetPeriod?: string } {
-    if (!seq.resetFrequency || seq.resetFrequency === 'NEVER') {
+    if (!seq.resetFrequency || seq.resetFrequency === "NEVER") {
       return { number: seq.nextNumber };
     }
 
     const ref = now ?? new Date();
     let currentPeriod: string;
 
-    if (seq.resetFrequency === 'YEARLY') {
+    if (seq.resetFrequency === "YEARLY") {
       currentPeriod = String(ref.getFullYear());
-    } else if (seq.resetFrequency === 'MONTHLY') {
-      currentPeriod = `${ref.getFullYear()}-${String(ref.getMonth() + 1).padStart(2, '0')}`;
+    } else if (seq.resetFrequency === "MONTHLY") {
+      currentPeriod = `${ref.getFullYear()}-${String(ref.getMonth() + 1).padStart(2, "0")}`;
     } else {
       return { number: seq.nextNumber };
     }

@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 // ── Drive Folders ──
 export const createDriveFolderSchema = z.object({
@@ -53,12 +53,14 @@ export const updateDriveCommentSchema = z.object({
 // ── Drive Share Links ──
 export const createDriveShareLinkSchema = z.object({
   fileId: z.string().min(1),
-  permission: z.enum(['VIEW', 'EDIT']).optional(),
+  permission: z.enum(["VIEW", "EDIT"]).optional(),
   password: z.string().optional(),
   expiresAt: z.string().datetime().optional(),
   maxDownloads: z.number().int().positive().optional(),
 });
-export type CreateDriveShareLinkInput = z.infer<typeof createDriveShareLinkSchema>;
+export type CreateDriveShareLinkInput = z.infer<
+  typeof createDriveShareLinkSchema
+>;
 
 // ── Drive Search ──
 export const driveSearchSchema = z.object({

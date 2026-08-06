@@ -65,7 +65,7 @@
 .style8 {
   width: 100%;
   max-width: calc(var(--space-1) * 100);
-  padding: 8px 12px 8px 36px;
+  padding: var(--space-2) var(--space-3) var(--space-2) var(--space-9);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   background: var(--color-bg);
@@ -82,7 +82,7 @@
 
 .style10 {
   font-family: monospace;
-  font-size: 12px;
+  font-size: var(--text-xs);
 }
 
 .style11 {
@@ -109,4 +109,11 @@
   color: var(--color-text-tertiary);
   margin-bottom: var(--space-1);
 }
-.s1 { color: var(--color-text-secondary); font-family: inherit; font-size: var(--text-sm); line-height: 1.6; margin: 0; white-space: pre-wrap; }
+.s1 {
+  color: var(--color-text-secondary);
+  font-family: inherit;
+  font-size: var(--text-sm);
+  line-height: 1.6;
+  margin: 0;
+  white-space: pre-wrap;
+}

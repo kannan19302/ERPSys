@@ -6,7 +6,8 @@ import '../repositories/projects_repository.dart';
 
 // ── Project ──
 
-class ListProjectsUseCase extends UseCase<Cacheable<Paginated<Project>>, ListQuery> {
+class ListProjectsUseCase
+    extends UseCase<Cacheable<Paginated<Project>>, ListQuery> {
   const ListProjectsUseCase(this._repository);
   final ProjectsRepository _repository;
   @override
@@ -56,11 +57,13 @@ class ListTasksUseCase extends UseCase<Cacheable<Paginated<Task>>, ListQuery> {
       _repository.listTasks(params);
 }
 
-class ListProjectTasksUseCase extends UseCase<Cacheable<Paginated<Task>>, ListProjectTasksParams> {
+class ListProjectTasksUseCase
+    extends UseCase<Cacheable<Paginated<Task>>, ListProjectTasksParams> {
   const ListProjectTasksUseCase(this._repository);
   final ProjectsRepository _repository;
   @override
-  Future<Result<Cacheable<Paginated<Task>>>> call(ListProjectTasksParams params) =>
+  Future<Result<Cacheable<Paginated<Task>>>> call(
+          ListProjectTasksParams params) =>
       _repository.listProjectTasks(params.projectId, params.query);
 }
 
@@ -104,7 +107,8 @@ class DeleteTaskUseCase extends UseCase<void, String> {
 
 // ── Milestone ──
 
-class ListMilestonesUseCase extends UseCase<Cacheable<Paginated<Milestone>>, ListQuery> {
+class ListMilestonesUseCase
+    extends UseCase<Cacheable<Paginated<Milestone>>, ListQuery> {
   const ListMilestonesUseCase(this._repository);
   final ProjectsRepository _repository;
   @override
@@ -112,16 +116,19 @@ class ListMilestonesUseCase extends UseCase<Cacheable<Paginated<Milestone>>, Lis
       _repository.listMilestones(params);
 }
 
-class ListProjectMilestonesUseCase extends UseCase<Cacheable<Paginated<Milestone>>, ListProjectMilestonesParams> {
+class ListProjectMilestonesUseCase extends UseCase<
+    Cacheable<Paginated<Milestone>>, ListProjectMilestonesParams> {
   const ListProjectMilestonesUseCase(this._repository);
   final ProjectsRepository _repository;
   @override
-  Future<Result<Cacheable<Paginated<Milestone>>>> call(ListProjectMilestonesParams params) =>
+  Future<Result<Cacheable<Paginated<Milestone>>>> call(
+          ListProjectMilestonesParams params) =>
       _repository.listProjectMilestones(params.projectId, params.query);
 }
 
 class ListProjectMilestonesParams {
-  const ListProjectMilestonesParams({required this.projectId, required this.query});
+  const ListProjectMilestonesParams(
+      {required this.projectId, required this.query});
   final String projectId;
   final ListQuery query;
 }
@@ -160,7 +167,8 @@ class DeleteMilestoneUseCase extends UseCase<void, String> {
 
 // ── Timesheet ──
 
-class ListTimesheetsUseCase extends UseCase<Cacheable<Paginated<Timesheet>>, ListQuery> {
+class ListTimesheetsUseCase
+    extends UseCase<Cacheable<Paginated<Timesheet>>, ListQuery> {
   const ListTimesheetsUseCase(this._repository);
   final ProjectsRepository _repository;
   @override
@@ -209,7 +217,8 @@ class ApproveTimesheetUseCase extends UseCase<Timesheet, String> {
 
 // ── Project Budget ──
 
-class ListProjectBudgetsUseCase extends UseCase<Cacheable<Paginated<ProjectBudget>>, String> {
+class ListProjectBudgetsUseCase
+    extends UseCase<Cacheable<Paginated<ProjectBudget>>, String> {
   const ListProjectBudgetsUseCase(this._repository);
   final ProjectsRepository _repository;
   @override
@@ -221,7 +230,8 @@ class GetProjectBudgetUseCase extends UseCase<ProjectBudget, String> {
   const GetProjectBudgetUseCase(this._repository);
   final ProjectsRepository _repository;
   @override
-  Future<Result<ProjectBudget>> call(String id) => _repository.getProjectBudget(id);
+  Future<Result<ProjectBudget>> call(String id) =>
+      _repository.getProjectBudget(id);
 }
 
 class SaveProjectBudgetParams {
@@ -230,7 +240,8 @@ class SaveProjectBudgetParams {
   final Map<String, dynamic> payload;
 }
 
-class SaveProjectBudgetUseCase extends UseCase<ProjectBudget, SaveProjectBudgetParams> {
+class SaveProjectBudgetUseCase
+    extends UseCase<ProjectBudget, SaveProjectBudgetParams> {
   const SaveProjectBudgetUseCase(this._repository);
   final ProjectsRepository _repository;
   @override
@@ -251,7 +262,8 @@ class DeleteProjectBudgetUseCase extends UseCase<void, String> {
 
 // ── Project Risk ──
 
-class ListProjectRisksUseCase extends UseCase<Cacheable<Paginated<ProjectRisk>>, String> {
+class ListProjectRisksUseCase
+    extends UseCase<Cacheable<Paginated<ProjectRisk>>, String> {
   const ListProjectRisksUseCase(this._repository);
   final ProjectsRepository _repository;
   @override
@@ -272,7 +284,8 @@ class SaveProjectRiskParams {
   final Map<String, dynamic> payload;
 }
 
-class SaveProjectRiskUseCase extends UseCase<ProjectRisk, SaveProjectRiskParams> {
+class SaveProjectRiskUseCase
+    extends UseCase<ProjectRisk, SaveProjectRiskParams> {
   const SaveProjectRiskUseCase(this._repository);
   final ProjectsRepository _repository;
   @override
@@ -293,11 +306,13 @@ class DeleteProjectRiskUseCase extends UseCase<void, String> {
 
 // ── Project Portfolio ──
 
-class ListProjectPortfoliosUseCase extends UseCase<Cacheable<Paginated<ProjectPortfolio>>, ListQuery> {
+class ListProjectPortfoliosUseCase
+    extends UseCase<Cacheable<Paginated<ProjectPortfolio>>, ListQuery> {
   const ListProjectPortfoliosUseCase(this._repository);
   final ProjectsRepository _repository;
   @override
-  Future<Result<Cacheable<Paginated<ProjectPortfolio>>>> call(ListQuery params) =>
+  Future<Result<Cacheable<Paginated<ProjectPortfolio>>>> call(
+          ListQuery params) =>
       _repository.listProjectPortfolios(params);
 }
 
@@ -305,7 +320,8 @@ class GetProjectPortfolioUseCase extends UseCase<ProjectPortfolio, String> {
   const GetProjectPortfolioUseCase(this._repository);
   final ProjectsRepository _repository;
   @override
-  Future<Result<ProjectPortfolio>> call(String id) => _repository.getProjectPortfolio(id);
+  Future<Result<ProjectPortfolio>> call(String id) =>
+      _repository.getProjectPortfolio(id);
 }
 
 class SaveProjectPortfolioParams {
@@ -314,7 +330,8 @@ class SaveProjectPortfolioParams {
   final Map<String, dynamic> payload;
 }
 
-class SaveProjectPortfolioUseCase extends UseCase<ProjectPortfolio, SaveProjectPortfolioParams> {
+class SaveProjectPortfolioUseCase
+    extends UseCase<ProjectPortfolio, SaveProjectPortfolioParams> {
   const SaveProjectPortfolioUseCase(this._repository);
   final ProjectsRepository _repository;
   @override
@@ -330,5 +347,6 @@ class DeleteProjectPortfolioUseCase extends UseCase<void, String> {
   const DeleteProjectPortfolioUseCase(this._repository);
   final ProjectsRepository _repository;
   @override
-  Future<Result<void>> call(String id) => _repository.deleteProjectPortfolio(id);
+  Future<Result<void>> call(String id) =>
+      _repository.deleteProjectPortfolio(id);
 }

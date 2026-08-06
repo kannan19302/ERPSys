@@ -58,7 +58,7 @@ export class FixedAssetsGeneratedController {
   @Permissions("fixed-assets.fixedAssetsEntity1.create")
   async createFixedAssetsEntity1(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createFixedAssetsEntity1(req.user.tenantId, body);
   }
@@ -69,7 +69,7 @@ export class FixedAssetsGeneratedController {
   async updateFixedAssetsEntity1(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateFixedAssetsEntity1(req.user.tenantId, id, body);
   }
@@ -107,7 +107,7 @@ export class FixedAssetsGeneratedController {
   @Permissions("fixed-assets.fixedAssetsEntity2.create")
   async createFixedAssetsEntity2(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createFixedAssetsEntity2(req.user.tenantId, body);
   }
@@ -118,7 +118,7 @@ export class FixedAssetsGeneratedController {
   async updateFixedAssetsEntity2(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateFixedAssetsEntity2(req.user.tenantId, id, body);
   }
@@ -156,7 +156,7 @@ export class FixedAssetsGeneratedController {
   @Permissions("fixed-assets.fixedAssetsEntity3.create")
   async createFixedAssetsEntity3(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createFixedAssetsEntity3(req.user.tenantId, body);
   }
@@ -167,7 +167,7 @@ export class FixedAssetsGeneratedController {
   async updateFixedAssetsEntity3(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateFixedAssetsEntity3(req.user.tenantId, id, body);
   }
@@ -205,7 +205,7 @@ export class FixedAssetsGeneratedController {
   @Permissions("fixed-assets.fixedAssetsEntity4.create")
   async createFixedAssetsEntity4(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createFixedAssetsEntity4(req.user.tenantId, body);
   }
@@ -216,7 +216,7 @@ export class FixedAssetsGeneratedController {
   async updateFixedAssetsEntity4(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateFixedAssetsEntity4(req.user.tenantId, id, body);
   }
@@ -254,7 +254,7 @@ export class FixedAssetsGeneratedController {
   @Permissions("fixed-assets.fixedAssetsEntity5.create")
   async createFixedAssetsEntity5(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createFixedAssetsEntity5(req.user.tenantId, body);
   }
@@ -265,7 +265,7 @@ export class FixedAssetsGeneratedController {
   async updateFixedAssetsEntity5(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateFixedAssetsEntity5(req.user.tenantId, id, body);
   }
@@ -303,7 +303,7 @@ export class FixedAssetsGeneratedController {
   @Permissions("fixed-assets.fixedAssetsEntity6.create")
   async createFixedAssetsEntity6(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createFixedAssetsEntity6(req.user.tenantId, body);
   }
@@ -314,7 +314,7 @@ export class FixedAssetsGeneratedController {
   async updateFixedAssetsEntity6(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateFixedAssetsEntity6(req.user.tenantId, id, body);
   }
@@ -352,7 +352,7 @@ export class FixedAssetsGeneratedController {
   @Permissions("fixed-assets.fixedAssetsEntity7.create")
   async createFixedAssetsEntity7(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createFixedAssetsEntity7(req.user.tenantId, body);
   }
@@ -363,7 +363,7 @@ export class FixedAssetsGeneratedController {
   async updateFixedAssetsEntity7(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateFixedAssetsEntity7(req.user.tenantId, id, body);
   }
@@ -401,7 +401,7 @@ export class FixedAssetsGeneratedController {
   @Permissions("fixed-assets.fixedAssetsEntity8.create")
   async createFixedAssetsEntity8(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createFixedAssetsEntity8(req.user.tenantId, body);
   }
@@ -412,7 +412,7 @@ export class FixedAssetsGeneratedController {
   async updateFixedAssetsEntity8(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateFixedAssetsEntity8(req.user.tenantId, id, body);
   }
@@ -450,7 +450,7 @@ export class FixedAssetsGeneratedController {
   @Permissions("fixed-assets.fixedAssetsEntity9.create")
   async createFixedAssetsEntity9(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createFixedAssetsEntity9(req.user.tenantId, body);
   }
@@ -461,7 +461,7 @@ export class FixedAssetsGeneratedController {
   async updateFixedAssetsEntity9(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateFixedAssetsEntity9(req.user.tenantId, id, body);
   }
@@ -499,7 +499,7 @@ export class FixedAssetsGeneratedController {
   @Permissions("fixed-assets.fixedAssetsEntity10.create")
   async createFixedAssetsEntity10(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createFixedAssetsEntity10(req.user.tenantId, body);
   }
@@ -510,7 +510,7 @@ export class FixedAssetsGeneratedController {
   async updateFixedAssetsEntity10(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateFixedAssetsEntity10(req.user.tenantId, id, body);
   }
@@ -548,7 +548,7 @@ export class FixedAssetsGeneratedController {
   @Permissions("fixed-assets.fixedAssetsEntity11.create")
   async createFixedAssetsEntity11(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createFixedAssetsEntity11(req.user.tenantId, body);
   }
@@ -559,7 +559,7 @@ export class FixedAssetsGeneratedController {
   async updateFixedAssetsEntity11(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateFixedAssetsEntity11(req.user.tenantId, id, body);
   }
@@ -597,7 +597,7 @@ export class FixedAssetsGeneratedController {
   @Permissions("fixed-assets.fixedAssetsEntity12.create")
   async createFixedAssetsEntity12(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createFixedAssetsEntity12(req.user.tenantId, body);
   }
@@ -608,7 +608,7 @@ export class FixedAssetsGeneratedController {
   async updateFixedAssetsEntity12(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateFixedAssetsEntity12(req.user.tenantId, id, body);
   }
@@ -646,7 +646,7 @@ export class FixedAssetsGeneratedController {
   @Permissions("fixed-assets.fixedAssetsEntity13.create")
   async createFixedAssetsEntity13(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createFixedAssetsEntity13(req.user.tenantId, body);
   }
@@ -657,7 +657,7 @@ export class FixedAssetsGeneratedController {
   async updateFixedAssetsEntity13(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateFixedAssetsEntity13(req.user.tenantId, id, body);
   }
@@ -695,7 +695,7 @@ export class FixedAssetsGeneratedController {
   @Permissions("fixed-assets.fixedAssetsEntity14.create")
   async createFixedAssetsEntity14(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createFixedAssetsEntity14(req.user.tenantId, body);
   }
@@ -706,7 +706,7 @@ export class FixedAssetsGeneratedController {
   async updateFixedAssetsEntity14(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateFixedAssetsEntity14(req.user.tenantId, id, body);
   }
@@ -744,7 +744,7 @@ export class FixedAssetsGeneratedController {
   @Permissions("fixed-assets.fixedAssetsEntity15.create")
   async createFixedAssetsEntity15(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createFixedAssetsEntity15(req.user.tenantId, body);
   }
@@ -755,7 +755,7 @@ export class FixedAssetsGeneratedController {
   async updateFixedAssetsEntity15(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateFixedAssetsEntity15(req.user.tenantId, id, body);
   }
@@ -793,7 +793,7 @@ export class FixedAssetsGeneratedController {
   @Permissions("fixed-assets.fixedAssetsEntity16.create")
   async createFixedAssetsEntity16(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createFixedAssetsEntity16(req.user.tenantId, body);
   }
@@ -804,7 +804,7 @@ export class FixedAssetsGeneratedController {
   async updateFixedAssetsEntity16(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateFixedAssetsEntity16(req.user.tenantId, id, body);
   }
@@ -842,7 +842,7 @@ export class FixedAssetsGeneratedController {
   @Permissions("fixed-assets.fixedAssetsEntity17.create")
   async createFixedAssetsEntity17(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createFixedAssetsEntity17(req.user.tenantId, body);
   }
@@ -853,7 +853,7 @@ export class FixedAssetsGeneratedController {
   async updateFixedAssetsEntity17(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateFixedAssetsEntity17(req.user.tenantId, id, body);
   }
@@ -891,7 +891,7 @@ export class FixedAssetsGeneratedController {
   @Permissions("fixed-assets.fixedAssetsEntity18.create")
   async createFixedAssetsEntity18(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createFixedAssetsEntity18(req.user.tenantId, body);
   }
@@ -902,7 +902,7 @@ export class FixedAssetsGeneratedController {
   async updateFixedAssetsEntity18(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateFixedAssetsEntity18(req.user.tenantId, id, body);
   }
@@ -940,7 +940,7 @@ export class FixedAssetsGeneratedController {
   @Permissions("fixed-assets.fixedAssetsEntity19.create")
   async createFixedAssetsEntity19(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createFixedAssetsEntity19(req.user.tenantId, body);
   }
@@ -951,7 +951,7 @@ export class FixedAssetsGeneratedController {
   async updateFixedAssetsEntity19(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateFixedAssetsEntity19(req.user.tenantId, id, body);
   }
@@ -989,7 +989,7 @@ export class FixedAssetsGeneratedController {
   @Permissions("fixed-assets.fixedAssetsEntity20.create")
   async createFixedAssetsEntity20(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createFixedAssetsEntity20(req.user.tenantId, body);
   }
@@ -1000,7 +1000,7 @@ export class FixedAssetsGeneratedController {
   async updateFixedAssetsEntity20(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateFixedAssetsEntity20(req.user.tenantId, id, body);
   }
@@ -1038,7 +1038,7 @@ export class FixedAssetsGeneratedController {
   @Permissions("fixed-assets.fixedAssetsEntity21.create")
   async createFixedAssetsEntity21(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createFixedAssetsEntity21(req.user.tenantId, body);
   }
@@ -1049,7 +1049,7 @@ export class FixedAssetsGeneratedController {
   async updateFixedAssetsEntity21(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateFixedAssetsEntity21(req.user.tenantId, id, body);
   }
@@ -1087,7 +1087,7 @@ export class FixedAssetsGeneratedController {
   @Permissions("fixed-assets.fixedAssetsEntity22.create")
   async createFixedAssetsEntity22(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createFixedAssetsEntity22(req.user.tenantId, body);
   }
@@ -1098,7 +1098,7 @@ export class FixedAssetsGeneratedController {
   async updateFixedAssetsEntity22(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateFixedAssetsEntity22(req.user.tenantId, id, body);
   }
@@ -1136,7 +1136,7 @@ export class FixedAssetsGeneratedController {
   @Permissions("fixed-assets.fixedAssetsEntity23.create")
   async createFixedAssetsEntity23(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createFixedAssetsEntity23(req.user.tenantId, body);
   }
@@ -1147,7 +1147,7 @@ export class FixedAssetsGeneratedController {
   async updateFixedAssetsEntity23(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateFixedAssetsEntity23(req.user.tenantId, id, body);
   }
@@ -1185,7 +1185,7 @@ export class FixedAssetsGeneratedController {
   @Permissions("fixed-assets.fixedAssetsEntity24.create")
   async createFixedAssetsEntity24(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createFixedAssetsEntity24(req.user.tenantId, body);
   }
@@ -1196,7 +1196,7 @@ export class FixedAssetsGeneratedController {
   async updateFixedAssetsEntity24(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateFixedAssetsEntity24(req.user.tenantId, id, body);
   }
@@ -1234,7 +1234,7 @@ export class FixedAssetsGeneratedController {
   @Permissions("fixed-assets.fixedAssetsEntity25.create")
   async createFixedAssetsEntity25(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createFixedAssetsEntity25(req.user.tenantId, body);
   }
@@ -1245,7 +1245,7 @@ export class FixedAssetsGeneratedController {
   async updateFixedAssetsEntity25(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateFixedAssetsEntity25(req.user.tenantId, id, body);
   }
@@ -1283,7 +1283,7 @@ export class FixedAssetsGeneratedController {
   @Permissions("fixed-assets.fixedAssetsEntity26.create")
   async createFixedAssetsEntity26(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createFixedAssetsEntity26(req.user.tenantId, body);
   }
@@ -1294,7 +1294,7 @@ export class FixedAssetsGeneratedController {
   async updateFixedAssetsEntity26(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateFixedAssetsEntity26(req.user.tenantId, id, body);
   }
@@ -1332,7 +1332,7 @@ export class FixedAssetsGeneratedController {
   @Permissions("fixed-assets.fixedAssetsEntity27.create")
   async createFixedAssetsEntity27(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createFixedAssetsEntity27(req.user.tenantId, body);
   }
@@ -1343,7 +1343,7 @@ export class FixedAssetsGeneratedController {
   async updateFixedAssetsEntity27(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateFixedAssetsEntity27(req.user.tenantId, id, body);
   }
@@ -1381,7 +1381,7 @@ export class FixedAssetsGeneratedController {
   @Permissions("fixed-assets.fixedAssetsEntity28.create")
   async createFixedAssetsEntity28(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createFixedAssetsEntity28(req.user.tenantId, body);
   }
@@ -1392,7 +1392,7 @@ export class FixedAssetsGeneratedController {
   async updateFixedAssetsEntity28(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateFixedAssetsEntity28(req.user.tenantId, id, body);
   }
@@ -1430,7 +1430,7 @@ export class FixedAssetsGeneratedController {
   @Permissions("fixed-assets.fixedAssetsEntity29.create")
   async createFixedAssetsEntity29(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createFixedAssetsEntity29(req.user.tenantId, body);
   }
@@ -1441,7 +1441,7 @@ export class FixedAssetsGeneratedController {
   async updateFixedAssetsEntity29(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateFixedAssetsEntity29(req.user.tenantId, id, body);
   }
@@ -1479,7 +1479,7 @@ export class FixedAssetsGeneratedController {
   @Permissions("fixed-assets.fixedAssetsEntity30.create")
   async createFixedAssetsEntity30(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createFixedAssetsEntity30(req.user.tenantId, body);
   }
@@ -1490,7 +1490,7 @@ export class FixedAssetsGeneratedController {
   async updateFixedAssetsEntity30(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateFixedAssetsEntity30(req.user.tenantId, id, body);
   }
@@ -1528,7 +1528,7 @@ export class FixedAssetsGeneratedController {
   @Permissions("fixed-assets.fixedAssetsEntity31.create")
   async createFixedAssetsEntity31(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createFixedAssetsEntity31(req.user.tenantId, body);
   }
@@ -1539,7 +1539,7 @@ export class FixedAssetsGeneratedController {
   async updateFixedAssetsEntity31(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateFixedAssetsEntity31(req.user.tenantId, id, body);
   }
@@ -1577,7 +1577,7 @@ export class FixedAssetsGeneratedController {
   @Permissions("fixed-assets.fixedAssetsEntity32.create")
   async createFixedAssetsEntity32(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createFixedAssetsEntity32(req.user.tenantId, body);
   }
@@ -1588,7 +1588,7 @@ export class FixedAssetsGeneratedController {
   async updateFixedAssetsEntity32(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateFixedAssetsEntity32(req.user.tenantId, id, body);
   }
@@ -1626,7 +1626,7 @@ export class FixedAssetsGeneratedController {
   @Permissions("fixed-assets.fixedAssetsEntity33.create")
   async createFixedAssetsEntity33(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createFixedAssetsEntity33(req.user.tenantId, body);
   }
@@ -1637,7 +1637,7 @@ export class FixedAssetsGeneratedController {
   async updateFixedAssetsEntity33(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateFixedAssetsEntity33(req.user.tenantId, id, body);
   }
@@ -1675,7 +1675,7 @@ export class FixedAssetsGeneratedController {
   @Permissions("fixed-assets.fixedAssetsEntity34.create")
   async createFixedAssetsEntity34(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createFixedAssetsEntity34(req.user.tenantId, body);
   }
@@ -1686,7 +1686,7 @@ export class FixedAssetsGeneratedController {
   async updateFixedAssetsEntity34(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateFixedAssetsEntity34(req.user.tenantId, id, body);
   }
@@ -1724,7 +1724,7 @@ export class FixedAssetsGeneratedController {
   @Permissions("fixed-assets.fixedAssetsEntity35.create")
   async createFixedAssetsEntity35(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createFixedAssetsEntity35(req.user.tenantId, body);
   }
@@ -1735,7 +1735,7 @@ export class FixedAssetsGeneratedController {
   async updateFixedAssetsEntity35(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateFixedAssetsEntity35(req.user.tenantId, id, body);
   }
@@ -1773,7 +1773,7 @@ export class FixedAssetsGeneratedController {
   @Permissions("fixed-assets.fixedAssetsEntity36.create")
   async createFixedAssetsEntity36(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createFixedAssetsEntity36(req.user.tenantId, body);
   }
@@ -1784,7 +1784,7 @@ export class FixedAssetsGeneratedController {
   async updateFixedAssetsEntity36(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateFixedAssetsEntity36(req.user.tenantId, id, body);
   }
@@ -1822,7 +1822,7 @@ export class FixedAssetsGeneratedController {
   @Permissions("fixed-assets.fixedAssetsEntity37.create")
   async createFixedAssetsEntity37(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createFixedAssetsEntity37(req.user.tenantId, body);
   }
@@ -1833,7 +1833,7 @@ export class FixedAssetsGeneratedController {
   async updateFixedAssetsEntity37(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateFixedAssetsEntity37(req.user.tenantId, id, body);
   }
@@ -1871,7 +1871,7 @@ export class FixedAssetsGeneratedController {
   @Permissions("fixed-assets.fixedAssetsEntity38.create")
   async createFixedAssetsEntity38(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createFixedAssetsEntity38(req.user.tenantId, body);
   }
@@ -1882,7 +1882,7 @@ export class FixedAssetsGeneratedController {
   async updateFixedAssetsEntity38(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateFixedAssetsEntity38(req.user.tenantId, id, body);
   }
@@ -1920,7 +1920,7 @@ export class FixedAssetsGeneratedController {
   @Permissions("fixed-assets.fixedAssetsEntity39.create")
   async createFixedAssetsEntity39(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createFixedAssetsEntity39(req.user.tenantId, body);
   }
@@ -1931,7 +1931,7 @@ export class FixedAssetsGeneratedController {
   async updateFixedAssetsEntity39(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateFixedAssetsEntity39(req.user.tenantId, id, body);
   }
@@ -1969,7 +1969,7 @@ export class FixedAssetsGeneratedController {
   @Permissions("fixed-assets.fixedAssetsEntity40.create")
   async createFixedAssetsEntity40(
     @Req() req: AuthenticatedRequest,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.createFixedAssetsEntity40(req.user.tenantId, body);
   }
@@ -1980,7 +1980,7 @@ export class FixedAssetsGeneratedController {
   async updateFixedAssetsEntity40(
     @Req() req: AuthenticatedRequest,
     @Param("id") id: string,
-    @ZodBody(z.object({ name: z.string() })) body: any,
+    @ZodBody(z.object({ name: z.string() })) body: { name: string },
   ) {
     return this.svc.updateFixedAssetsEntity40(req.user.tenantId, id, body);
   }

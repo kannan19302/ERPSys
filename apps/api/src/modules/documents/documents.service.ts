@@ -6,6 +6,7 @@ import {
   Optional,
 } from "@nestjs/common";
 import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 import {
   S3Client,
   PutObjectCommand,
@@ -785,7 +786,7 @@ export class DocumentsService implements DocumentStorageClient {
 
   // Get tenant users list
   async getUsers(tenantId: string) {
-    return prisma.user.findMany({
+    return idpPrisma.user.findMany({
       where: { tenantId },
       select: { id: true, firstName: true, lastName: true, email: true },
     });

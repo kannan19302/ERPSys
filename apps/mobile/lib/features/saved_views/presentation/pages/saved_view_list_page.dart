@@ -35,7 +35,8 @@ class _SavedViewListPageState extends ConsumerState<SavedViewListPage> {
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
+            padding: const EdgeInsets.fromLTRB(
+                Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
             child: TextField(
               controller: _search,
               onChanged: controller.search,
@@ -47,21 +48,27 @@ class _SavedViewListPageState extends ConsumerState<SavedViewListPage> {
                     ? null
                     : IconButton(
                         icon: const Icon(Icons.close),
-                        onPressed: () { _search.clear(); controller.search(''); },
+                        onPressed: () {
+                          _search.clear();
+                          controller.search('');
+                        },
                       ),
               ),
             ),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: Spacing.x4),
-            child: Row(children: [
-              Text(
-                state.isLoading
-                    ? 'Loading...'
-                    : '${state.meta.total} view${state.meta.total == 1 ? '' : 's'}',
-                style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
-              ),
-            ],),
+            child: Row(
+              children: [
+                Text(
+                  state.isLoading
+                      ? 'Loading...'
+                      : '${state.meta.total} view${state.meta.total == 1 ? '' : 's'}',
+                  style:
+                      TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
+                ),
+              ],
+            ),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -92,34 +99,51 @@ class _SavedViewListPageState extends ConsumerState<SavedViewListPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(children: [
-                Expanded(
-                  child: Text(view.name,
-                      style: Theme.of(context).textTheme.titleSmall,),
-                ),
-                if (view.isDefault)
-                  const UiStatusBadge(label: 'DEFAULT', tone: UiTone.info),
-              ],),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      view.name,
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
+                  ),
+                  if (view.isDefault)
+                    const UiStatusBadge(label: 'DEFAULT', tone: UiTone.info),
+                ],
+              ),
               const SizedBox(height: Spacing.x1),
-              Text(view.resourceType,
-                  style: TextStyle(color: palette.textSecondary, fontSize: TypeScale.xs),),
+              Text(
+                view.resourceType,
+                style: TextStyle(
+                    color: palette.textSecondary, fontSize: TypeScale.xs),
+              ),
               if (view.description != null) ...[
                 const SizedBox(height: Spacing.x1),
-                Text(view.description!,
-                    style: TextStyle(color: palette.textTertiary, fontSize: TypeScale.xs),),
+                Text(
+                  view.description!,
+                  style: TextStyle(
+                      color: palette.textTertiary, fontSize: TypeScale.xs),
+                ),
               ],
               if (view.ownerName != null) ...[
                 const SizedBox(height: Spacing.x1),
-                Row(children: [
-                  Icon(Icons.person_outline, size: TypeScale.xs, color: palette.textTertiary),
-                  const SizedBox(width: Spacing.x1),
-                  Text(view.ownerName!,
-                      style: TextStyle(fontSize: TypeScale.xs, color: palette.textTertiary),),
-                  if (view.isShared) ...[
-                    const SizedBox(width: Spacing.x2),
-                    Icon(Icons.share_outlined, size: TypeScale.xs, color: palette.textTertiary),
+                Row(
+                  children: [
+                    Icon(Icons.person_outline,
+                        size: TypeScale.xs, color: palette.textTertiary),
+                    const SizedBox(width: Spacing.x1),
+                    Text(
+                      view.ownerName!,
+                      style: TextStyle(
+                          fontSize: TypeScale.xs, color: palette.textTertiary),
+                    ),
+                    if (view.isShared) ...[
+                      const SizedBox(width: Spacing.x2),
+                      Icon(Icons.share_outlined,
+                          size: TypeScale.xs, color: palette.textTertiary),
+                    ],
                   ],
-                ],),
+                ),
               ],
             ],
           ),

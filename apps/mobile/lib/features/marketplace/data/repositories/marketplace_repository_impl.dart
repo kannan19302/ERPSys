@@ -37,7 +37,8 @@ class MarketplaceRepositoryImpl implements MarketplaceRepository {
       final jsonItems = page.data
           .map((dynamic e) => (e as dynamic).toJson() as Map<String, dynamic>)
           .toList(growable: false);
-      await _cache.write(_tenantId, namespace, query.cacheKey, <String, Object?>{
+      await _cache
+          .write(_tenantId, namespace, query.cacheKey, <String, Object?>{
         'data': jsonItems,
         'meta': page.meta.toJson(),
       });
@@ -45,9 +46,11 @@ class MarketplaceRepositoryImpl implements MarketplaceRepository {
         Cacheable<Paginated<T>>(value: page),
       );
     } on NetworkException catch (error) {
-      final cached = _cache.read<Map<String, dynamic>>(_tenantId, namespace, query.cacheKey);
+      final cached = _cache.read<Map<String, dynamic>>(
+          _tenantId, namespace, query.cacheKey);
       if (cached == null) {
-        return Result<Cacheable<Paginated<T>>>.err(mapExceptionToFailure(error));
+        return Result<Cacheable<Paginated<T>>>.err(
+            mapExceptionToFailure(error));
       }
       return Result<Cacheable<Paginated<T>>>.ok(
         Cacheable<Paginated<T>>(
@@ -90,10 +93,12 @@ class MarketplaceRepositoryImpl implements MarketplaceRepository {
 
   @override
   Future<Result<Cacheable<Paginated<MarketplaceApp>>>> listApps(ListQuery q) =>
-      _paginated(_appNamespace, q, () => _remote.listApps(q), MarketplaceAppModel.fromJson);
+      _paginated(_appNamespace, q, () => _remote.listApps(q),
+          MarketplaceAppModel.fromJson);
 
   @override
-  Future<Result<MarketplaceApp>> getApp(String id) => _single(() => _remote.getApp(id));
+  Future<Result<MarketplaceApp>> getApp(String id) =>
+      _single(() => _remote.getApp(id));
 
   @override
   Future<Result<MarketplaceApp>> createApp(Map<String, dynamic> p) =>
@@ -104,7 +109,8 @@ class MarketplaceRepositoryImpl implements MarketplaceRepository {
       _write(() => _remote.updateApp(id, p));
 
   @override
-  Future<Result<void>> deleteApp(String id) => _delete(() => _remote.deleteApp(id));
+  Future<Result<void>> deleteApp(String id) =>
+      _delete(() => _remote.deleteApp(id));
 
   @override
   Future<Result<MarketplaceApp>> publishApp(String id) =>
@@ -115,22 +121,28 @@ class MarketplaceRepositoryImpl implements MarketplaceRepository {
       _write(() => _remote.unpublishApp(id));
 
   @override
-  Future<Result<Cacheable<Paginated<MarketplaceReview>>>> listReviews(ListQuery q) =>
-      _paginated(_reviewNamespace, q, () => _remote.listReviews(q), MarketplaceReviewModel.fromJson);
+  Future<Result<Cacheable<Paginated<MarketplaceReview>>>> listReviews(
+          ListQuery q) =>
+      _paginated(_reviewNamespace, q, () => _remote.listReviews(q),
+          MarketplaceReviewModel.fromJson);
 
   @override
-  Future<Result<MarketplaceReview>> getReview(String id) => _single(() => _remote.getReview(id));
+  Future<Result<MarketplaceReview>> getReview(String id) =>
+      _single(() => _remote.getReview(id));
 
   @override
   Future<Result<MarketplaceReview>> createReview(Map<String, dynamic> p) =>
       _write(() => _remote.createReview(p));
 
   @override
-  Future<Result<void>> deleteReview(String id) => _delete(() => _remote.deleteReview(id));
+  Future<Result<void>> deleteReview(String id) =>
+      _delete(() => _remote.deleteReview(id));
 
   @override
-  Future<Result<Cacheable<Paginated<MarketplaceAppVersion>>>> listVersions(ListQuery q) =>
-      _paginated(_versionNamespace, q, () => _remote.listVersions(q), MarketplaceAppVersionModel.fromJson);
+  Future<Result<Cacheable<Paginated<MarketplaceAppVersion>>>> listVersions(
+          ListQuery q) =>
+      _paginated(_versionNamespace, q, () => _remote.listVersions(q),
+          MarketplaceAppVersionModel.fromJson);
 
   @override
   Future<Result<MarketplaceAppVersion>> createVersion(Map<String, dynamic> p) =>
@@ -141,18 +153,22 @@ class MarketplaceRepositoryImpl implements MarketplaceRepository {
       _write(() => _remote.releaseVersion(id));
 
   @override
-  Future<Result<Cacheable<Paginated<MarketplaceSubmission>>>> listSubmissions(ListQuery q) =>
-      _paginated(_submissionNamespace, q, () => _remote.listSubmissions(q), MarketplaceSubmissionModel.fromJson);
+  Future<Result<Cacheable<Paginated<MarketplaceSubmission>>>> listSubmissions(
+          ListQuery q) =>
+      _paginated(_submissionNamespace, q, () => _remote.listSubmissions(q),
+          MarketplaceSubmissionModel.fromJson);
 
   @override
   Future<Result<MarketplaceSubmission>> getSubmission(String id) =>
       _single(() => _remote.getSubmission(id));
 
   @override
-  Future<Result<MarketplaceSubmission>> createSubmission(Map<String, dynamic> p) =>
+  Future<Result<MarketplaceSubmission>> createSubmission(
+          Map<String, dynamic> p) =>
       _write(() => _remote.createSubmission(p));
 
   @override
-  Future<Result<MarketplaceSubmission>> reviewSubmission(String id, String decision, String? notes) =>
+  Future<Result<MarketplaceSubmission>> reviewSubmission(
+          String id, String decision, String? notes) =>
       _write(() => _remote.reviewSubmission(id, decision, notes));
 }

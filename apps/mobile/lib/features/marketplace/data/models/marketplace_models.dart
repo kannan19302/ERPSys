@@ -99,7 +99,8 @@ class MarketplaceReviewModel extends MarketplaceReview {
 
   factory MarketplaceReviewModel.fromJson(Map<String, dynamic> json) {
     final Object? id = json['id'];
-    if (id is! String) throw const ParseException('MarketplaceReview missing id');
+    if (id is! String)
+      throw const ParseException('MarketplaceReview missing id');
     return MarketplaceReviewModel(
       id: id,
       appId: json['appId'] as String?,
@@ -144,7 +145,8 @@ class MarketplaceAppVersionModel extends MarketplaceAppVersion {
 
   factory MarketplaceAppVersionModel.fromJson(Map<String, dynamic> json) {
     final Object? id = json['id'];
-    if (id is! String) throw const ParseException('MarketplaceAppVersion missing id');
+    if (id is! String)
+      throw const ParseException('MarketplaceAppVersion missing id');
     return MarketplaceAppVersionModel(
       id: id,
       appId: json['appId'] as String?,
@@ -192,7 +194,8 @@ class MarketplaceSubmissionModel extends MarketplaceSubmission {
 
   factory MarketplaceSubmissionModel.fromJson(Map<String, dynamic> json) {
     final Object? id = json['id'];
-    if (id is! String) throw const ParseException('MarketplaceSubmission missing id');
+    if (id is! String)
+      throw const ParseException('MarketplaceSubmission missing id');
     return MarketplaceSubmissionModel(
       id: id,
       appId: json['appId'] as String?,

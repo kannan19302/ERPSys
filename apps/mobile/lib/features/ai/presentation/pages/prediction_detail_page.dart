@@ -29,10 +29,14 @@ class AiPredictionDetailPage extends ConsumerWidget {
       body: predictionAsync.when(
         loading: () => const LoadingView(),
         error: (Object error, StackTrace _) => FailureView(
-          failure: error is Failure ? error : const ServerFailure('Could not load prediction.'),
-          onRetry: () => ref.invalidate(aiPredictionDetailProvider(predictionId)),
+          failure: error is Failure
+              ? error
+              : const ServerFailure('Could not load prediction.'),
+          onRetry: () =>
+              ref.invalidate(aiPredictionDetailProvider(predictionId)),
         ),
-        data: (AiPrediction prediction) => _AiPredictionDetail(prediction: prediction),
+        data: (AiPrediction prediction) =>
+            _AiPredictionDetail(prediction: prediction),
       ),
     );
   }
@@ -64,7 +68,8 @@ class _AiPredictionDetail extends StatelessWidget {
               ),
               const SizedBox(height: Spacing.x2),
               if (prediction.modelName != null)
-                Text(prediction.modelName!, style: TextStyle(color: t.textSecondary)),
+                Text(prediction.modelName!,
+                    style: TextStyle(color: t.textSecondary)),
               const SizedBox(height: Spacing.x2),
               Row(
                 children: <Widget>[
@@ -75,7 +80,8 @@ class _AiPredictionDetail extends StatelessWidget {
                   if (prediction.processingTime != null)
                     _pill(
                       '${prediction.processingTime!.toStringAsFixed(1)}ms',
-                      t.info, t.infoLight,
+                      t.info,
+                      t.infoLight,
                     ),
                 ],
               ),
@@ -90,7 +96,8 @@ class _AiPredictionDetail extends StatelessWidget {
               const _SectionTitle(title: 'Input'),
               Text(
                 _prettyJson(prediction.input),
-                style: const TextStyle(fontFamily: 'monospace', fontSize: TypeScale.xs),
+                style: const TextStyle(
+                    fontFamily: 'monospace', fontSize: TypeScale.xs),
               ),
             ],
           ),
@@ -104,7 +111,8 @@ class _AiPredictionDetail extends StatelessWidget {
                 const _SectionTitle(title: 'Output'),
                 Text(
                   _prettyJson(prediction.output!),
-                  style: const TextStyle(fontFamily: 'monospace', fontSize: TypeScale.xs),
+                  style: const TextStyle(
+                      fontFamily: 'monospace', fontSize: TypeScale.xs),
                 ),
               ],
             ),
@@ -119,8 +127,16 @@ class _AiPredictionDetail extends StatelessWidget {
               _FieldRow('Model ID', prediction.modelId ?? '—'),
               _FieldRow('Model Name', prediction.modelName ?? '—'),
               _FieldRow('Confidence', confidenceLabel),
-              _FieldRow('Processing Time', prediction.processingTime != null ? '${prediction.processingTime!.toStringAsFixed(1)}ms' : '—'),
-              _FieldRow('Created', prediction.createdAt != null ? Formatters.dateTime(prediction.createdAt!) : '—'),
+              _FieldRow(
+                  'Processing Time',
+                  prediction.processingTime != null
+                      ? '${prediction.processingTime!.toStringAsFixed(1)}ms'
+                      : '—'),
+              _FieldRow(
+                  'Created',
+                  prediction.createdAt != null
+                      ? Formatters.dateTime(prediction.createdAt!)
+                      : '—'),
             ],
           ),
         ),

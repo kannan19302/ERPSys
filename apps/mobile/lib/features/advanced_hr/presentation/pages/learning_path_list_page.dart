@@ -12,7 +12,8 @@ class LearningPathListPage extends ConsumerStatefulWidget {
   static const String routeName = 'learning-paths';
   static const String routePath = '/advanced-hr/learning-paths';
   @override
-  ConsumerState<LearningPathListPage> createState() => _LearningPathListPageState();
+  ConsumerState<LearningPathListPage> createState() =>
+      _LearningPathListPageState();
 }
 
 class _LearningPathListPageState extends ConsumerState<LearningPathListPage> {
@@ -37,7 +38,8 @@ class _LearningPathListPageState extends ConsumerState<LearningPathListPage> {
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
+            padding: const EdgeInsets.fromLTRB(
+                Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
             child: TextField(
               controller: _search,
               onChanged: controller.search,
@@ -49,21 +51,27 @@ class _LearningPathListPageState extends ConsumerState<LearningPathListPage> {
                     ? null
                     : IconButton(
                         icon: const Icon(Icons.close),
-                        onPressed: () { _search.clear(); controller.search(''); },
+                        onPressed: () {
+                          _search.clear();
+                          controller.search('');
+                        },
                       ),
               ),
             ),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: Spacing.x4),
-            child: Row(children: [
-              Text(
-                state.isLoading
-                    ? 'Loading...'
-                    : '${state.meta.total} path${state.meta.total == 1 ? '' : 's'}',
-                style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
-              ),
-            ],),
+            child: Row(
+              children: [
+                Text(
+                  state.isLoading
+                      ? 'Loading...'
+                      : '${state.meta.total} path${state.meta.total == 1 ? '' : 's'}',
+                  style:
+                      TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
+                ),
+              ],
+            ),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -71,7 +79,8 @@ class _LearningPathListPageState extends ConsumerState<LearningPathListPage> {
     );
   }
 
-  Widget _body(LearningPathListState state, LearningPathListController controller) {
+  Widget _body(
+      LearningPathListState state, LearningPathListController controller) {
     if (state.isLoading && state.items.isEmpty) return const LoadingView();
     final failure = state.failure;
     if (failure != null && state.items.isEmpty) {
@@ -111,30 +120,47 @@ class _PathTile extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(children: [
-              Expanded(
-                child: Text(path.title,
-                    style: Theme.of(context).textTheme.titleSmall,),
-              ),
-              UiStatusBadge(
-                label: path.status,
-                tone: path.status == 'ACTIVE' ? UiTone.success : UiTone.neutral,
-              ),
-            ],),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    path.title,
+                    style: Theme.of(context).textTheme.titleSmall,
+                  ),
+                ),
+                UiStatusBadge(
+                  label: path.status,
+                  tone:
+                      path.status == 'ACTIVE' ? UiTone.success : UiTone.neutral,
+                ),
+              ],
+            ),
             const SizedBox(height: Spacing.x1),
-            Text(path.category,
-                style: TextStyle(color: t.textSecondary),),
+            Text(
+              path.category,
+              style: TextStyle(color: t.textSecondary),
+            ),
             const SizedBox(height: Spacing.x1),
-            Row(children: [
-              Text('${path.estimatedHours}h',
-                  style: Theme.of(context).textTheme.labelLarge,),
-              const SizedBox(width: Spacing.x4),
-              Text('${path.enrolledCount} enrolled',
-                  style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),),
-              const Spacer(),
-              Text('${path.completionRate.toStringAsFixed(0)}% complete',
-                  style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),),
-            ],),
+            Row(
+              children: [
+                Text(
+                  '${path.estimatedHours}h',
+                  style: Theme.of(context).textTheme.labelLarge,
+                ),
+                const SizedBox(width: Spacing.x4),
+                Text(
+                  '${path.enrolledCount} enrolled',
+                  style:
+                      TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
+                ),
+                const Spacer(),
+                Text(
+                  '${path.completionRate.toStringAsFixed(0)}% complete',
+                  style:
+                      TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
+                ),
+              ],
+            ),
           ],
         ),
       ),

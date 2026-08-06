@@ -11,7 +11,7 @@ import {
   KPICard,
   Spinner,
 } from "@unerp/ui";
-import { SubTabBar, type SubTab } from "@unerp/ui-layout";
+import { SubTabBar, type SubTab } from "@unerp/ui/layout";
 import {
   ShieldCheck,
   AlertTriangle,

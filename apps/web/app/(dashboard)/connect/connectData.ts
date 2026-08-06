@@ -99,13 +99,18 @@ export const PRESENCE_META: Record<
   Presence,
   { label: string; color: string; icon: string; ring?: boolean }
 > = {
-  ACTIVE: { label: "Active", color: "#10b981", icon: "🟢" },
-  AWAY: { label: "Away", color: "#f59e0b", icon: "🟡" },
-  BRB: { label: "Be right back", color: "#f59e0b", icon: "⏳" },
-  DND: { label: "Do not disturb", color: "#f43f5e", icon: "⛔", ring: true },
+  ACTIVE: { label: "Active", color: "var(--chart-9)", icon: "🟢" },
+  AWAY: { label: "Away", color: "var(--chart-3)", icon: "🟡" },
+  BRB: { label: "Be right back", color: "var(--chart-3)", icon: "⏳" },
+  DND: {
+    label: "Do not disturb",
+    color: "var(--color-danger)",
+    icon: "⛔",
+    ring: true,
+  },
   OOO: { label: "Out of office", color: "#a855f7", icon: "🏖️" },
   INACTIVE: { label: "Offline", color: "#9ca3af", icon: "⚫" },
-  IN_MEETING: { label: "In a meeting", color: "#6366f1", icon: "📅" },
+  IN_MEETING: { label: "In a meeting", color: "var(--chart-10)", icon: "📅" },
   FOCUSING: { label: "Focusing", color: "#14b8a6", icon: "🎯", ring: true },
 };
 
@@ -593,15 +598,15 @@ export const initials = (name: string) =>
     .toUpperCase();
 
 const AVATAR_COLORS = [
-  "#6366f1",
-  "#ec4899",
-  "#0ea5e9",
+  "var(--chart-10)",
+  "var(--chart-8)",
+  "var(--color-info)",
   "#f97316",
   "#14b8a6",
-  "#8b5cf6",
-  "#10b981",
-  "#f43f5e",
-  "#eab308",
+  "var(--chart-5)",
+  "var(--chart-9)",
+  "var(--color-danger)",
+  "var(--color-warning)",
 ];
 export const avatarColor = (seed: string) => {
   let h = 0;

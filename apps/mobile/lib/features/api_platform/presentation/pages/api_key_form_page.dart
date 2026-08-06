@@ -43,9 +43,8 @@ class _ApiKeyFormPageState extends ConsumerState<ApiKeyFormPage> {
   }
 
   Future<void> _loadKey() async {
-    final ApiKey? key = ref
-        .read(apiKeyDetailProvider(widget.keyId!))
-        .valueOrNull;
+    final ApiKey? key =
+        ref.read(apiKeyDetailProvider(widget.keyId!)).valueOrNull;
     if (key != null) {
       _nameCtrl.text = key.name;
       _prefixCtrl.text = key.prefix;
@@ -77,8 +76,14 @@ class _ApiKeyFormPageState extends ConsumerState<ApiKeyFormPage> {
       'status': _status,
       'scopes': _scopesCtrl.text.trim().isEmpty
           ? <String>[]
-          : _scopesCtrl.text.split(',').map((String s) => s.trim()).where((String s) => s.isNotEmpty).toList(),
-      'ipWhitelist': _ipWhitelistCtrl.text.trim().isEmpty ? null : _ipWhitelistCtrl.text.trim(),
+          : _scopesCtrl.text
+              .split(',')
+              .map((String s) => s.trim())
+              .where((String s) => s.isNotEmpty)
+              .toList(),
+      'ipWhitelist': _ipWhitelistCtrl.text.trim().isEmpty
+          ? null
+          : _ipWhitelistCtrl.text.trim(),
     };
 
     final Result<ApiKey> result = await ref
@@ -147,8 +152,10 @@ class _ApiKeyFormPageState extends ConsumerState<ApiKeyFormPage> {
               initialValue: _status,
               decoration: const InputDecoration(labelText: 'Status'),
               items: const <DropdownMenuItem<String>>[
-                DropdownMenuItem<String>(value: 'ACTIVE', child: Text('Active')),
-                DropdownMenuItem<String>(value: 'REVOKED', child: Text('Revoked')),
+                DropdownMenuItem<String>(
+                    value: 'ACTIVE', child: Text('Active')),
+                DropdownMenuItem<String>(
+                    value: 'REVOKED', child: Text('Revoked')),
               ],
               onChanged: (String? v) {
                 if (v != null) setState(() => _status = v);

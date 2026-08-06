@@ -1,3 +1,3 @@
-import { ProcurementLifecycleContract } from './procurementContract';
+import { ProcurementLifecycleContract } from "./procurementContract";
 export { ProcurementLifecycleContract };
 export const contracts = [ProcurementLifecycleContract];

@@ -1,9 +1,23 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { Injectable, NotFoundException, Optional } from "@nestjs/common";
 import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 
 @Injectable()
 export class HealthcareClinicalService {
-  private readonly prisma = prisma;
+  private readonly prisma: typeof prisma;
+
+  /**
+   * Injectable so this service can be unit-tested. It previously used the
+   * module-level `prisma` import directly, so the mock its spec passes to the
+   * constructor was discarded and every test hit the real database — failing on
+   * RLS, since a unit test establishes no tenant session.
+   *
+   * `@Optional()` leaves the parameter undefined under Nest DI in production,
+   * so the real client is used and runtime behaviour is unchanged.
+   */
+  constructor(@Optional() client?: typeof prisma) {
+    this.prisma = client ?? prisma;
+  }
 
   // ── CLINICAL NOTES ──
   async getClinicalNotes(

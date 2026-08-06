@@ -31,8 +31,18 @@ class ServiceCatalog extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, name, description, category, deliveryType, defaultSlaId,
-        estimatedDuration, price, currency, status, createdAt, updatedAt,
+        id,
+        name,
+        description,
+        category,
+        deliveryType,
+        defaultSlaId,
+        estimatedDuration,
+        price,
+        currency,
+        status,
+        createdAt,
+        updatedAt,
       ];
 }
 
@@ -73,9 +83,21 @@ class ServiceRequest extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, subject, description, catalogId, catalogName, customerId,
-        customerName, assignedTo, priority, status, slaId, slaDeadline,
-        resolution, createdAt, updatedAt,
+        id,
+        subject,
+        description,
+        catalogId,
+        catalogName,
+        customerId,
+        customerName,
+        assignedTo,
+        priority,
+        status,
+        slaId,
+        slaDeadline,
+        resolution,
+        createdAt,
+        updatedAt,
       ];
 }
 
@@ -114,8 +136,20 @@ class ServiceContract extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, name, customerId, customerName, startDate, endDate, slaId,
-        serviceLevel, status, renewalType, price, currency, createdAt, updatedAt,
+        id,
+        name,
+        customerId,
+        customerName,
+        startDate,
+        endDate,
+        slaId,
+        serviceLevel,
+        status,
+        renewalType,
+        price,
+        currency,
+        createdAt,
+        updatedAt,
       ];
 }
 
@@ -148,7 +182,16 @@ class ServiceLevelAgreement extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, name, description, responseTime, resolutionTime,
-        availabilityTarget, priority, penaltyRules, status, createdAt, updatedAt,
+        id,
+        name,
+        description,
+        responseTime,
+        resolutionTime,
+        availabilityTarget,
+        priority,
+        penaltyRules,
+        status,
+        createdAt,
+        updatedAt,
       ];
 }

@@ -13,10 +13,12 @@ class SupplyChainRouteListPage extends ConsumerStatefulWidget {
   static const String routeName = 'supply-chain-routes';
   static const String routePath = '/supply-chain/routes';
   @override
-  ConsumerState<SupplyChainRouteListPage> createState() => _SupplyChainRouteListPageState();
+  ConsumerState<SupplyChainRouteListPage> createState() =>
+      _SupplyChainRouteListPageState();
 }
 
-class _SupplyChainRouteListPageState extends ConsumerState<SupplyChainRouteListPage> {
+class _SupplyChainRouteListPageState
+    extends ConsumerState<SupplyChainRouteListPage> {
   final TextEditingController _search = TextEditingController();
   bool? _activeFilter;
 
@@ -51,7 +53,8 @@ class _SupplyChainRouteListPageState extends ConsumerState<SupplyChainRouteListP
             initialValue: state.query.sort,
             onSelected: controller.applySort,
             itemBuilder: (_) => _sortOptions.entries
-                .map((e) => PopupMenuItem<String>(value: e.key, child: Text(e.value)))
+                .map((e) =>
+                    PopupMenuItem<String>(value: e.key, child: Text(e.value)))
                 .toList(),
           ),
         ],
@@ -64,7 +67,8 @@ class _SupplyChainRouteListPageState extends ConsumerState<SupplyChainRouteListP
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
+            padding: const EdgeInsets.fromLTRB(
+                Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
             child: TextField(
               controller: _search,
               onChanged: controller.search,
@@ -76,38 +80,46 @@ class _SupplyChainRouteListPageState extends ConsumerState<SupplyChainRouteListP
                     ? null
                     : IconButton(
                         icon: const Icon(Icons.close),
-                        onPressed: () { _search.clear(); controller.search(''); },
+                        onPressed: () {
+                          _search.clear();
+                          controller.search('');
+                        },
                       ),
               ),
             ),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: Spacing.x4),
-            child: Row(children: [
-              Text(
-                state.isLoading ? 'Loading...' : '${state.meta.total} route${state.meta.total == 1 ? '' : 's'}',
-                style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
-              ),
-              const Spacer(),
-              DropdownButton<bool?>(
-                value: _activeFilter,
-                hint: const Text('Status'),
-                underline: const SizedBox.shrink(),
-                items: const [
-                  DropdownMenuItem(value: null, child: Text('All')),
-                  DropdownMenuItem(value: true, child: Text('Active')),
-                  DropdownMenuItem(value: false, child: Text('Inactive')),
-                ],
-                onChanged: (v) {
-                  setState(() => _activeFilter = v);
-                  if (v == null) {
-                    controller.applyFilters({});
-                  } else {
-                    controller.applyFilters({'isActive': v.toString()});
-                  }
-                },
-              ),
-            ],),
+            child: Row(
+              children: [
+                Text(
+                  state.isLoading
+                      ? 'Loading...'
+                      : '${state.meta.total} route${state.meta.total == 1 ? '' : 's'}',
+                  style:
+                      TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
+                ),
+                const Spacer(),
+                DropdownButton<bool?>(
+                  value: _activeFilter,
+                  hint: const Text('Status'),
+                  underline: const SizedBox.shrink(),
+                  items: const [
+                    DropdownMenuItem(value: null, child: Text('All')),
+                    DropdownMenuItem(value: true, child: Text('Active')),
+                    DropdownMenuItem(value: false, child: Text('Inactive')),
+                  ],
+                  onChanged: (v) {
+                    setState(() => _activeFilter = v);
+                    if (v == null) {
+                      controller.applyFilters({});
+                    } else {
+                      controller.applyFilters({'isActive': v.toString()});
+                    }
+                  },
+                ),
+              ],
+            ),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -160,36 +172,57 @@ class _RouteTile extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(children: [
-                Expanded(child: Text(route.name, style: Theme.of(context).textTheme.titleSmall)),
-                UiStatusBadge(
-                  label: route.isActive ? 'Active' : 'Inactive',
-                  tone: route.isActive ? UiTone.success : UiTone.neutral,
-                ),
-              ],),
-              const SizedBox(height: Spacing.x1),
-              Row(children: [
-                Icon(Icons.trip_origin, size: TypeScale.sm, color: t.textTertiary),
-                const SizedBox(width: Spacing.x1),
-                Text(route.origin, style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs)),
-                const SizedBox(width: Spacing.x1),
-                Icon(Icons.arrow_forward, size: TypeScale.sm, color: t.textTertiary),
-                const SizedBox(width: Spacing.x1),
-                Icon(Icons.location_on, size: TypeScale.sm, color: t.textTertiary),
-                const SizedBox(width: Spacing.x1),
-                Expanded(child: Text(route.destination, style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs))),
-              ],),
-              const SizedBox(height: Spacing.x1),
-              Row(children: [
-                if (route.carrierName != null)
-                  Text(route.carrierName!, style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs)),
-                const Spacer(),
-                Text('\$${route.cost.toStringAsFixed(2)}', style: const TextStyle(fontWeight: TypeScale.semibold)),
-                if (route.transitTime != null) ...[
-                  const SizedBox(width: Spacing.x2),
-                  Text('${route.transitTime}d', style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs)),
+              Row(
+                children: [
+                  Expanded(
+                      child: Text(route.name,
+                          style: Theme.of(context).textTheme.titleSmall)),
+                  UiStatusBadge(
+                    label: route.isActive ? 'Active' : 'Inactive',
+                    tone: route.isActive ? UiTone.success : UiTone.neutral,
+                  ),
                 ],
-              ],),
+              ),
+              const SizedBox(height: Spacing.x1),
+              Row(
+                children: [
+                  Icon(Icons.trip_origin,
+                      size: TypeScale.sm, color: t.textTertiary),
+                  const SizedBox(width: Spacing.x1),
+                  Text(route.origin,
+                      style: TextStyle(
+                          color: t.textSecondary, fontSize: TypeScale.xs)),
+                  const SizedBox(width: Spacing.x1),
+                  Icon(Icons.arrow_forward,
+                      size: TypeScale.sm, color: t.textTertiary),
+                  const SizedBox(width: Spacing.x1),
+                  Icon(Icons.location_on,
+                      size: TypeScale.sm, color: t.textTertiary),
+                  const SizedBox(width: Spacing.x1),
+                  Expanded(
+                      child: Text(route.destination,
+                          style: TextStyle(
+                              color: t.textSecondary, fontSize: TypeScale.xs))),
+                ],
+              ),
+              const SizedBox(height: Spacing.x1),
+              Row(
+                children: [
+                  if (route.carrierName != null)
+                    Text(route.carrierName!,
+                        style: TextStyle(
+                            color: t.textTertiary, fontSize: TypeScale.xs)),
+                  const Spacer(),
+                  Text('\$${route.cost.toStringAsFixed(2)}',
+                      style: const TextStyle(fontWeight: TypeScale.semibold)),
+                  if (route.transitTime != null) ...[
+                    const SizedBox(width: Spacing.x2),
+                    Text('${route.transitTime}d',
+                        style: TextStyle(
+                            color: t.textTertiary, fontSize: TypeScale.xs)),
+                  ],
+                ],
+              ),
             ],
           ),
         ),

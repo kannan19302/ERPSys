@@ -55,7 +55,8 @@ class ExplodeBomUseCase extends UseCase<Bom, String> {
 
 // ── Work Order ──
 
-class ListWorkOrdersUseCase extends UseCase<Cacheable<Paginated<WorkOrder>>, ListQuery> {
+class ListWorkOrdersUseCase
+    extends UseCase<Cacheable<Paginated<WorkOrder>>, ListQuery> {
   const ListWorkOrdersUseCase(this._repository);
   final ManufacturingRepository _repository;
   @override
@@ -106,7 +107,8 @@ class CompleteWorkOrderUseCase extends UseCase<WorkOrder, String> {
   const CompleteWorkOrderUseCase(this._repository);
   final ManufacturingRepository _repository;
   @override
-  Future<Result<WorkOrder>> call(String id) => _repository.completeWorkOrder(id);
+  Future<Result<WorkOrder>> call(String id) =>
+      _repository.completeWorkOrder(id);
 }
 
 class CancelWorkOrderUseCase extends UseCase<WorkOrder, String> {
@@ -118,7 +120,8 @@ class CancelWorkOrderUseCase extends UseCase<WorkOrder, String> {
 
 // ── MRP / Production Plan ──
 
-class ListMrpRunsUseCase extends UseCase<Cacheable<Paginated<MrpRun>>, ListQuery> {
+class ListMrpRunsUseCase
+    extends UseCase<Cacheable<Paginated<MrpRun>>, ListQuery> {
   const ListMrpRunsUseCase(this._repository);
   final ManufacturingRepository _repository;
   @override
@@ -143,7 +146,8 @@ class CreateMrpRunUseCase extends UseCase<MrpRun, Map<String, dynamic>> {
 
 // ── Workstation ──
 
-class ListWorkstationsUseCase extends UseCase<Cacheable<Paginated<Workstation>>, ListQuery> {
+class ListWorkstationsUseCase
+    extends UseCase<Cacheable<Paginated<Workstation>>, ListQuery> {
   const ListWorkstationsUseCase(this._repository);
   final ManufacturingRepository _repository;
   @override
@@ -164,7 +168,8 @@ class SaveWorkstationParams {
   final Map<String, dynamic> payload;
 }
 
-class SaveWorkstationUseCase extends UseCase<Workstation, SaveWorkstationParams> {
+class SaveWorkstationUseCase
+    extends UseCase<Workstation, SaveWorkstationParams> {
   const SaveWorkstationUseCase(this._repository);
   final ManufacturingRepository _repository;
   @override
@@ -185,7 +190,8 @@ class DeleteWorkstationUseCase extends UseCase<void, String> {
 
 // ── Routing ──
 
-class ListRoutingsUseCase extends UseCase<Cacheable<Paginated<Routing>>, ListQuery> {
+class ListRoutingsUseCase
+    extends UseCase<Cacheable<Paginated<Routing>>, ListQuery> {
   const ListRoutingsUseCase(this._repository);
   final ManufacturingRepository _repository;
   @override
@@ -227,11 +233,13 @@ class DeleteRoutingUseCase extends UseCase<void, String> {
 
 // ── Quality Inspection ──
 
-class ListQualityInspectionsUseCase extends UseCase<Cacheable<Paginated<QualityInspection>>, ListQuery> {
+class ListQualityInspectionsUseCase
+    extends UseCase<Cacheable<Paginated<QualityInspection>>, ListQuery> {
   const ListQualityInspectionsUseCase(this._repository);
   final ManufacturingRepository _repository;
   @override
-  Future<Result<Cacheable<Paginated<QualityInspection>>>> call(ListQuery params) =>
+  Future<Result<Cacheable<Paginated<QualityInspection>>>> call(
+          ListQuery params) =>
       _repository.listQualityInspections(params);
 }
 
@@ -249,7 +257,8 @@ class SaveQualityInspectionParams {
   final Map<String, dynamic> payload;
 }
 
-class SaveQualityInspectionUseCase extends UseCase<QualityInspection, SaveQualityInspectionParams> {
+class SaveQualityInspectionUseCase
+    extends UseCase<QualityInspection, SaveQualityInspectionParams> {
   const SaveQualityInspectionUseCase(this._repository);
   final ManufacturingRepository _repository;
   @override
@@ -265,20 +274,24 @@ class DeleteQualityInspectionUseCase extends UseCase<void, String> {
   const DeleteQualityInspectionUseCase(this._repository);
   final ManufacturingRepository _repository;
   @override
-  Future<Result<void>> call(String id) => _repository.deleteQualityInspection(id);
+  Future<Result<void>> call(String id) =>
+      _repository.deleteQualityInspection(id);
 }
 
 // ── Engineering Change Order ──
 
-class ListEngineeringChangeOrdersUseCase extends UseCase<Cacheable<Paginated<EngineeringChangeOrder>>, ListQuery> {
+class ListEngineeringChangeOrdersUseCase
+    extends UseCase<Cacheable<Paginated<EngineeringChangeOrder>>, ListQuery> {
   const ListEngineeringChangeOrdersUseCase(this._repository);
   final ManufacturingRepository _repository;
   @override
-  Future<Result<Cacheable<Paginated<EngineeringChangeOrder>>>> call(ListQuery params) =>
+  Future<Result<Cacheable<Paginated<EngineeringChangeOrder>>>> call(
+          ListQuery params) =>
       _repository.listEngineeringChangeOrders(params);
 }
 
-class GetEngineeringChangeOrderUseCase extends UseCase<EngineeringChangeOrder, String> {
+class GetEngineeringChangeOrderUseCase
+    extends UseCase<EngineeringChangeOrder, String> {
   const GetEngineeringChangeOrderUseCase(this._repository);
   final ManufacturingRepository _repository;
   @override
@@ -292,11 +305,13 @@ class SaveEngineeringChangeOrderParams {
   final Map<String, dynamic> payload;
 }
 
-class SaveEngineeringChangeOrderUseCase extends UseCase<EngineeringChangeOrder, SaveEngineeringChangeOrderParams> {
+class SaveEngineeringChangeOrderUseCase
+    extends UseCase<EngineeringChangeOrder, SaveEngineeringChangeOrderParams> {
   const SaveEngineeringChangeOrderUseCase(this._repository);
   final ManufacturingRepository _repository;
   @override
-  Future<Result<EngineeringChangeOrder>> call(SaveEngineeringChangeOrderParams params) {
+  Future<Result<EngineeringChangeOrder>> call(
+      SaveEngineeringChangeOrderParams params) {
     final String? id = params.id;
     return id == null
         ? _repository.createEngineeringChangeOrder(params.payload)
@@ -312,7 +327,8 @@ class DeleteEngineeringChangeOrderUseCase extends UseCase<void, String> {
       _repository.deleteEngineeringChangeOrder(id);
 }
 
-class ApproveEngineeringChangeOrderUseCase extends UseCase<EngineeringChangeOrder, String> {
+class ApproveEngineeringChangeOrderUseCase
+    extends UseCase<EngineeringChangeOrder, String> {
   const ApproveEngineeringChangeOrderUseCase(this._repository);
   final ManufacturingRepository _repository;
   @override

@@ -7,13 +7,28 @@
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { readSchema } from './lib/read-schema.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const schema = readFileSync(path.join(root, 'packages', 'database', 'prisma', 'schema.prisma'), 'utf8');
+// Multi-file schema since R2, plus the IdP schema: User, UserProfile and
+// UserIdentity are the most PII-dense models in the system, and this control
+// would silently stop covering them otherwise.
+const schema = readSchema(root, { includeIdp: true });
 const registry = JSON.parse(readFileSync(path.join(root, 'scripts', 'pii-registry.json'), 'utf8'));
 
 const PII_FIELD = /^(email|phone|mobile|firstName|lastName|fullName|dateOfBirth|dob|ssn|taxId|passport|nationalId|iban|bankAccount|salary|address(Line)?\d?|street|city|zip|postalCode)$/i;
-const VALID_TREATMENTS = new Set(['erase', 'anonymize', 'retain-legal-hold']);
+// `not-personal` records a REVIEWED false positive: the field name matches the
+// PII pattern but the value describes a thing, not a person (a blockchain
+// contract address, a port's city, a building's street address). Without it the
+// only options are to misclassify such a model as personal data — which pollutes
+// erasure runs — or to leave it undeclared, which is indistinguishable from
+// "nobody has looked at this yet". A compliance control has to tell those apart.
+const VALID_TREATMENTS = new Set([
+  'erase',
+  'anonymize',
+  'retain-legal-hold',
+  'not-personal',
+]);
 
 let model = null;
 const piiModels = new Map();

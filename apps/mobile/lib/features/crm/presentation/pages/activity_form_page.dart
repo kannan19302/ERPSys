@@ -31,11 +31,17 @@ class _ActivityFormPageState extends ConsumerState<ActivityFormPage> {
   bool _saving = false;
 
   static const List<String> _types = <String>[
-    'CALL', 'EMAIL', 'MEETING', 'TASK', 'NOTE',
+    'CALL',
+    'EMAIL',
+    'MEETING',
+    'TASK',
+    'NOTE',
   ];
 
   static const List<String> _statuses = <String>[
-    'OPEN', 'COMPLETED', 'CANCELLED',
+    'OPEN',
+    'COMPLETED',
+    'CANCELLED',
   ];
 
   @override
@@ -62,9 +68,8 @@ class _ActivityFormPageState extends ConsumerState<ActivityFormPage> {
       if (_leadId != null) 'leadId': _leadId,
     };
 
-    final Result<Activity> result = await ref
-        .read(activitiesProvider.notifier)
-        .create(payload);
+    final Result<Activity> result =
+        await ref.read(activitiesProvider.notifier).create(payload);
 
     if (!context.mounted) return;
     setState(() => _saving = false);

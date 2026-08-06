@@ -13,7 +13,8 @@ class ServiceTicketListPage extends ConsumerStatefulWidget {
   static const String routeName = 'service-tickets';
   static const String routePath = '/field-service/tickets';
   @override
-  ConsumerState<ServiceTicketListPage> createState() => _ServiceTicketListPageState();
+  ConsumerState<ServiceTicketListPage> createState() =>
+      _ServiceTicketListPageState();
 }
 
 class _ServiceTicketListPageState extends ConsumerState<ServiceTicketListPage> {
@@ -48,8 +49,12 @@ class _ServiceTicketListPageState extends ConsumerState<ServiceTicketListPage> {
             initialValue: state.query.sort,
             onSelected: controller.applySort,
             itemBuilder: (_) => _sortOptions.entries
-                .map((e) => PopupMenuItem<String>(
-                    value: e.key, child: Text(e.value),),)
+                .map(
+                  (e) => PopupMenuItem<String>(
+                    value: e.key,
+                    child: Text(e.value),
+                  ),
+                )
                 .toList(),
           ),
         ],
@@ -57,7 +62,8 @@ class _ServiceTicketListPageState extends ConsumerState<ServiceTicketListPage> {
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
+            padding: const EdgeInsets.fromLTRB(
+                Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
             child: TextField(
               controller: _search,
               onChanged: controller.search,
@@ -69,21 +75,27 @@ class _ServiceTicketListPageState extends ConsumerState<ServiceTicketListPage> {
                     ? null
                     : IconButton(
                         icon: const Icon(Icons.close),
-                        onPressed: () { _search.clear(); controller.search(''); },
+                        onPressed: () {
+                          _search.clear();
+                          controller.search('');
+                        },
                       ),
               ),
             ),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: Spacing.x4),
-            child: Row(children: [
-              Text(
-                state.isLoading
-                    ? 'Loading...'
-                    : '${state.meta.total} ticket${state.meta.total == 1 ? '' : 's'}',
-                style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
-              ),
-            ],),
+            child: Row(
+              children: [
+                Text(
+                  state.isLoading
+                      ? 'Loading...'
+                      : '${state.meta.total} ticket${state.meta.total == 1 ? '' : 's'}',
+                  style:
+                      TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
+                ),
+              ],
+            ),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -91,7 +103,8 @@ class _ServiceTicketListPageState extends ConsumerState<ServiceTicketListPage> {
     );
   }
 
-  Widget _body(ServiceTicketListState state, ServiceTicketListController controller) {
+  Widget _body(
+      ServiceTicketListState state, ServiceTicketListController controller) {
     if (state.isLoading && state.items.isEmpty) return const LoadingView();
     final failure = state.failure;
     if (failure != null && state.items.isEmpty) {
@@ -113,29 +126,41 @@ class _ServiceTicketListPageState extends ConsumerState<ServiceTicketListPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(children: [
-                Expanded(
-                  child: Text(t.ticketNumber,
-                      style: Theme.of(context).textTheme.titleSmall,),
-                ),
-                UiStatusBadge(
-                  label: t.status,
-                  tone: _statusTone(t.status),
-                ),
-              ],),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      t.ticketNumber,
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
+                  ),
+                  UiStatusBadge(
+                    label: t.status,
+                    tone: _statusTone(t.status),
+                  ),
+                ],
+              ),
               const SizedBox(height: Spacing.x1),
-              Text(t.title,
-                  style: TextStyle(color: context.tokens.textSecondary, fontSize: TypeScale.sm),),
+              Text(
+                t.title,
+                style: TextStyle(
+                    color: context.tokens.textSecondary,
+                    fontSize: TypeScale.sm),
+              ),
               const SizedBox(height: Spacing.x1),
-              Row(children: [
-                Text(t.customerName ?? 'Unknown customer',
-                    style: const TextStyle(fontSize: TypeScale.xs),),
-                const Spacer(),
-                UiStatusBadge(
-                  label: t.priority,
-                  tone: _priorityTone(t.priority),
-                ),
-              ],),
+              Row(
+                children: [
+                  Text(
+                    t.customerName ?? 'Unknown customer',
+                    style: const TextStyle(fontSize: TypeScale.xs),
+                  ),
+                  const Spacer(),
+                  UiStatusBadge(
+                    label: t.priority,
+                    tone: _priorityTone(t.priority),
+                  ),
+                ],
+              ),
             ],
           ),
         ),

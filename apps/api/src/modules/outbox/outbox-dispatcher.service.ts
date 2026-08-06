@@ -7,6 +7,7 @@ import {
 import { InjectQueue } from "@nestjs/bullmq";
 import { Queue } from "bullmq";
 import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 
 const CLAIM_LIMIT = 100;
 const LEASE_SECONDS = 30;

@@ -28,10 +28,14 @@ class PipelineDetailPage extends ConsumerWidget {
       body: pipelineAsync.when(
         loading: () => const LoadingView(),
         error: (Object error, StackTrace _) => FailureView(
-          failure: error is Failure ? error : const ServerFailure('Could not load pipeline.'),
-          onRetry: () => ref.invalidate(analyticsPipelineDetailProvider(pipelineId)),
+          failure: error is Failure
+              ? error
+              : const ServerFailure('Could not load pipeline.'),
+          onRetry: () =>
+              ref.invalidate(analyticsPipelineDetailProvider(pipelineId)),
         ),
-        data: (AnalyticsPipeline pipeline) => _PipelineDetail(pipeline: pipeline),
+        data: (AnalyticsPipeline pipeline) =>
+            _PipelineDetail(pipeline: pipeline),
       ),
     );
   }
@@ -109,37 +113,47 @@ class _PipelineDetail extends StatelessWidget {
               if (pipeline.stages.isEmpty)
                 Text('No stages', style: TextStyle(color: t.textSecondary))
               else
-                ...pipeline.stages.map((PipelineStage stage) => Padding(
-                      padding: const EdgeInsets.only(bottom: Spacing.x3),
-                      child: Row(
-                        children: <Widget>[
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: <Widget>[
-                                Text(stage.name ?? 'Stage',
-                                    style: Theme.of(context).textTheme.labelLarge,),
-                                const SizedBox(height: Spacing.x1),
-                                LinearProgressIndicator(
-                                  value: stage.probability ?? 0,
-                                  backgroundColor: t.bgSunken,
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(width: Spacing.x3),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.end,
+                ...pipeline.stages.map(
+                  (PipelineStage stage) => Padding(
+                    padding: const EdgeInsets.only(bottom: Spacing.x3),
+                    child: Row(
+                      children: <Widget>[
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: <Widget>[
-                              Text(Formatters.compact(stage.value),
-                                  style: Theme.of(context).textTheme.labelLarge,),
-                              Text('${stage.count} deals',
-                                  style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),),
+                              Text(
+                                stage.name ?? 'Stage',
+                                style: Theme.of(context).textTheme.labelLarge,
+                              ),
+                              const SizedBox(height: Spacing.x1),
+                              LinearProgressIndicator(
+                                value: stage.probability ?? 0,
+                                backgroundColor: t.bgSunken,
+                              ),
                             ],
                           ),
-                        ],
-                      ),
-                    ),),
+                        ),
+                        const SizedBox(width: Spacing.x3),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: <Widget>[
+                            Text(
+                              Formatters.compact(stage.value),
+                              style: Theme.of(context).textTheme.labelLarge,
+                            ),
+                            Text(
+                              '${stage.count} deals',
+                              style: TextStyle(
+                                  color: t.textSecondary,
+                                  fontSize: TypeScale.xs),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
             ],
           ),
         ),
@@ -150,9 +164,18 @@ class _PipelineDetail extends StatelessWidget {
             children: <Widget>[
               const _SectionTitle(title: 'Details'),
               _FieldRow('Status', statusLabel),
-              _FieldRow('Total Value', Formatters.currency(pipeline.totalValue)),
-              _FieldRow('Created', pipeline.createdAt != null ? Formatters.dateTime(pipeline.createdAt!) : '—'),
-              _FieldRow('Updated', pipeline.updatedAt != null ? Formatters.dateTime(pipeline.updatedAt!) : '—'),
+              _FieldRow(
+                  'Total Value', Formatters.currency(pipeline.totalValue)),
+              _FieldRow(
+                  'Created',
+                  pipeline.createdAt != null
+                      ? Formatters.dateTime(pipeline.createdAt!)
+                      : '—'),
+              _FieldRow(
+                  'Updated',
+                  pipeline.updatedAt != null
+                      ? Formatters.dateTime(pipeline.updatedAt!)
+                      : '—'),
             ],
           ),
         ),

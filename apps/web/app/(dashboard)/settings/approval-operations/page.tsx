@@ -3,7 +3,7 @@
 import React, { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { PageHeader, Spinner } from "@unerp/ui";
-import { SubTabBar, type SubTab } from "@unerp/ui-layout";
+import { SubTabBar, type SubTab } from "@unerp/ui/layout";
 import { Activity, CheckSquare, BarChart3, ShieldAlert } from "lucide-react";
 import ActiveApprovalsTab from "./ActiveApprovalsTab";
 import BulkApprovalsTab from "./BulkApprovalsTab";

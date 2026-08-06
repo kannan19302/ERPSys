@@ -47,10 +47,26 @@ class Customer extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, name, email, phone, taxId, billingAddress, shippingAddress,
-        status, customerType, industry, website, notes, currency,
-        creditLimit, totalRevenue, totalOrders, portalAccess, tags,
-        createdAt, updatedAt,
+        id,
+        name,
+        email,
+        phone,
+        taxId,
+        billingAddress,
+        shippingAddress,
+        status,
+        customerType,
+        industry,
+        website,
+        notes,
+        currency,
+        creditLimit,
+        totalRevenue,
+        totalOrders,
+        portalAccess,
+        tags,
+        createdAt,
+        updatedAt,
       ];
 }
 
@@ -87,8 +103,19 @@ class Contact extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, customerId, firstName, lastName, email, phone, mobile,
-        position, department, isPrimary, notes, createdAt, updatedAt,
+        id,
+        customerId,
+        firstName,
+        lastName,
+        email,
+        phone,
+        mobile,
+        position,
+        department,
+        isPrimary,
+        notes,
+        createdAt,
+        updatedAt,
       ];
 }
 
@@ -131,9 +158,22 @@ class Lead extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, salutation, firstName, lastName, email, phone, company,
-        title, source, status, industry, estimatedRevenue, notes,
-        assignedTo, createdAt, updatedAt,
+        id,
+        salutation,
+        firstName,
+        lastName,
+        email,
+        phone,
+        company,
+        title,
+        source,
+        status,
+        industry,
+        estimatedRevenue,
+        notes,
+        assignedTo,
+        createdAt,
+        updatedAt,
       ];
 }
 
@@ -179,8 +219,16 @@ class Activity extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, type, subject, description, customerId, contactId,
-        leadId, status, dueDate, createdAt,
+        id,
+        type,
+        subject,
+        description,
+        customerId,
+        contactId,
+        leadId,
+        status,
+        dueDate,
+        createdAt,
       ];
 }
 
@@ -202,5 +250,6 @@ class EmailTemplate extends Equatable {
   final DateTime? createdAt;
 
   @override
-  List<Object?> get props => <Object?>[id, name, subject, body, category, createdAt];
+  List<Object?> get props =>
+      <Object?>[id, name, subject, body, category, createdAt];
 }

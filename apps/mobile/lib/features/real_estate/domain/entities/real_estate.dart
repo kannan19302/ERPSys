@@ -48,10 +48,25 @@ class Property extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, name, propertyType, address, city, state, zipCode, country,
-        totalUnits, occupiedUnits, totalArea, areaUnit, status,
-        purchasePrice, currentValue, description, amenities,
-        createdAt, updatedAt,
+        id,
+        name,
+        propertyType,
+        address,
+        city,
+        state,
+        zipCode,
+        country,
+        totalUnits,
+        occupiedUnits,
+        totalArea,
+        areaUnit,
+        status,
+        purchasePrice,
+        currentValue,
+        description,
+        amenities,
+        createdAt,
+        updatedAt,
       ];
 }
 
@@ -98,9 +113,24 @@ class Lease extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, leaseNumber, propertyId, propertyName, tenantId, tenantName,
-        unitLabel, startDate, endDate, status, monthlyRent, securityDeposit,
-        currency, paymentDay, renewalTerms, notes, createdAt, updatedAt,
+        id,
+        leaseNumber,
+        propertyId,
+        propertyName,
+        tenantId,
+        tenantName,
+        unitLabel,
+        startDate,
+        endDate,
+        status,
+        monthlyRent,
+        securityDeposit,
+        currency,
+        paymentDay,
+        renewalTerms,
+        notes,
+        createdAt,
+        updatedAt,
       ];
 }
 
@@ -139,9 +169,20 @@ class TenantDetail extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, name, email, phone, company, status, leaseCount, totalRent,
-        outstandingBalance, emergencyContact, emergencyPhone, notes,
-        createdAt, updatedAt,
+        id,
+        name,
+        email,
+        phone,
+        company,
+        status,
+        leaseCount,
+        totalRent,
+        outstandingBalance,
+        emergencyContact,
+        emergencyPhone,
+        notes,
+        createdAt,
+        updatedAt,
       ];
 }
 
@@ -184,9 +225,22 @@ class MaintenanceOrder extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, title, propertyId, propertyName, unitLabel, priority, category,
-        status, assignedTo, description, estimatedCost, actualCost,
-        scheduledDate, completedDate, createdAt, updatedAt,
+        id,
+        title,
+        propertyId,
+        propertyName,
+        unitLabel,
+        priority,
+        category,
+        status,
+        assignedTo,
+        description,
+        estimatedCost,
+        actualCost,
+        scheduledDate,
+        completedDate,
+        createdAt,
+        updatedAt,
       ];
 }
 
@@ -221,8 +275,17 @@ class PropertyValuation extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, propertyId, valuationDate, estimatedValue, assessedValue,
-        appraisedBy, valuationMethod, capRate, noi, marketComparables,
-        notes, createdAt,
+        id,
+        propertyId,
+        valuationDate,
+        estimatedValue,
+        assessedValue,
+        appraisedBy,
+        valuationMethod,
+        capRate,
+        noi,
+        marketComparables,
+        notes,
+        createdAt,
       ];
 }

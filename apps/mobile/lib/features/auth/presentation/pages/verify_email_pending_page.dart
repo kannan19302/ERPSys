@@ -25,7 +25,8 @@ class VerifyEmailPendingPage extends ConsumerStatefulWidget {
       _VerifyEmailPendingPageState();
 }
 
-class _VerifyEmailPendingPageState extends ConsumerState<VerifyEmailPendingPage> {
+class _VerifyEmailPendingPageState
+    extends ConsumerState<VerifyEmailPendingPage> {
   bool _resending = false;
   bool _resent = false;
 
@@ -64,7 +65,8 @@ class _VerifyEmailPendingPageState extends ConsumerState<VerifyEmailPendingPage>
                       borderRadius: Radii.card,
                     ),
                     alignment: Alignment.center,
-                    child: Icon(Icons.mark_email_read_outlined, color: t.primary, size: TypeScale.x2l),
+                    child: Icon(Icons.mark_email_read_outlined,
+                        color: t.primary, size: TypeScale.x2l),
                   ),
                   const SizedBox(height: Spacing.x6),
                   Text(
@@ -80,7 +82,6 @@ class _VerifyEmailPendingPageState extends ConsumerState<VerifyEmailPendingPage>
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                   const SizedBox(height: Spacing.x6),
-
                   if (devLink != null) ...<Widget>[
                     Container(
                       padding: const EdgeInsets.all(Spacing.x3),
@@ -93,19 +94,22 @@ class _VerifyEmailPendingPageState extends ConsumerState<VerifyEmailPendingPage>
                         children: <Widget>[
                           Text(
                             'Dev build only — production never returns this link.',
-                            style: TextStyle(color: t.warning, fontSize: TypeScale.xs),
+                            style: TextStyle(
+                                color: t.warning, fontSize: TypeScale.xs),
                           ),
                           const SizedBox(height: Spacing.x1),
-                          SelectableText(devLink, style: const TextStyle(fontSize: TypeScale.xs)),
+                          SelectableText(devLink,
+                              style: const TextStyle(fontSize: TypeScale.xs)),
                         ],
                       ),
                     ),
                     const SizedBox(height: Spacing.x6),
                   ],
-
                   OutlinedButton(
                     onPressed: _resending ? null : _resend,
-                    child: Text(_resent ? 'Verification link resent' : 'Resend verification email'),
+                    child: Text(_resent
+                        ? 'Verification link resent'
+                        : 'Resend verification email'),
                   ),
                   const SizedBox(height: Spacing.x4),
                   FilledButton(

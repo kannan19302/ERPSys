@@ -48,8 +48,12 @@ class _DashboardListPageState extends ConsumerState<DashboardListPage> {
             initialValue: state.query.sort,
             onSelected: controller.applySort,
             itemBuilder: (_) => _sortOptions.entries
-                .map((e) => PopupMenuItem<String>(
-                    value: e.key, child: Text(e.value),),)
+                .map(
+                  (e) => PopupMenuItem<String>(
+                    value: e.key,
+                    child: Text(e.value),
+                  ),
+                )
                 .toList(),
           ),
         ],
@@ -65,7 +69,8 @@ class _DashboardListPageState extends ConsumerState<DashboardListPage> {
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
+            padding: const EdgeInsets.fromLTRB(
+                Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
             child: TextField(
               controller: _search,
               onChanged: controller.search,
@@ -77,21 +82,27 @@ class _DashboardListPageState extends ConsumerState<DashboardListPage> {
                     ? null
                     : IconButton(
                         icon: const Icon(Icons.close),
-                        onPressed: () { _search.clear(); controller.search(''); },
+                        onPressed: () {
+                          _search.clear();
+                          controller.search('');
+                        },
                       ),
               ),
             ),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: Spacing.x4),
-            child: Row(children: [
-              Text(
-                state.isLoading
-                    ? 'Loading...'
-                    : '${state.meta.total} dashboard${state.meta.total == 1 ? '' : 's'}',
-                style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
-              ),
-            ],),
+            child: Row(
+              children: [
+                Text(
+                  state.isLoading
+                      ? 'Loading...'
+                      : '${state.meta.total} dashboard${state.meta.total == 1 ? '' : 's'}',
+                  style:
+                      TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
+                ),
+              ],
+            ),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -143,24 +154,33 @@ class _DashboardTile extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(children: [
-                Expanded(
-                  child: Text(dashboard.title,
-                      style: Theme.of(context).textTheme.titleSmall,),
-                ),
-                UiStatusBadge(
-                  label: dashboard.status,
-                  tone: _statusTone(dashboard.status),
-                ),
-              ],),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      dashboard.title,
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
+                  ),
+                  UiStatusBadge(
+                    label: dashboard.status,
+                    tone: _statusTone(dashboard.status),
+                  ),
+                ],
+              ),
               if (dashboard.description != null) ...[
                 const SizedBox(height: Spacing.x1),
-                Text(dashboard.description!,
-                    style: TextStyle(color: t.textSecondary),),
+                Text(
+                  dashboard.description!,
+                  style: TextStyle(color: t.textSecondary),
+                ),
               ],
               const SizedBox(height: Spacing.x1),
-              Text('${dashboard.widgets.length} widget${dashboard.widgets.length == 1 ? '' : 's'}',
-                  style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),),
+              Text(
+                '${dashboard.widgets.length} widget${dashboard.widgets.length == 1 ? '' : 's'}',
+                style:
+                    TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
+              ),
             ],
           ),
         ),

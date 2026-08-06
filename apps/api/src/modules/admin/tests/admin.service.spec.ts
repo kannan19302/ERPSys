@@ -1,9 +1,16 @@
+import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { AdminService } from "../admin.service";
 
 // Mock database package
 vi.mock("@unerp/database", () => {
-  return {
+  // Identity models (user, role, userSession, ...) are read through
+  // `idpPrisma`, not `prisma` — this spec predates that split and stubs
+  // them under `prisma`. Exporting the same stub object under both names
+  // keeps every `vi.mocked(prisma.user.*)` setup pointing at exactly the
+  // function the service calls.
+  const mocked = {
     prisma: {
       user: {
         findMany: vi.fn(),
@@ -45,6 +52,7 @@ vi.mock("@unerp/database", () => {
       ),
     },
   };
+  return { ...mocked, idpPrisma: mocked.prisma };
 });
 
 describe("AdminService", () => {
@@ -80,9 +88,9 @@ describe("AdminService", () => {
         },
       ];
 
-      vi.mocked(prisma.user.findMany).mockResolvedValue(
+      vi.mocked(idpPrisma.user.findMany).mockResolvedValue(
         mockUsers as unknown as Awaited<
-          ReturnType<typeof prisma.user.findMany>
+          ReturnType<typeof idpPrisma.user.findMany>
         >,
       );
 

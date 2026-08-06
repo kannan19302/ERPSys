@@ -30,7 +30,8 @@ class BomModel extends Bom {
       quantity: asDouble(json['quantity']),
       status: json['status'] as String? ?? 'ACTIVE',
       items: (json['items'] as List<dynamic>?)
-              ?.map((Object? e) => BomItemModel.fromJson(e as Map<String, dynamic>))
+              ?.map((Object? e) =>
+                  BomItemModel.fromJson(e as Map<String, dynamic>))
               .toList(growable: false) ??
           const <BomItem>[],
       wastagePercentage: asDoubleOrNull(json['wastagePercentage']),
@@ -47,7 +48,8 @@ class BomModel extends Bom {
         'type': type,
         'quantity': quantity,
         'status': status,
-        'items': items.map((BomItem e) => (e as BomItemModel).toJson()).toList(),
+        'items':
+            items.map((BomItem e) => (e as BomItemModel).toJson()).toList(),
         'wastagePercentage': wastagePercentage,
         'createdAt': createdAt?.toIso8601String(),
         'updatedAt': updatedAt?.toIso8601String(),
@@ -314,7 +316,8 @@ class RoutingModel extends Routing {
       productName: json['productName'] as String?,
       status: json['status'] as String? ?? 'ACTIVE',
       steps: (json['steps'] as List<dynamic>?)
-              ?.map((Object? e) => RoutingStepModel.fromJson(e as Map<String, dynamic>))
+              ?.map((Object? e) =>
+                  RoutingStepModel.fromJson(e as Map<String, dynamic>))
               .toList(growable: false) ??
           const <RoutingStep>[],
       totalDuration: asDouble(json['totalDuration']),
@@ -329,7 +332,9 @@ class RoutingModel extends Routing {
         'productId': productId,
         'productName': productName,
         'status': status,
-        'steps': steps.map((RoutingStep e) => (e as RoutingStepModel).toJson()).toList(),
+        'steps': steps
+            .map((RoutingStep e) => (e as RoutingStepModel).toJson())
+            .toList(),
         'totalDuration': totalDuration,
         'createdAt': createdAt?.toIso8601String(),
         'updatedAt': updatedAt?.toIso8601String(),

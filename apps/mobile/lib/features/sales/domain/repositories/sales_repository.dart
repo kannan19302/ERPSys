@@ -13,13 +13,15 @@ class Cacheable<T> {
 }
 
 abstract class SalesRepository {
-  Future<Result<Cacheable<Paginated<Quotation>>>> listQuotations(ListQuery query);
+  Future<Result<Cacheable<Paginated<Quotation>>>> listQuotations(
+      ListQuery query);
 
   Future<Result<Quotation>> getQuotation(String id);
 
   Future<Result<Quotation>> createQuotation(Map<String, dynamic> payload);
 
-  Future<Result<Quotation>> updateQuotation(String id, Map<String, dynamic> payload);
+  Future<Result<Quotation>> updateQuotation(
+      String id, Map<String, dynamic> payload);
 
   Future<Result<void>> deleteQuotation(String id);
 
@@ -29,13 +31,15 @@ abstract class SalesRepository {
 
   Future<Result<SalesOrder>> convertQuotation(String id);
 
-  Future<Result<Cacheable<Paginated<SalesOrder>>>> listSalesOrders(ListQuery query);
+  Future<Result<Cacheable<Paginated<SalesOrder>>>> listSalesOrders(
+      ListQuery query);
 
   Future<Result<SalesOrder>> getSalesOrder(String id);
 
   Future<Result<SalesOrder>> createSalesOrder(Map<String, dynamic> payload);
 
-  Future<Result<SalesOrder>> updateSalesOrder(String id, Map<String, dynamic> payload);
+  Future<Result<SalesOrder>> updateSalesOrder(
+      String id, Map<String, dynamic> payload);
 
   Future<Result<void>> deleteSalesOrder(String id);
 
@@ -49,7 +53,8 @@ abstract class SalesRepository {
 
   Future<Result<DeliveryNote>> createDeliveryNote(Map<String, dynamic> payload);
 
-  Future<Result<DeliveryNote>> updateDeliveryNote(String id, Map<String, dynamic> payload);
+  Future<Result<DeliveryNote>> updateDeliveryNote(
+      String id, Map<String, dynamic> payload);
 
   Future<Result<void>> deleteDeliveryNote(String id);
 
@@ -75,7 +80,8 @@ abstract class SalesRepository {
 
   Future<Result<Opportunity>> createOpportunity(Map<String, dynamic> payload);
 
-  Future<Result<Opportunity>> updateOpportunity(String id, Map<String, dynamic> payload);
+  Future<Result<Opportunity>> updateOpportunity(
+      String id, Map<String, dynamic> payload);
 
   Future<Result<void>> deleteOpportunity(String id);
 

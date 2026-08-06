@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 import { Test, TestingModule } from "@nestjs/testing";
 import { LocalizationGlossaryService } from "../localization-glossary.service";
 import { LocalizationContextService } from "../localization-context.service";
-import { LocalizationMtService } from "../localization-mt.service";
+import { LocalizationMachineTranslationService } from "../localization-mt.service";
 import { LocalizationMemoryService } from "../localization-memory.service";
 import { LocalizationFallbackService } from "../localization-fallback.service";
 import { LocalizationRegionValidationService } from "../localization-region-validation.service";
@@ -12,7 +12,7 @@ import { LocalizationReviewService } from "../localization-review.service";
 describe("LocalizationDeepServices", () => {
   let glossaryService: LocalizationGlossaryService;
   let contextService: LocalizationContextService;
-  let mtService: LocalizationMtService;
+  let mtService: LocalizationMachineTranslationService;
   let memoryService: LocalizationMemoryService;
   let fallbackService: LocalizationFallbackService;
   let regionValidationService: LocalizationRegionValidationService;
@@ -24,7 +24,7 @@ describe("LocalizationDeepServices", () => {
       providers: [
         LocalizationGlossaryService,
         LocalizationContextService,
-        LocalizationMtService,
+        LocalizationMachineTranslationService,
         LocalizationMemoryService,
         LocalizationFallbackService,
         LocalizationRegionValidationService,
@@ -36,7 +36,7 @@ describe("LocalizationDeepServices", () => {
       .useValue({ getGlossary: vi.fn().mockResolvedValue([]) })
       .overrideProvider(LocalizationContextService)
       .useValue({ getContexts: vi.fn().mockResolvedValue([]) })
-      .overrideProvider(LocalizationMtService)
+      .overrideProvider(LocalizationMachineTranslationService)
       .useValue({
         translate: vi.fn().mockResolvedValue({ translatedText: "hello" }),
       })
@@ -54,7 +54,7 @@ describe("LocalizationDeepServices", () => {
 
     glossaryService = module.get(LocalizationGlossaryService);
     contextService = module.get(LocalizationContextService);
-    mtService = module.get(LocalizationMtService);
+    mtService = module.get(LocalizationMachineTranslationService);
     memoryService = module.get(LocalizationMemoryService);
     fallbackService = module.get(LocalizationFallbackService);
     regionValidationService = module.get(LocalizationRegionValidationService);

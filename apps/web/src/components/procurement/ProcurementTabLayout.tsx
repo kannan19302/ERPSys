@@ -19,7 +19,7 @@ import {
   Star,
   CheckSquare,
 } from "lucide-react";
-import type { ModuleTab } from "@unerp/ui-layout";
+import type { ModuleTab } from "@unerp/ui/layout";
 
 export {
   ModuleTabLayout as ProcurementTabLayout,
@@ -27,7 +27,7 @@ export {
   type ModuleTabLayoutProps as ProcurementTabLayoutProps,
   SubTabBar,
   type SubTab,
-} from "@unerp/ui-layout";
+} from "@unerp/ui/layout";
 
 export const PROCUREMENT_TABS: ModuleTab[] = [
   {

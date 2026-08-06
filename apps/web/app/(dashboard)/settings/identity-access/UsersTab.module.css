@@ -57,7 +57,7 @@
 
 .s9 {
   width: 100%;
-  padding: 8px 12px 8px 36px;
+  padding: var(--space-2) var(--space-3) var(--space-2) var(--space-9);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   background: var(--color-bg);
@@ -67,7 +67,7 @@
 }
 
 .s10 {
-  padding: 6px 12px;
+  padding: var(--space-1-5) var(--space-3);
   border-radius: var(--radius-md);
   cursor: pointer;
   font-size: var(--text-xs);
@@ -236,7 +236,7 @@
 .s29 {
   font-size: var(--text-xs);
   color: var(--color-text-tertiary);
-  margin-bottom: 2px;
+  margin-bottom: var(--space-half);
 }
 
 .s30 {

@@ -18,7 +18,8 @@ class BankAccountListPage extends ConsumerStatefulWidget {
   static const String routePath = '/finance/bank-accounts';
 
   @override
-  ConsumerState<BankAccountListPage> createState() => _BankAccountListPageState();
+  ConsumerState<BankAccountListPage> createState() =>
+      _BankAccountListPageState();
 }
 
 class _BankAccountListPageState extends ConsumerState<BankAccountListPage> {
@@ -40,7 +41,8 @@ class _BankAccountListPageState extends ConsumerState<BankAccountListPage> {
   @override
   Widget build(BuildContext context) {
     final FinanceListState<BankAccount> state = ref.watch(bankAccountsProvider);
-    final BankAccountsController controller = ref.read(bankAccountsProvider.notifier);
+    final BankAccountsController controller =
+        ref.read(bankAccountsProvider.notifier);
     final Palette t = context.tokens;
 
     return Scaffold(
@@ -67,7 +69,10 @@ class _BankAccountListPageState extends ConsumerState<BankAccountListPage> {
         children: <Widget>[
           Padding(
             padding: const EdgeInsets.fromLTRB(
-              Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2,
+              Spacing.x4,
+              Spacing.x3,
+              Spacing.x4,
+              Spacing.x2,
             ),
             child: TextField(
               controller: _search,
@@ -111,7 +116,8 @@ class _BankAccountListPageState extends ConsumerState<BankAccountListPage> {
     );
   }
 
-  Widget _body(FinanceListState<BankAccount> state, BankAccountsController controller) {
+  Widget _body(
+      FinanceListState<BankAccount> state, BankAccountsController controller) {
     if (state.isLoading && state.items.isEmpty) {
       return const LoadingView();
     }
@@ -201,7 +207,8 @@ class _BankAccountTile extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: <Widget>[
               Text(
-                Formatters.currency(account.balance, currencyCode: account.currency),
+                Formatters.currency(account.balance,
+                    currencyCode: account.currency),
                 style: Theme.of(context).textTheme.labelLarge,
               ),
               const SizedBox(height: Spacing.x1),

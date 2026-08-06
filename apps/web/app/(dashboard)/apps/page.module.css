@@ -2,10 +2,10 @@
 .folderTile {
   border-radius: 18px;
   display: grid;
-  gap: 4px;
+  gap: var(--space-1);
   grid-template-columns: 1fr 1fr;
   height: 72px;
-  padding: 10px;
+  padding: var(--space-2-5);
   transition: all 0.15s ease;
   width: 72px;
   background: color-mix(in srgb, var(--tile-color) 9%, transparent);
@@ -69,7 +69,7 @@
   -webkit-line-clamp: 2;
   color: var(--color-text);
   display: -webkit-box;
-  font-size: 12px;
+  font-size: var(--text-xs);
   line-height: 1.2;
   max-width: 88px;
   overflow: hidden;
@@ -111,12 +111,12 @@
   width: 32px;
 }
 .modalHeaderIconGrid {
-  border-radius: 12px;
+  border-radius: var(--radius-xl);
   display: grid;
   gap: 3px;
   grid-template-columns: 1fr 1fr;
   height: 40px;
-  padding: 8px;
+  padding: var(--space-2);
   width: 40px;
 }
 .modalIconCell {
@@ -154,7 +154,7 @@
   color: var(--color-primary);
   display: inline-flex;
   font-size: var(--text-xs);
-  gap: 4px;
+  gap: var(--space-1);
   text-decoration: none;
 }
 .footerActionBtn {

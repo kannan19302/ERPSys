@@ -55,6 +55,19 @@ you are.
 
 ## Current priority
 
-**Phase 0 — foundation restoration.** Read `docs/ai/ARCHITECTURE_REVIEW.md`. The platform
-scores 5.4/10 and 100% of application source is currently `@ts-nocheck`. Foundation
-remediation (R1–R10) outranks new features until Phase 0 completes.
+**Phase 0 is ~97% done, and this section said otherwise for two days.** It read "the platform
+scores 5.4/10 and 100% of application source is currently `@ts-nocheck`" — the 2026-07-30
+assessment, still being handed to every agent as its standing instruction after the numbers it
+quotes had reached zero. Read `docs/PLATFORM_ARCHITECTURE.md` § 14 for the measured state, not
+this paragraph, and amend this paragraph when it drifts again.
+
+Where the foundation actually stands: `@ts-nocheck` 0, unguarded routes 0, `Float` money 0, RLS
+verified on 1,780 tables over a `NOBYPASSRLS` role, `pnpm verify` 15/15 with nothing skipped.
+What is genuinely still owed is presentational — 309 hardcoded colours and 2,315 hardcoded pixel
+declarations, neither of which can corrupt data or bypass authorisation — plus one reviewed raw-SQL
+exception.
+
+**So new feature work is no longer blocked by Phase 0.** Two things do still block a clean
+push, and both are recorded in § 14.2: the `Supply chain` gate is red (1 critical, `vitest`
+< 3.2.6, and 21 high), and the Flutter `Analyze` job needs `dart format`. Neither is a reason to
+suppress a check — that rule has no exceptions and none of this changes it.

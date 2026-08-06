@@ -16,8 +16,8 @@ export default function WhiteLabelTab() {
 
   const [settings, setSettings] = useState({
     appName: "UniERP",
-    primaryColor: "#10b981",
-    secondaryColor: "#3b82f6",
+    primaryColor: "var(--chart-9)",
+    secondaryColor: "var(--color-primary)",
     borderRadius: "8px",
     fontFamily: "Inter",
     enablePWA: true,

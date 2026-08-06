@@ -7,15 +7,15 @@ mechanism. Everything under `apps/mobile` is additive; nothing in
 
 ## Why it fits the existing architecture
 
-| Concern | Reused from | How |
-|---|---|---|
-| Auth | `apps/api/src/modules/auth` | Same `/auth/login`, `/auth/refresh`, MFA, tenant switch endpoints. `JwtAuthGuard` already accepts a Bearer header as a fallback to the cookie, so no guard change was needed. |
-| CSRF | `apps/api/src/common/middleware/csrf.middleware.ts` | The app carries a persistent cookie jar and replays the same double-submit `x-csrf-token` header the web client uses. |
-| Contracts | `packages/shared/src/contracts/*` | `error_envelope.dart` and `paginated.dart` are hand-maintained Dart mirrors of the frozen TS contracts — see the doc comment in each file for the source of truth. |
-| RBAC | `packages/shared/src/permissions/registry.ts` | `core/rbac/permissions.dart` reuses the same `module.resource.action` strings and the same wildcard matching rules as `hasPermission()`; the API's `RbacGuard` remains the sole enforcement point. |
-| Design system | `packages/ui-tokens/src/themes/{light,dark}.css` | `app/theme/design_tokens.dart` mirrors the CSS custom properties 1:1 so the mobile UI matches web without hardcoded colors (AGENTS.md Rule 5). |
-| Pagination | `apps/api/src/common/utils/pagination.util.ts` | Every list screen requests `page`/`limit`/`sort`/`search` and never paginates client-side (Rule 25). |
-| Database | — | Never touched directly. All access goes through the REST API, which already enforces tenant isolation via RLS. |
+| Concern       | Reused from                                         | How                                                                                                                                                                                                |
+| ------------- | --------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Auth          | `apps/api/src/modules/auth`                         | Same `/auth/login`, `/auth/refresh`, MFA, tenant switch endpoints. `JwtAuthGuard` already accepts a Bearer header as a fallback to the cookie, so no guard change was needed.                      |
+| CSRF          | `apps/api/src/common/middleware/csrf.middleware.ts` | The app carries a persistent cookie jar and replays the same double-submit `x-csrf-token` header the web client uses.                                                                              |
+| Contracts     | `packages/shared/src/contracts/*`                   | `error_envelope.dart` and `paginated.dart` are hand-maintained Dart mirrors of the frozen TS contracts — see the doc comment in each file for the source of truth.                                 |
+| RBAC          | `packages/shared/src/permissions/registry.ts`       | `core/rbac/permissions.dart` reuses the same `module.resource.action` strings and the same wildcard matching rules as `hasPermission()`; the API's `RbacGuard` remains the sole enforcement point. |
+| Design system | `packages/ui-tokens/src/themes/{light,dark}.css`    | `app/theme/design_tokens.dart` mirrors the CSS custom properties 1:1 so the mobile UI matches web without hardcoded colors (AGENTS.md Rule 5).                                                     |
+| Pagination    | `apps/api/src/common/utils/pagination.util.ts`      | Every list screen requests `page`/`limit`/`sort`/`search` and never paginates client-side (Rule 25).                                                                                               |
+| Database      | —                                                   | Never touched directly. All access goes through the REST API, which already enforces tenant isolation via RLS.                                                                                     |
 
 ## Architecture (Clean Architecture, feature-first)
 

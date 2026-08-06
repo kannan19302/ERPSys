@@ -36,7 +36,8 @@ class _DisposalFormPageState extends ConsumerState<DisposalFormPage> {
   }
 
   Future<void> _loadExisting() async {
-    final disposal = await ref.read(assetDisposalDetailProvider(widget.id!).future);
+    final disposal =
+        await ref.read(assetDisposalDetailProvider(widget.id!).future);
     if (!mounted) return;
     _assetIdController.text = disposal.assetId;
     _assetNameController.text = disposal.assetName ?? '';
@@ -76,13 +77,17 @@ class _DisposalFormPageState extends ConsumerState<DisposalFormPage> {
       'notes': _notesController.text.trim(),
       'disposalMethod': _disposalMethod,
       'status': _status,
-      if (_disposalDate != null) 'disposalDate': _disposalDate!.toIso8601String(),
+      if (_disposalDate != null)
+        'disposalDate': _disposalDate!.toIso8601String(),
     };
-    final result = await ref.read(disposalListControllerProvider.notifier).save(payload, id: widget.id);
+    final result = await ref
+        .read(disposalListControllerProvider.notifier)
+        .save(payload, id: widget.id);
     if (!mounted) return;
     setState(() => _isLoading = false);
     result.fold(
-      (f) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(f.message))),
+      (f) => ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(f.message))),
       (_) => Navigator.of(context).pop(true),
     );
   }
@@ -96,7 +101,8 @@ class _DisposalFormPageState extends ConsumerState<DisposalFormPage> {
       );
     }
     return Scaffold(
-      appBar: AppBar(title: Text(widget.id != null ? 'Edit Disposal' : 'New Disposal')),
+      appBar: AppBar(
+          title: Text(widget.id != null ? 'Edit Disposal' : 'New Disposal')),
       body: Form(
         key: _formKey,
         child: ListView(
@@ -105,7 +111,8 @@ class _DisposalFormPageState extends ConsumerState<DisposalFormPage> {
             UiTextField(
               label: 'Asset ID',
               controller: _assetIdController,
-              validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+              validator: (v) =>
+                  (v == null || v.trim().isEmpty) ? 'Required' : null,
             ),
             UiTextField(label: 'Asset Name', controller: _assetNameController),
             UiDropdownField(
@@ -127,16 +134,28 @@ class _DisposalFormPageState extends ConsumerState<DisposalFormPage> {
               selectedDate: _disposalDate,
               onChanged: (v) => setState(() => _disposalDate = v),
             ),
-            UiTextField(label: 'Proceeds from Sale', controller: _proceedsController, keyboardType: TextInputType.number),
-            UiTextField(label: 'Disposal Cost', controller: _disposalCostController, keyboardType: TextInputType.number),
-            UiTextField(label: 'Approved By', controller: _approvedByController),
-            UiTextField(label: 'Reason', controller: _reasonController, maxLines: 3),
-            UiTextField(label: 'Notes', controller: _notesController, maxLines: 3),
+            UiTextField(
+                label: 'Proceeds from Sale',
+                controller: _proceedsController,
+                keyboardType: TextInputType.number),
+            UiTextField(
+                label: 'Disposal Cost',
+                controller: _disposalCostController,
+                keyboardType: TextInputType.number),
+            UiTextField(
+                label: 'Approved By', controller: _approvedByController),
+            UiTextField(
+                label: 'Reason', controller: _reasonController, maxLines: 3),
+            UiTextField(
+                label: 'Notes', controller: _notesController, maxLines: 3),
             const SizedBox(height: 24),
             ElevatedButton(
               onPressed: _isLoading ? null : _submit,
               child: _isLoading
-                  ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2))
                   : const Text('Save'),
             ),
           ],

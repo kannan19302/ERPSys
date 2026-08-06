@@ -35,18 +35,22 @@ class _PaymentFormPageState extends ConsumerState<PaymentFormPage> {
                   children: <Widget>[
                     const UiSectionHeader(title: 'Payment Details'),
                     TextFormField(
-                      decoration: const InputDecoration(labelText: 'Invoice ID'),
-                      validator: (v) => v == null || v.isEmpty ? 'Required' : null,
+                      decoration:
+                          const InputDecoration(labelText: 'Invoice ID'),
+                      validator: (v) =>
+                          v == null || v.isEmpty ? 'Required' : null,
                     ),
                     const SizedBox(height: Spacing.x3),
                     TextFormField(
                       decoration: const InputDecoration(labelText: 'Amount'),
                       keyboardType: TextInputType.number,
-                      validator: (v) => v == null || v.isEmpty ? 'Required' : null,
+                      validator: (v) =>
+                          v == null || v.isEmpty ? 'Required' : null,
                     ),
                     const SizedBox(height: Spacing.x3),
                     TextFormField(
-                      decoration: const InputDecoration(labelText: 'Payment Method'),
+                      decoration:
+                          const InputDecoration(labelText: 'Payment Method'),
                     ),
                     const SizedBox(height: Spacing.x3),
                     TextFormField(

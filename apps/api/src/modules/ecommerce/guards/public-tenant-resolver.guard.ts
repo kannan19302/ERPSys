@@ -4,7 +4,8 @@ import {
   ExecutionContext,
   NotFoundException,
 } from "@nestjs/common";
-import { prisma } from "@unerp/database";
+import { prisma, runWithTenantSession } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 
 /**
  * PublicTenantResolverGuard — the ONE sanctioned way to resolve tenant context

@@ -65,7 +65,8 @@ class _ProductCategoryFormPageState
             TextFormField(
               controller: _nameCtrl,
               decoration: const InputDecoration(labelText: 'Name *'),
-              validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,
+              validator: (v) =>
+                  v == null || v.trim().isEmpty ? 'Required' : null,
               textInputAction: TextInputAction.next,
             ),
             const SizedBox(height: Spacing.x4),
@@ -116,9 +117,8 @@ class _ProductCategoryFormPageState
     final payload = <String, dynamic>{
       'name': _nameCtrl.text.trim(),
       'description': _descriptionCtrl.text.trim(),
-      'parentId': _parentIdCtrl.text.trim().isEmpty
-          ? null
-          : _parentIdCtrl.text.trim(),
+      'parentId':
+          _parentIdCtrl.text.trim().isEmpty ? null : _parentIdCtrl.text.trim(),
       'isActive': _isActive,
     };
 
@@ -142,9 +142,9 @@ class _ProductCategoryFormPageState
       (_) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(_isEditing
-                ? 'Category updated'
-                : 'Category created',),
+            content: Text(
+              _isEditing ? 'Category updated' : 'Category created',
+            ),
           ),
         );
         Navigator.of(context).pop();

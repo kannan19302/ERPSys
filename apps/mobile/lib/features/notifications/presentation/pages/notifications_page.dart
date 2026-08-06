@@ -93,7 +93,8 @@ class _NotificationRow extends StatelessWidget {
       title: Text(
         notification.title,
         style: TextStyle(
-          fontWeight: notification.isUnread ? TypeScale.semibold : TypeScale.normal,
+          fontWeight:
+              notification.isUnread ? TypeScale.semibold : TypeScale.normal,
         ),
       ),
       subtitle: Text(

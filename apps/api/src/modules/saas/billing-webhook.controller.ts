@@ -9,6 +9,7 @@ import {
 } from "@nestjs/common";
 import { BillingService } from "./billing.service";
 import { ApiTags, ApiOperation } from "@nestjs/swagger";
+import { Public } from "../../common/decorators/public.decorator";
 
 @ApiTags("saas-webhooks")
 @Controller("billing-webhooks")
@@ -16,6 +17,9 @@ export class BillingWebhookController {
   constructor(private readonly billingService: BillingService) {}
 
   @ApiOperation({ summary: "Stripe webhook (unauthenticated)" })
+  @Public(
+    "Payment provider webhook. Verifies the Stripe/Razorpay signature header itself; the provider cannot present a session.",
+  )
   @Post("stripe")
   @HttpCode(HttpStatus.OK)
   async stripeWebhook(
@@ -32,6 +36,9 @@ export class BillingWebhookController {
   }
 
   @ApiOperation({ summary: "Razorpay webhook (unauthenticated)" })
+  @Public(
+    "Payment provider webhook. Verifies the Stripe/Razorpay signature header itself; the provider cannot present a session.",
+  )
   @Post("razorpay")
   @HttpCode(HttpStatus.OK)
   async razorpayWebhook(

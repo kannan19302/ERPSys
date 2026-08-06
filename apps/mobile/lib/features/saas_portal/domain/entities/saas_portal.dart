@@ -41,9 +41,23 @@ class PortalBillingInfo extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, tenantId, companyName, taxId, address, city, country,
-        zipCode, email, phone, paymentMethod, last4, cardBrand,
-        expMonth, expYear, createdAt, updatedAt,
+        id,
+        tenantId,
+        companyName,
+        taxId,
+        address,
+        city,
+        country,
+        zipCode,
+        email,
+        phone,
+        paymentMethod,
+        last4,
+        cardBrand,
+        expMonth,
+        expYear,
+        createdAt,
+        updatedAt,
       ];
 }
 
@@ -70,8 +84,14 @@ class PortalPlan extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, name, description, price, billingInterval,
-        features, isPopular, createdAt,
+        id,
+        name,
+        description,
+        price,
+        billingInterval,
+        features,
+        isPopular,
+        createdAt,
       ];
 }
 
@@ -100,7 +120,14 @@ class PortalSupportTicket extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, subject, status, priority, description, category,
-        assignedTo, createdAt, updatedAt,
+        id,
+        subject,
+        status,
+        priority,
+        description,
+        category,
+        assignedTo,
+        createdAt,
+        updatedAt,
       ];
 }

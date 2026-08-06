@@ -36,22 +36,38 @@ class ContractDetailPage extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _DetailRow(label: 'Contract #', value: contract.contractNumber),
-                      _DetailRow(label: 'Customer', value: contract.customerName),
-                      _DetailRow(label: 'Service Type', value: contract.serviceType ?? '-'),
-                      _DetailRow(label: 'Start Date', value: Formatters.date(contract.startDate)),
-                      _DetailRow(label: 'End Date', value: Formatters.date(contract.endDate)),
-                      _DetailRow(label: 'Contract Value', value: Formatters.currency(contract.contractValue)),
-                      _DetailRow(label: 'Billing Cycle', value: contract.billingCycle ?? '-'),
-                      if (contract.terms != null && contract.terms!.isNotEmpty) ...[
+                      _DetailRow(
+                          label: 'Contract #', value: contract.contractNumber),
+                      _DetailRow(
+                          label: 'Customer', value: contract.customerName),
+                      _DetailRow(
+                          label: 'Service Type',
+                          value: contract.serviceType ?? '-'),
+                      _DetailRow(
+                          label: 'Start Date',
+                          value: Formatters.date(contract.startDate)),
+                      _DetailRow(
+                          label: 'End Date',
+                          value: Formatters.date(contract.endDate)),
+                      _DetailRow(
+                          label: 'Contract Value',
+                          value: Formatters.currency(contract.contractValue)),
+                      _DetailRow(
+                          label: 'Billing Cycle',
+                          value: contract.billingCycle ?? '-'),
+                      if (contract.terms != null &&
+                          contract.terms!.isNotEmpty) ...[
                         const SizedBox(height: 12),
-                        const Text('Terms', style: TextStyle(fontWeight: FontWeight.w600)),
+                        const Text('Terms',
+                            style: TextStyle(fontWeight: FontWeight.w600)),
                         const SizedBox(height: 4),
                         Text(contract.terms!),
                       ],
-                      if (contract.notes != null && contract.notes!.isNotEmpty) ...[
+                      if (contract.notes != null &&
+                          contract.notes!.isNotEmpty) ...[
                         const SizedBox(height: 12),
-                        const Text('Notes', style: TextStyle(fontWeight: FontWeight.w600)),
+                        const Text('Notes',
+                            style: TextStyle(fontWeight: FontWeight.w600)),
                         const SizedBox(height: 4),
                         Text(contract.notes!),
                       ],
@@ -88,7 +104,8 @@ class _StatusBadge extends StatelessWidget {
       ),
       child: Text(
         status,
-        style: TextStyle(color: color, fontWeight: FontWeight.w600, fontSize: 13),
+        style:
+            TextStyle(color: color, fontWeight: FontWeight.w600, fontSize: 13),
       ),
     );
   }
@@ -101,16 +118,18 @@ class _DetailRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.symmetric(vertical: 6),
-    child: Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        SizedBox(
-          width: 120,
-          child: Text(label, style: const TextStyle(color: Colors.grey, fontWeight: FontWeight.w500)),
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(
+              width: 120,
+              child: Text(label,
+                  style: const TextStyle(
+                      color: Colors.grey, fontWeight: FontWeight.w500)),
+            ),
+            Expanded(child: Text(value)),
+          ],
         ),
-        Expanded(child: Text(value)),
-      ],
-    ),
-  );
+      );
 }

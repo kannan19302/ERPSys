@@ -10,8 +10,10 @@ import '../../domain/entities/hr.dart';
 import '../providers/hr_providers.dart';
 
 class PerformanceReviewDetailPage extends ConsumerWidget {
-  const PerformanceReviewDetailPage(
-      {required this.performanceReviewId, super.key,});
+  const PerformanceReviewDetailPage({
+    required this.performanceReviewId,
+    super.key,
+  });
 
   static const String routeName = 'performance-review-detail';
   static const String routePath = '/hr/performance-reviews/:id';
@@ -27,8 +29,7 @@ class PerformanceReviewDetailPage extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('Performance Review'),
         actions: <Widget>[
-          if (asyncPr.valueOrNull?.status ==
-              PerformanceReviewStatus.draft)
+          if (asyncPr.valueOrNull?.status == PerformanceReviewStatus.draft)
             IconButton(
               icon: const Icon(Icons.send_outlined),
               tooltip: 'Submit',

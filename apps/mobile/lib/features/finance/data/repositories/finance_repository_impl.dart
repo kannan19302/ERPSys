@@ -34,7 +34,7 @@ class FinanceRepositoryImpl implements FinanceRepository {
       final Paginated<InvoiceModel> page = await _remote.listInvoices(query);
 
       await _cache.write(
-        _tenantId, _invoicesNamespace, query.cacheKey, <String, Object?>{
+          _tenantId, _invoicesNamespace, query.cacheKey, <String, Object?>{
         'data': page.data.map((InvoiceModel p) => p.toJson()).toList(),
         'meta': page.meta.toJson(),
       });
@@ -149,7 +149,7 @@ class FinanceRepositoryImpl implements FinanceRepository {
       final Paginated<PaymentModel> page = await _remote.listPayments(query);
 
       await _cache.write(
-        _tenantId, _paymentsNamespace, query.cacheKey, <String, Object?>{
+          _tenantId, _paymentsNamespace, query.cacheKey, <String, Object?>{
         'data': page.data.map((PaymentModel p) => p.toJson()).toList(),
         'meta': page.meta.toJson(),
       });
@@ -212,7 +212,8 @@ class FinanceRepositoryImpl implements FinanceRepository {
   @override
   Future<Result<Paginated<CreditNote>>> listCreditNotes(ListQuery query) async {
     try {
-      final Paginated<CreditNoteModel> page = await _remote.listCreditNotes(query);
+      final Paginated<CreditNoteModel> page =
+          await _remote.listCreditNotes(query);
       return Result<Paginated<CreditNote>>.ok(
         Paginated<CreditNote>(data: page.data, meta: page.meta),
       );
@@ -328,7 +329,8 @@ class FinanceRepositoryImpl implements FinanceRepository {
   @override
   Future<Result<Paginated<TaxFiling>>> listTaxFilings(ListQuery query) async {
     try {
-      final Paginated<TaxFilingModel> page = await _remote.listTaxFilings(query);
+      final Paginated<TaxFilingModel> page =
+          await _remote.listTaxFilings(query);
       return Result<Paginated<TaxFiling>>.ok(
         Paginated<TaxFiling>(data: page.data, meta: page.meta),
       );
@@ -347,7 +349,8 @@ class FinanceRepositoryImpl implements FinanceRepository {
   }
 
   @override
-  Future<Result<TaxFiling>> createTaxFiling(Map<String, dynamic> payload) async {
+  Future<Result<TaxFiling>> createTaxFiling(
+      Map<String, dynamic> payload) async {
     try {
       return Result<TaxFiling>.ok(await _remote.createTaxFiling(payload));
     } on Object catch (error) {
@@ -583,8 +586,7 @@ class FinanceRepositoryImpl implements FinanceRepository {
     Map<String, dynamic> payload,
   ) async {
     try {
-      final BankAccount updated =
-          await _remote.updateBankAccount(id, payload);
+      final BankAccount updated = await _remote.updateBankAccount(id, payload);
       await _cache.clearTenant(_tenantId);
       return Result<BankAccount>.ok(updated);
     } on Object catch (error) {
@@ -649,5 +651,4 @@ class FinanceRepositoryImpl implements FinanceRepository {
       return Result<Map<String, dynamic>>.err(mapExceptionToFailure(error));
     }
   }
-
 }

@@ -36,8 +36,11 @@ class JournalEntryDetailPage extends ConsumerWidget {
       body: entryAsync.when(
         loading: () => const LoadingView(),
         error: (Object error, StackTrace _) => FailureView(
-          failure: error is Failure ? error : const ServerFailure('Could not load journal entry.'),
-          onRetry: () => ref.invalidate(journalEntryDetailProvider(journalEntryId)),
+          failure: error is Failure
+              ? error
+              : const ServerFailure('Could not load journal entry.'),
+          onRetry: () =>
+              ref.invalidate(journalEntryDetailProvider(journalEntryId)),
         ),
         data: (JournalEntry entry) => _JournalEntryDetail(entry: entry),
       ),
@@ -64,9 +67,8 @@ class JournalEntryDetailPage extends ConsumerWidget {
     );
     if (confirmed != true || !context.mounted) return;
 
-    final result = await ref
-        .read(journalEntriesProvider.notifier)
-        .delete(journalEntryId);
+    final result =
+        await ref.read(journalEntriesProvider.notifier).delete(journalEntryId);
 
     if (!context.mounted) return;
     result.fold(
@@ -112,7 +114,8 @@ class _JournalEntryDetail extends StatelessWidget {
               ),
               const SizedBox(height: Spacing.x2),
               if (entry.description != null)
-                Text(entry.description!, style: TextStyle(color: t.textSecondary)),
+                Text(entry.description!,
+                    style: TextStyle(color: t.textSecondary)),
               const SizedBox(height: Spacing.x1),
               Text(
                 Formatters.date(entry.date),
@@ -131,8 +134,12 @@ class _JournalEntryDetail extends StatelessWidget {
 //                 style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs),
                 children: <Widget>[
                   Expanded(flex: 3, child: Text('Account')),
-                  Expanded(flex: 2, child: Text('Debit', textAlign: TextAlign.right)),
-                  Expanded(flex: 2, child: Text('Credit', textAlign: TextAlign.right)),
+                  Expanded(
+                      flex: 2,
+                      child: Text('Debit', textAlign: TextAlign.right)),
+                  Expanded(
+                      flex: 2,
+                      child: Text('Credit', textAlign: TextAlign.right)),
                 ],
               ),
               const Divider(),
@@ -184,9 +191,12 @@ class _LineItemRow extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                Text(item.accountName ?? item.accountId, style: Theme.of(context).textTheme.labelLarge),
+                Text(item.accountName ?? item.accountId,
+                    style: Theme.of(context).textTheme.labelLarge),
                 if (item.description != null && item.description!.isNotEmpty)
-                  Text(item.description!, style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs)),
+                  Text(item.description!,
+                      style: TextStyle(
+                          color: t.textTertiary, fontSize: TypeScale.xs)),
               ],
             ),
           ),
@@ -248,9 +258,8 @@ class _PostButton extends ConsumerWidget {
     );
     if (confirmed != true || !context.mounted) return;
 
-    final result = await ref
-        .read(journalEntriesProvider.notifier)
-        .post(entryId);
+    final result =
+        await ref.read(journalEntriesProvider.notifier).post(entryId);
 
     if (!context.mounted) return;
     result.fold(
@@ -293,7 +302,8 @@ class _FieldRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: Spacing.x1_5),
       child: Row(
         children: <Widget>[
-          Expanded(child: Text(label, style: TextStyle(color: t.textSecondary))),
+          Expanded(
+              child: Text(label, style: TextStyle(color: t.textSecondary))),
           Text(value, style: Theme.of(context).textTheme.labelLarge),
         ],
       ),

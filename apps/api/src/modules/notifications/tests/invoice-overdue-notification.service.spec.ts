@@ -1,3 +1,5 @@
+import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { EventEmitter2 } from "@nestjs/event-emitter";
 import { InvoiceOverdueNotificationService } from "../invoice-overdue-notification.service";
@@ -9,14 +11,22 @@ import { InvoiceOverdueNotificationService } from "../invoice-overdue-notificati
  * them, tenant-scoped, without leaking across tenants or notifying unrelated roles.
  */
 
-vi.mock("@unerp/database", () => ({
-  prisma: {
-    invoice: { findFirst: vi.fn() },
-    dunningLevel: { findFirst: vi.fn() },
-    role: { findMany: vi.fn() },
-    userRole: { findMany: vi.fn() },
-  },
-}));
+vi.mock("@unerp/database", () => {
+  // Identity models (user, role, userSession, ...) are read through
+  // `idpPrisma`, not `prisma` — this spec predates that split and stubs
+  // them under `prisma`. Exporting the same stub object under both names
+  // keeps every `vi.mocked(prisma.user.*)` setup pointing at exactly the
+  // function the service calls.
+  const mocked = {
+    prisma: {
+      invoice: { findFirst: vi.fn() },
+      dunningLevel: { findFirst: vi.fn() },
+      role: { findMany: vi.fn() },
+      userRole: { findMany: vi.fn() },
+    },
+  };
+  return { ...mocked, idpPrisma: mocked.prisma };
+});
 
 describe("InvoiceOverdueNotificationService — finance.invoice.overdue consumer", () => {
   let service: InvoiceOverdueNotificationService;
@@ -38,11 +48,11 @@ describe("InvoiceOverdueNotificationService — finance.invoice.overdue consumer
     vi.mocked(prisma.dunningLevel.findFirst).mockResolvedValue({
       levelName: "Level 2",
     } as never);
-    vi.mocked(prisma.role.findMany).mockResolvedValue([
+    vi.mocked(idpPrisma.role.findMany).mockResolvedValue([
       { id: "role-finance", permissions: ["finance.invoice.update"] },
       { id: "role-sales", permissions: ["sales.order.read"] },
     ] as never);
-    vi.mocked(prisma.userRole.findMany).mockResolvedValue([
+    vi.mocked(idpPrisma.userRole.findMany).mockResolvedValue([
       { userId: "user-ar-1" },
       { userId: "user-ar-2" },
     ] as never);
@@ -56,7 +66,7 @@ describe("InvoiceOverdueNotificationService — finance.invoice.overdue consumer
       feeApplied: 25,
     });
 
-    expect(prisma.userRole.findMany).toHaveBeenCalledWith(
+    expect(idpPrisma.userRole.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: expect.objectContaining({
           roleId: { in: ["role-finance"] },
@@ -85,7 +95,7 @@ describe("InvoiceOverdueNotificationService — finance.invoice.overdue consumer
       customer: { name: "Beta Inc" },
     } as never);
     vi.mocked(prisma.dunningLevel.findFirst).mockResolvedValue(null as never);
-    vi.mocked(prisma.role.findMany).mockResolvedValue([
+    vi.mocked(idpPrisma.role.findMany).mockResolvedValue([
       { id: "role-sales", permissions: ["sales.order.read"] },
     ] as never);
 
@@ -98,7 +108,7 @@ describe("InvoiceOverdueNotificationService — finance.invoice.overdue consumer
       feeApplied: 0,
     });
 
-    expect(prisma.userRole.findMany).not.toHaveBeenCalled();
+    expect(idpPrisma.userRole.findMany).not.toHaveBeenCalled();
     expect(emitter.emit).not.toHaveBeenCalled();
   });
 
@@ -115,7 +125,7 @@ describe("InvoiceOverdueNotificationService — finance.invoice.overdue consumer
       feeApplied: 0,
     });
 
-    expect(prisma.role.findMany).not.toHaveBeenCalled();
+    expect(idpPrisma.role.findMany).not.toHaveBeenCalled();
     expect(emitter.emit).not.toHaveBeenCalled();
   });
 

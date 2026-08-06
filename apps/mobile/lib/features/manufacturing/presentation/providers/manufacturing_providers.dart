@@ -12,7 +12,8 @@ import '../../domain/entities/manufacturing.dart';
 import '../../domain/repositories/manufacturing_repository.dart';
 import '../../domain/usecases/manufacturing_usecases.dart';
 
-final Provider<ManufacturingRemoteDataSource> manufacturingRemoteDataSourceProvider =
+final Provider<ManufacturingRemoteDataSource>
+    manufacturingRemoteDataSourceProvider =
     Provider<ManufacturingRemoteDataSource>(
   (Ref ref) => ManufacturingRemoteDataSourceImpl(ref.watch(apiClientProvider)),
 );
@@ -31,7 +32,8 @@ final Provider<ManufacturingRepository> manufacturingRepositoryProvider =
 class WorkOrderListState extends Equatable {
   const WorkOrderListState({
     this.items = const <WorkOrder>[],
-    this.meta = const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
+    this.meta =
+        const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
     this.query = const ListQuery(sort: '-createdAt'),
     this.isLoading = true,
     this.isLoadingMore = false,
@@ -68,13 +70,21 @@ class WorkOrderListState extends Equatable {
         isLoading: isLoading ?? this.isLoading,
         isLoadingMore: isLoadingMore ?? this.isLoadingMore,
         failure: clearFailures ? null : (failure ?? this.failure),
-        loadMoreFailure: clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
+        loadMoreFailure:
+            clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
         cachedAt: clearCachedAt ? null : (cachedAt ?? this.cachedAt),
       );
 
   @override
   List<Object?> get props => <Object?>[
-        items, meta, query.cacheKey, isLoading, isLoadingMore, failure, loadMoreFailure, cachedAt,
+        items,
+        meta,
+        query.cacheKey,
+        isLoading,
+        isLoadingMore,
+        failure,
+        loadMoreFailure,
+        cachedAt,
       ];
 }
 
@@ -105,8 +115,12 @@ class WorkOrderListController extends Notifier<WorkOrderListState> {
     state = result.fold(
       (f) => state.copyWith(isLoading: false, failure: f, items: const []),
       (page) => state.copyWith(
-        items: page.value.data, meta: page.value.meta, query: query,
-        isLoading: false, clearFailures: true, cachedAt: page.cachedAt,
+        items: page.value.data,
+        meta: page.value.meta,
+        query: query,
+        isLoading: false,
+        clearFailures: true,
+        cachedAt: page.cachedAt,
         clearCachedAt: !page.isFromCache,
       ),
     );
@@ -120,8 +134,11 @@ class WorkOrderListController extends Notifier<WorkOrderListState> {
     state = result.fold(
       (f) => state.copyWith(isLoadingMore: false, loadMoreFailure: f),
       (page) => state.copyWith(
-        items: [...state.items, ...page.value.data], meta: page.value.meta,
-        query: next, isLoadingMore: false, clearFailures: true,
+        items: [...state.items, ...page.value.data],
+        meta: page.value.meta,
+        query: next,
+        isLoadingMore: false,
+        clearFailures: true,
       ),
     );
   }
@@ -129,7 +146,8 @@ class WorkOrderListController extends Notifier<WorkOrderListState> {
   void search(String term) {
     _searchDebounce?.cancel();
     _searchDebounce = Timer(const Duration(milliseconds: 350), () {
-      state = state.copyWith(query: state.query.copyWith(search: term, page: 1));
+      state =
+          state.copyWith(query: state.query.copyWith(search: term, page: 1));
       refresh();
     });
   }
@@ -141,21 +159,27 @@ class WorkOrderListController extends Notifier<WorkOrderListState> {
 
   Future<Result<void>> delete(String id) async {
     final result = await DeleteWorkOrderUseCase(
-      ref.read(manufacturingRepositoryProvider),)(id);
+      ref.read(manufacturingRepositoryProvider),
+    )(id);
     if (result.isOk) await refresh();
     return result;
   }
 
   Future<Result<void>> save(Map<String, dynamic> payload, {String? id}) async {
     final result = await SaveWorkOrderUseCase(
-      ref.read(manufacturingRepositoryProvider),)(SaveWorkOrderParams(payload: payload, id: id));
+      ref.read(manufacturingRepositoryProvider),
+    )(SaveWorkOrderParams(payload: payload, id: id));
     if (result.isOk) await refresh();
-    return result.fold((f) => Result<void>.err(f), (_) => const Result<void>.ok(null));
+    return result.fold(
+        (f) => Result<void>.err(f), (_) => const Result<void>.ok(null));
   }
-} FutureProviderFamily<WorkOrder, String> workOrderDetailProvider =
+}
+
+FutureProviderFamily<WorkOrder, String> workOrderDetailProvider =
     FutureProvider.family<WorkOrder, String>((Ref ref, String id) async {
   final result = await GetWorkOrderUseCase(
-    ref.watch(manufacturingRepositoryProvider),)(id);
+    ref.watch(manufacturingRepositoryProvider),
+  )(id);
   return result.fold((f) => throw f, (v) => v);
 });
 
@@ -164,7 +188,8 @@ class WorkOrderListController extends Notifier<WorkOrderListState> {
 class BomListState extends Equatable {
   const BomListState({
     this.items = const <Bom>[],
-    this.meta = const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
+    this.meta =
+        const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
     this.query = const ListQuery(sort: '-createdAt'),
     this.isLoading = true,
     this.isLoadingMore = false,
@@ -201,13 +226,21 @@ class BomListState extends Equatable {
         isLoading: isLoading ?? this.isLoading,
         isLoadingMore: isLoadingMore ?? this.isLoadingMore,
         failure: clearFailures ? null : (failure ?? this.failure),
-        loadMoreFailure: clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
+        loadMoreFailure:
+            clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
         cachedAt: clearCachedAt ? null : (cachedAt ?? this.cachedAt),
       );
 
   @override
   List<Object?> get props => <Object?>[
-        items, meta, query.cacheKey, isLoading, isLoadingMore, failure, loadMoreFailure, cachedAt,
+        items,
+        meta,
+        query.cacheKey,
+        isLoading,
+        isLoadingMore,
+        failure,
+        loadMoreFailure,
+        cachedAt,
       ];
 }
 
@@ -238,8 +271,12 @@ class BomListController extends Notifier<BomListState> {
     state = result.fold(
       (f) => state.copyWith(isLoading: false, failure: f, items: const []),
       (page) => state.copyWith(
-        items: page.value.data, meta: page.value.meta, query: query,
-        isLoading: false, clearFailures: true, cachedAt: page.cachedAt,
+        items: page.value.data,
+        meta: page.value.meta,
+        query: query,
+        isLoading: false,
+        clearFailures: true,
+        cachedAt: page.cachedAt,
         clearCachedAt: !page.isFromCache,
       ),
     );
@@ -253,8 +290,11 @@ class BomListController extends Notifier<BomListState> {
     state = result.fold(
       (f) => state.copyWith(isLoadingMore: false, loadMoreFailure: f),
       (page) => state.copyWith(
-        items: [...state.items, ...page.value.data], meta: page.value.meta,
-        query: next, isLoadingMore: false, clearFailures: true,
+        items: [...state.items, ...page.value.data],
+        meta: page.value.meta,
+        query: next,
+        isLoadingMore: false,
+        clearFailures: true,
       ),
     );
   }
@@ -262,7 +302,8 @@ class BomListController extends Notifier<BomListState> {
   void search(String term) {
     _searchDebounce?.cancel();
     _searchDebounce = Timer(const Duration(milliseconds: 350), () {
-      state = state.copyWith(query: state.query.copyWith(search: term, page: 1));
+      state =
+          state.copyWith(query: state.query.copyWith(search: term, page: 1));
       refresh();
     });
   }
@@ -274,23 +315,27 @@ class BomListController extends Notifier<BomListState> {
 
   Future<Result<void>> delete(String id) async {
     final result = await DeleteBomUseCase(
-      ref.read(manufacturingRepositoryProvider),)(id);
+      ref.read(manufacturingRepositoryProvider),
+    )(id);
     if (result.isOk) await refresh();
     return result;
   }
 
   Future<Result<void>> save(Map<String, dynamic> payload, {String? id}) async {
     final result = await SaveBomUseCase(
-      ref.read(manufacturingRepositoryProvider),)(SaveBomParams(payload: payload, id: id));
+      ref.read(manufacturingRepositoryProvider),
+    )(SaveBomParams(payload: payload, id: id));
     if (result.isOk) await refresh();
-    return result.fold((f) => Result<void>.err(f), (_) => const Result<void>.ok(null));
+    return result.fold(
+        (f) => Result<void>.err(f), (_) => const Result<void>.ok(null));
   }
 }
 
 final FutureProviderFamily<Bom, String> bomDetailProvider =
     FutureProvider.family<Bom, String>((Ref ref, String id) async {
   final result = await GetBomUseCase(
-    ref.watch(manufacturingRepositoryProvider),)(id);
+    ref.watch(manufacturingRepositoryProvider),
+  )(id);
   return result.fold((f) => throw f, (v) => v);
 });
 
@@ -299,7 +344,8 @@ final FutureProviderFamily<Bom, String> bomDetailProvider =
 class MrpRunListState extends Equatable {
   const MrpRunListState({
     this.items = const <MrpRun>[],
-    this.meta = const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
+    this.meta =
+        const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
     this.query = const ListQuery(sort: '-createdAt'),
     this.isLoading = true,
     this.isLoadingMore = false,
@@ -336,13 +382,21 @@ class MrpRunListState extends Equatable {
         isLoading: isLoading ?? this.isLoading,
         isLoadingMore: isLoadingMore ?? this.isLoadingMore,
         failure: clearFailures ? null : (failure ?? this.failure),
-        loadMoreFailure: clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
+        loadMoreFailure:
+            clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
         cachedAt: clearCachedAt ? null : (cachedAt ?? this.cachedAt),
       );
 
   @override
   List<Object?> get props => <Object?>[
-        items, meta, query.cacheKey, isLoading, isLoadingMore, failure, loadMoreFailure, cachedAt,
+        items,
+        meta,
+        query.cacheKey,
+        isLoading,
+        isLoadingMore,
+        failure,
+        loadMoreFailure,
+        cachedAt,
       ];
 }
 
@@ -370,8 +424,12 @@ class MrpRunListController extends Notifier<MrpRunListState> {
     state = result.fold(
       (f) => state.copyWith(isLoading: false, failure: f, items: const []),
       (page) => state.copyWith(
-        items: page.value.data, meta: page.value.meta, query: query,
-        isLoading: false, clearFailures: true, cachedAt: page.cachedAt,
+        items: page.value.data,
+        meta: page.value.meta,
+        query: query,
+        isLoading: false,
+        clearFailures: true,
+        cachedAt: page.cachedAt,
         clearCachedAt: !page.isFromCache,
       ),
     );
@@ -385,24 +443,30 @@ class MrpRunListController extends Notifier<MrpRunListState> {
     state = result.fold(
       (f) => state.copyWith(isLoadingMore: false, loadMoreFailure: f),
       (page) => state.copyWith(
-        items: [...state.items, ...page.value.data], meta: page.value.meta,
-        query: next, isLoadingMore: false, clearFailures: true,
+        items: [...state.items, ...page.value.data],
+        meta: page.value.meta,
+        query: next,
+        isLoadingMore: false,
+        clearFailures: true,
       ),
     );
   }
 
   Future<Result<void>> save(Map<String, dynamic> payload) async {
     final result = await CreateMrpRunUseCase(
-      ref.read(manufacturingRepositoryProvider),)(payload);
+      ref.read(manufacturingRepositoryProvider),
+    )(payload);
     if (result.isOk) await refresh();
-    return result.fold((f) => Result<void>.err(f), (_) => const Result<void>.ok(null));
+    return result.fold(
+        (f) => Result<void>.err(f), (_) => const Result<void>.ok(null));
   }
 }
 
 final FutureProviderFamily<MrpRun, String> mrpRunDetailProvider =
     FutureProvider.family<MrpRun, String>((Ref ref, String id) async {
   final result = await GetMrpRunUseCase(
-    ref.watch(manufacturingRepositoryProvider),)(id);
+    ref.watch(manufacturingRepositoryProvider),
+  )(id);
   return result.fold((f) => throw f, (v) => v);
 });
 
@@ -411,7 +475,8 @@ final FutureProviderFamily<MrpRun, String> mrpRunDetailProvider =
 class WorkstationListState extends Equatable {
   const WorkstationListState({
     this.items = const <Workstation>[],
-    this.meta = const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
+    this.meta =
+        const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
     this.query = const ListQuery(sort: 'name'),
     this.isLoading = true,
     this.isLoadingMore = false,
@@ -444,12 +509,19 @@ class WorkstationListState extends Equatable {
         isLoading: isLoading ?? this.isLoading,
         isLoadingMore: isLoadingMore ?? this.isLoadingMore,
         failure: clearFailures ? null : (failure ?? this.failure),
-        loadMoreFailure: clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
+        loadMoreFailure:
+            clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
       );
 
   @override
   List<Object?> get props => <Object?>[
-        items, meta, query.cacheKey, isLoading, isLoadingMore, failure, loadMoreFailure,
+        items,
+        meta,
+        query.cacheKey,
+        isLoading,
+        isLoadingMore,
+        failure,
+        loadMoreFailure,
       ];
 }
 
@@ -477,8 +549,11 @@ class WorkstationListController extends Notifier<WorkstationListState> {
     state = result.fold(
       (f) => state.copyWith(isLoading: false, failure: f, items: const []),
       (page) => state.copyWith(
-        items: page.value.data, meta: page.value.meta, query: query,
-        isLoading: false, clearFailures: true,
+        items: page.value.data,
+        meta: page.value.meta,
+        query: query,
+        isLoading: false,
+        clearFailures: true,
       ),
     );
   }
@@ -491,8 +566,11 @@ class WorkstationListController extends Notifier<WorkstationListState> {
     state = result.fold(
       (f) => state.copyWith(isLoadingMore: false, loadMoreFailure: f),
       (page) => state.copyWith(
-        items: [...state.items, ...page.value.data], meta: page.value.meta,
-        query: next, isLoadingMore: false, clearFailures: true,
+        items: [...state.items, ...page.value.data],
+        meta: page.value.meta,
+        query: next,
+        isLoadingMore: false,
+        clearFailures: true,
       ),
     );
   }
@@ -501,7 +579,8 @@ class WorkstationListController extends Notifier<WorkstationListState> {
 final FutureProviderFamily<Workstation, String> workstationDetailProvider =
     FutureProvider.family<Workstation, String>((Ref ref, String id) async {
   final result = await GetWorkstationUseCase(
-    ref.watch(manufacturingRepositoryProvider),)(id);
+    ref.watch(manufacturingRepositoryProvider),
+  )(id);
   return result.fold((f) => throw f, (v) => v);
 });
 
@@ -510,7 +589,8 @@ final FutureProviderFamily<Workstation, String> workstationDetailProvider =
 class QualityInspectionListState extends Equatable {
   const QualityInspectionListState({
     this.items = const <QualityInspection>[],
-    this.meta = const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
+    this.meta =
+        const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
     this.query = const ListQuery(sort: '-createdAt'),
     this.isLoading = true,
     this.isLoadingMore = false,
@@ -543,22 +623,31 @@ class QualityInspectionListState extends Equatable {
         isLoading: isLoading ?? this.isLoading,
         isLoadingMore: isLoadingMore ?? this.isLoadingMore,
         failure: clearFailures ? null : (failure ?? this.failure),
-        loadMoreFailure: clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
+        loadMoreFailure:
+            clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
       );
 
   @override
   List<Object?> get props => <Object?>[
-        items, meta, query.cacheKey, isLoading, isLoadingMore, failure, loadMoreFailure,
+        items,
+        meta,
+        query.cacheKey,
+        isLoading,
+        isLoadingMore,
+        failure,
+        loadMoreFailure,
       ];
 }
 
-final NotifierProvider<QualityInspectionListController, QualityInspectionListState>
-    qualityInspectionListControllerProvider =
-    NotifierProvider<QualityInspectionListController, QualityInspectionListState>(
+final NotifierProvider<QualityInspectionListController,
+        QualityInspectionListState> qualityInspectionListControllerProvider =
+    NotifierProvider<QualityInspectionListController,
+        QualityInspectionListState>(
   QualityInspectionListController.new,
 );
 
-class QualityInspectionListController extends Notifier<QualityInspectionListState> {
+class QualityInspectionListController
+    extends Notifier<QualityInspectionListState> {
   @override
   QualityInspectionListState build() {
     ref.watch(activeTenantIdProvider);
@@ -576,8 +665,11 @@ class QualityInspectionListController extends Notifier<QualityInspectionListStat
     state = result.fold(
       (f) => state.copyWith(isLoading: false, failure: f, items: const []),
       (page) => state.copyWith(
-        items: page.value.data, meta: page.value.meta, query: query,
-        isLoading: false, clearFailures: true,
+        items: page.value.data,
+        meta: page.value.meta,
+        query: query,
+        isLoading: false,
+        clearFailures: true,
       ),
     );
   }
@@ -590,24 +682,32 @@ class QualityInspectionListController extends Notifier<QualityInspectionListStat
     state = result.fold(
       (f) => state.copyWith(isLoadingMore: false, loadMoreFailure: f),
       (page) => state.copyWith(
-        items: [...state.items, ...page.value.data], meta: page.value.meta,
-        query: next, isLoadingMore: false, clearFailures: true,
+        items: [...state.items, ...page.value.data],
+        meta: page.value.meta,
+        query: next,
+        isLoadingMore: false,
+        clearFailures: true,
       ),
     );
   }
 
   Future<Result<void>> save(Map<String, dynamic> payload, {String? id}) async {
     final result = await SaveQualityInspectionUseCase(
-      ref.read(manufacturingRepositoryProvider),)(SaveQualityInspectionParams(payload: payload, id: id));
+      ref.read(manufacturingRepositoryProvider),
+    )(SaveQualityInspectionParams(payload: payload, id: id));
     if (result.isOk) await refresh();
-    return result.fold((f) => Result<void>.err(f), (_) => const Result<void>.ok(null));
+    return result.fold(
+        (f) => Result<void>.err(f), (_) => const Result<void>.ok(null));
   }
 }
 
-final FutureProviderFamily<QualityInspection, String> qualityInspectionDetailProvider =
-    FutureProvider.family<QualityInspection, String>((Ref ref, String id) async {
+final FutureProviderFamily<QualityInspection, String>
+    qualityInspectionDetailProvider =
+    FutureProvider.family<QualityInspection, String>(
+        (Ref ref, String id) async {
   final result = await GetQualityInspectionUseCase(
-    ref.watch(manufacturingRepositoryProvider),)(id);
+    ref.watch(manufacturingRepositoryProvider),
+  )(id);
   return result.fold((f) => throw f, (v) => v);
 });
 
@@ -616,7 +716,8 @@ final FutureProviderFamily<QualityInspection, String> qualityInspectionDetailPro
 class RoutingListState extends Equatable {
   const RoutingListState({
     this.items = const <Routing>[],
-    this.meta = const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
+    this.meta =
+        const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
     this.query = const ListQuery(sort: '-createdAt'),
     this.isLoading = true,
     this.isLoadingMore = false,
@@ -649,12 +750,19 @@ class RoutingListState extends Equatable {
         isLoading: isLoading ?? this.isLoading,
         isLoadingMore: isLoadingMore ?? this.isLoadingMore,
         failure: clearFailures ? null : (failure ?? this.failure),
-        loadMoreFailure: clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
+        loadMoreFailure:
+            clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
       );
 
   @override
   List<Object?> get props => <Object?>[
-        items, meta, query.cacheKey, isLoading, isLoadingMore, failure, loadMoreFailure,
+        items,
+        meta,
+        query.cacheKey,
+        isLoading,
+        isLoadingMore,
+        failure,
+        loadMoreFailure,
       ];
 }
 
@@ -682,8 +790,11 @@ class RoutingListController extends Notifier<RoutingListState> {
     state = result.fold(
       (f) => state.copyWith(isLoading: false, failure: f, items: const []),
       (page) => state.copyWith(
-        items: page.value.data, meta: page.value.meta, query: query,
-        isLoading: false, clearFailures: true,
+        items: page.value.data,
+        meta: page.value.meta,
+        query: query,
+        isLoading: false,
+        clearFailures: true,
       ),
     );
   }
@@ -696,24 +807,30 @@ class RoutingListController extends Notifier<RoutingListState> {
     state = result.fold(
       (f) => state.copyWith(isLoadingMore: false, loadMoreFailure: f),
       (page) => state.copyWith(
-        items: [...state.items, ...page.value.data], meta: page.value.meta,
-        query: next, isLoadingMore: false, clearFailures: true,
+        items: [...state.items, ...page.value.data],
+        meta: page.value.meta,
+        query: next,
+        isLoadingMore: false,
+        clearFailures: true,
       ),
     );
   }
 
   Future<Result<void>> save(Map<String, dynamic> payload, {String? id}) async {
     final result = await SaveRoutingUseCase(
-      ref.read(manufacturingRepositoryProvider),)(SaveRoutingParams(payload: payload, id: id));
+      ref.read(manufacturingRepositoryProvider),
+    )(SaveRoutingParams(payload: payload, id: id));
     if (result.isOk) await refresh();
-    return result.fold((f) => Result<void>.err(f), (_) => const Result<void>.ok(null));
+    return result.fold(
+        (f) => Result<void>.err(f), (_) => const Result<void>.ok(null));
   }
 }
 
 final FutureProviderFamily<Routing, String> routingDetailProvider =
     FutureProvider.family<Routing, String>((Ref ref, String id) async {
   final result = await GetRoutingUseCase(
-    ref.watch(manufacturingRepositoryProvider),)(id);
+    ref.watch(manufacturingRepositoryProvider),
+  )(id);
   return result.fold((f) => throw f, (v) => v);
 });
 
@@ -722,7 +839,8 @@ final FutureProviderFamily<Routing, String> routingDetailProvider =
 class EngineeringChangeOrderListState extends Equatable {
   const EngineeringChangeOrderListState({
     this.items = const <EngineeringChangeOrder>[],
-    this.meta = const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
+    this.meta =
+        const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
     this.query = const ListQuery(sort: '-createdAt'),
     this.isLoading = true,
     this.isLoadingMore = false,
@@ -755,22 +873,31 @@ class EngineeringChangeOrderListState extends Equatable {
         isLoading: isLoading ?? this.isLoading,
         isLoadingMore: isLoadingMore ?? this.isLoadingMore,
         failure: clearFailures ? null : (failure ?? this.failure),
-        loadMoreFailure: clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
+        loadMoreFailure:
+            clearFailures ? null : (loadMoreFailure ?? this.loadMoreFailure),
       );
 
   @override
   List<Object?> get props => <Object?>[
-        items, meta, query.cacheKey, isLoading, isLoadingMore, failure, loadMoreFailure,
+        items,
+        meta,
+        query.cacheKey,
+        isLoading,
+        isLoadingMore,
+        failure,
+        loadMoreFailure,
       ];
 }
 
-final NotifierProvider<EngineeringChangeOrderListController, EngineeringChangeOrderListState>
-    engineeringChangeOrderListControllerProvider =
-    NotifierProvider<EngineeringChangeOrderListController, EngineeringChangeOrderListState>(
+final NotifierProvider<EngineeringChangeOrderListController,
+        EngineeringChangeOrderListState>
+    engineeringChangeOrderListControllerProvider = NotifierProvider<
+        EngineeringChangeOrderListController, EngineeringChangeOrderListState>(
   EngineeringChangeOrderListController.new,
 );
 
-class EngineeringChangeOrderListController extends Notifier<EngineeringChangeOrderListState> {
+class EngineeringChangeOrderListController
+    extends Notifier<EngineeringChangeOrderListState> {
   @override
   EngineeringChangeOrderListState build() {
     ref.watch(activeTenantIdProvider);
@@ -779,7 +906,8 @@ class EngineeringChangeOrderListController extends Notifier<EngineeringChangeOrd
   }
 
   ListEngineeringChangeOrdersUseCase get _listUseCase =>
-      ListEngineeringChangeOrdersUseCase(ref.read(manufacturingRepositoryProvider));
+      ListEngineeringChangeOrdersUseCase(
+          ref.read(manufacturingRepositoryProvider));
 
   Future<void> refresh() async {
     final query = state.query.copyWith(page: 1);
@@ -788,8 +916,11 @@ class EngineeringChangeOrderListController extends Notifier<EngineeringChangeOrd
     state = result.fold(
       (f) => state.copyWith(isLoading: false, failure: f, items: const []),
       (page) => state.copyWith(
-        items: page.value.data, meta: page.value.meta, query: query,
-        isLoading: false, clearFailures: true,
+        items: page.value.data,
+        meta: page.value.meta,
+        query: query,
+        isLoading: false,
+        clearFailures: true,
       ),
     );
   }
@@ -802,30 +933,40 @@ class EngineeringChangeOrderListController extends Notifier<EngineeringChangeOrd
     state = result.fold(
       (f) => state.copyWith(isLoadingMore: false, loadMoreFailure: f),
       (page) => state.copyWith(
-        items: [...state.items, ...page.value.data], meta: page.value.meta,
-        query: next, isLoadingMore: false, clearFailures: true,
+        items: [...state.items, ...page.value.data],
+        meta: page.value.meta,
+        query: next,
+        isLoadingMore: false,
+        clearFailures: true,
       ),
     );
   }
 
   Future<Result<void>> save(Map<String, dynamic> payload, {String? id}) async {
     final result = await SaveEngineeringChangeOrderUseCase(
-      ref.read(manufacturingRepositoryProvider),)(SaveEngineeringChangeOrderParams(payload: payload, id: id));
+      ref.read(manufacturingRepositoryProvider),
+    )(SaveEngineeringChangeOrderParams(payload: payload, id: id));
     if (result.isOk) await refresh();
-    return result.fold((f) => Result<void>.err(f), (_) => const Result<void>.ok(null));
+    return result.fold(
+        (f) => Result<void>.err(f), (_) => const Result<void>.ok(null));
   }
 
   Future<Result<void>> approve(String id) async {
     final result = await ApproveEngineeringChangeOrderUseCase(
-      ref.read(manufacturingRepositoryProvider),)(id);
+      ref.read(manufacturingRepositoryProvider),
+    )(id);
     if (result.isOk) await refresh();
-    return result.fold((f) => Result<void>.err(f), (_) => const Result<void>.ok(null));
+    return result.fold(
+        (f) => Result<void>.err(f), (_) => const Result<void>.ok(null));
   }
 }
 
-final FutureProviderFamily<EngineeringChangeOrder, String> engineeringChangeOrderDetailProvider =
-    FutureProvider.family<EngineeringChangeOrder, String>((Ref ref, String id) async {
+final FutureProviderFamily<EngineeringChangeOrder, String>
+    engineeringChangeOrderDetailProvider =
+    FutureProvider.family<EngineeringChangeOrder, String>(
+        (Ref ref, String id) async {
   final result = await GetEngineeringChangeOrderUseCase(
-    ref.watch(manufacturingRepositoryProvider),)(id);
+    ref.watch(manufacturingRepositoryProvider),
+  )(id);
   return result.fold((f) => throw f, (v) => v);
 });

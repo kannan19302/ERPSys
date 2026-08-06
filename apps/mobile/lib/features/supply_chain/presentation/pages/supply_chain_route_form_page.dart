@@ -12,10 +12,12 @@ class SupplyChainRouteFormPage extends ConsumerStatefulWidget {
   static const String routeEditPath = '/supply-chain/routes/:id/edit';
   final String? routeId;
   @override
-  ConsumerState<SupplyChainRouteFormPage> createState() => _SupplyChainRouteFormPageState();
+  ConsumerState<SupplyChainRouteFormPage> createState() =>
+      _SupplyChainRouteFormPageState();
 }
 
-class _SupplyChainRouteFormPageState extends ConsumerState<SupplyChainRouteFormPage> {
+class _SupplyChainRouteFormPageState
+    extends ConsumerState<SupplyChainRouteFormPage> {
   final _formKey = GlobalKey<FormState>();
   final _nameCtrl = TextEditingController();
   final _originCtrl = TextEditingController();
@@ -69,20 +71,26 @@ class _SupplyChainRouteFormPageState extends ConsumerState<SupplyChainRouteFormP
       'name': _nameCtrl.text.trim(),
       'origin': _originCtrl.text.trim(),
       'destination': _destinationCtrl.text.trim(),
-      'carrierId': _carrierIdCtrl.text.trim().isEmpty ? null : _carrierIdCtrl.text.trim(),
-      'carrierName': _carrierNameCtrl.text.trim().isEmpty ? null : _carrierNameCtrl.text.trim(),
+      'carrierId': _carrierIdCtrl.text.trim().isEmpty
+          ? null
+          : _carrierIdCtrl.text.trim(),
+      'carrierName': _carrierNameCtrl.text.trim().isEmpty
+          ? null
+          : _carrierNameCtrl.text.trim(),
       'transitTime': int.tryParse(_transitTimeCtrl.text),
       'cost': double.tryParse(_costCtrl.text) ?? 0,
       'isActive': _isActive,
     };
 
-    final result = await ref.read(routeListControllerProvider.notifier)
+    final result = await ref
+        .read(routeListControllerProvider.notifier)
         .save(payload, id: widget.routeId);
 
     if (!context.mounted) return;
     setState(() => _saving = false);
     result.fold(
-      (Failure f) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(f.message))),
+      (Failure f) => ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(f.message))),
       (_) => Navigator.of(context).pop(),
     );
   }
@@ -96,7 +104,10 @@ class _SupplyChainRouteFormPageState extends ConsumerState<SupplyChainRouteFormP
           TextButton(
             onPressed: _saving ? null : _save,
             child: _saving
-                ? const SizedBox(height: Spacing.x5, width: Spacing.x5, child: CircularProgressIndicator(strokeWidth: 2))
+                ? const SizedBox(
+                    height: Spacing.x5,
+                    width: Spacing.x5,
+                    child: CircularProgressIndicator(strokeWidth: 2))
                 : const Text('Save'),
           ),
         ],
@@ -109,26 +120,30 @@ class _SupplyChainRouteFormPageState extends ConsumerState<SupplyChainRouteFormP
             TextFormField(
               controller: _nameCtrl,
               decoration: const InputDecoration(labelText: 'Name *'),
-              validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,
+              validator: (v) =>
+                  v == null || v.trim().isEmpty ? 'Required' : null,
             ),
             const SizedBox(height: Spacing.x4),
             TextFormField(
               controller: _originCtrl,
               textCapitalization: TextCapitalization.words,
               decoration: const InputDecoration(labelText: 'Origin *'),
-              validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,
+              validator: (v) =>
+                  v == null || v.trim().isEmpty ? 'Required' : null,
             ),
             const SizedBox(height: Spacing.x4),
             TextFormField(
               controller: _destinationCtrl,
               textCapitalization: TextCapitalization.words,
               decoration: const InputDecoration(labelText: 'Destination *'),
-              validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,
+              validator: (v) =>
+                  v == null || v.trim().isEmpty ? 'Required' : null,
             ),
             const SizedBox(height: Spacing.x4),
             TextFormField(
               controller: _carrierIdCtrl,
-              decoration: const InputDecoration(labelText: 'Carrier ID', helperText: 'Internal reference'),
+              decoration: const InputDecoration(
+                  labelText: 'Carrier ID', helperText: 'Internal reference'),
             ),
             const SizedBox(height: Spacing.x4),
             TextFormField(
@@ -136,23 +151,26 @@ class _SupplyChainRouteFormPageState extends ConsumerState<SupplyChainRouteFormP
               decoration: const InputDecoration(labelText: 'Carrier Name'),
             ),
             const SizedBox(height: Spacing.x4),
-            Row(children: [
-              Expanded(
-                child: TextFormField(
-                  controller: _transitTimeCtrl,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(labelText: 'Transit Time (days)'),
+            Row(
+              children: [
+                Expanded(
+                  child: TextFormField(
+                    controller: _transitTimeCtrl,
+                    keyboardType: TextInputType.number,
+                    decoration:
+                        const InputDecoration(labelText: 'Transit Time (days)'),
+                  ),
                 ),
-              ),
-              const SizedBox(width: Spacing.x4),
-              Expanded(
-                child: TextFormField(
-                  controller: _costCtrl,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(labelText: 'Cost'),
+                const SizedBox(width: Spacing.x4),
+                Expanded(
+                  child: TextFormField(
+                    controller: _costCtrl,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(labelText: 'Cost'),
+                  ),
                 ),
-              ),
-            ],),
+              ],
+            ),
             const SizedBox(height: Spacing.x4),
             SwitchListTile(
               title: const Text('Active'),

@@ -22,8 +22,7 @@ class LeaveRequestListPage extends ConsumerStatefulWidget {
       _LeaveRequestListPageState();
 }
 
-class _LeaveRequestListPageState
-    extends ConsumerState<LeaveRequestListPage> {
+class _LeaveRequestListPageState extends ConsumerState<LeaveRequestListPage> {
   @override
   Widget build(BuildContext context) {
     final LeaveRequestListState state =
@@ -36,7 +35,8 @@ class _LeaveRequestListPageState
       appBar: AppBar(title: const Text('Leave Requests')),
       body: Column(
         children: <Widget>[
-          if (state.cachedAt != null) StaleDataBanner(cachedAt: state.cachedAt!),
+          if (state.cachedAt != null)
+            StaleDataBanner(cachedAt: state.cachedAt!),
           Padding(
             padding: const EdgeInsets.fromLTRB(
               Spacing.x4,
@@ -155,15 +155,17 @@ class _StatusFilterRow extends StatelessWidget {
         LeaveRequestStatus.approved,
         LeaveRequestStatus.rejected,
         LeaveRequestStatus.cancelled,
-      ].map(
-        (String v) => DropdownMenuItem<String>(
-          value: v,
-          child: Text(
-            v.isEmpty ? 'All statuses' : _label(v),
-            style: const TextStyle(fontSize: TypeScale.xs),
-          ),
-        ),
-      ).toList(),
+      ]
+          .map(
+            (String v) => DropdownMenuItem<String>(
+              value: v,
+              child: Text(
+                v.isEmpty ? 'All statuses' : _label(v),
+                style: const TextStyle(fontSize: TypeScale.xs),
+              ),
+            ),
+          )
+          .toList(),
       onChanged: onChanged,
     );
   }
@@ -240,8 +242,11 @@ class _LeaveRequestTile extends StatelessWidget {
           const SizedBox(height: Spacing.x3),
           Row(
             children: <Widget>[
-              Icon(Icons.date_range_outlined,
-                  size: TypeScale.base, color: t.textTertiary,),
+              Icon(
+                Icons.date_range_outlined,
+                size: TypeScale.base,
+                color: t.textTertiary,
+              ),
               const SizedBox(width: Spacing.x1),
               Text(
                 '${Formatters.date(leaveRequest.fromDate)} – ${Formatters.date(leaveRequest.toDate)}',

@@ -136,7 +136,7 @@
   right: var(--space-2);
   font-size: 9px;
   padding: 2px 5px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   border: 1px solid var(--color-border);
   color: var(--color-text-tertiary);
   font-family: var(--font-mono);
@@ -145,7 +145,7 @@
 }
 
 .searchKbdLight {
-  background: #fff;
+  background: var(--color-bg-elevated);
 }
 
 .searchKbdDark {
@@ -212,7 +212,7 @@
   background: transparent;
   border: none;
   cursor: pointer;
-  padding: 4px;
+  padding: var(--space-1);
   border-radius: var(--radius-lg);
   transition: all var(--duration-fast) var(--ease-default);
 }
@@ -250,7 +250,7 @@
   width: 9px;
   height: 9px;
   border-radius: var(--radius-full);
-  background: #10b981;
+  background: var(--color-success);
 }
 
 .statusDotLight {

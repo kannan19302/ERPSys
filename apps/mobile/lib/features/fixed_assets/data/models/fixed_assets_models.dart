@@ -55,7 +55,8 @@ class FixedAssetModel extends FixedAsset {
       currentValue: asDouble(json['currentValue']),
       salvageValue: asDouble(json['salvageValue']),
       usefulLifeYears: asInt(json['usefulLifeYears']),
-      depreciationMethod: json['depreciationMethod'] as String? ?? 'STRAIGHT_LINE',
+      depreciationMethod:
+          json['depreciationMethod'] as String? ?? 'STRAIGHT_LINE',
       accumulatedDepreciation: asDouble(json['accumulatedDepreciation']),
       warrantyExpiry: DateTime.tryParse('${json['warrantyExpiry']}'),
       insurancePolicy: json['insurancePolicy'] as String?,
@@ -107,7 +108,8 @@ class AssetDepreciationScheduleModel extends AssetDepreciationSchedule {
 
   factory AssetDepreciationScheduleModel.fromJson(Map<String, dynamic> json) {
     final Object? id = json['id'];
-    if (id is! String) throw const ParseException('AssetDepreciationSchedule missing id');
+    if (id is! String)
+      throw const ParseException('AssetDepreciationSchedule missing id');
     return AssetDepreciationScheduleModel(
       id: id,
       assetId: json['assetId'] as String? ?? '',
@@ -161,7 +163,8 @@ class AssetMaintenanceScheduleModel extends AssetMaintenanceSchedule {
 
   factory AssetMaintenanceScheduleModel.fromJson(Map<String, dynamic> json) {
     final Object? id = json['id'];
-    if (id is! String) throw const ParseException('AssetMaintenanceSchedule missing id');
+    if (id is! String)
+      throw const ParseException('AssetMaintenanceSchedule missing id');
     return AssetMaintenanceScheduleModel(
       id: id,
       assetId: json['assetId'] as String? ?? '',

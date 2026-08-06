@@ -18,7 +18,8 @@ class BuilderFormFormPage extends ConsumerStatefulWidget {
   final String? formId;
 
   @override
-  ConsumerState<BuilderFormFormPage> createState() => _BuilderFormFormPageState();
+  ConsumerState<BuilderFormFormPage> createState() =>
+      _BuilderFormFormPageState();
 }
 
 class _BuilderFormFormPageState extends ConsumerState<BuilderFormFormPage> {
@@ -40,9 +41,8 @@ class _BuilderFormFormPageState extends ConsumerState<BuilderFormFormPage> {
   }
 
   Future<void> _loadForm() async {
-    final BuilderForm? form = ref
-        .read(builderFormDetailProvider(widget.formId!))
-        .valueOrNull;
+    final BuilderForm? form =
+        ref.read(builderFormDetailProvider(widget.formId!)).valueOrNull;
     if (form != null) {
       _titleCtrl.text = form.title;
       _descriptionCtrl.text = form.description ?? '';
@@ -63,7 +63,9 @@ class _BuilderFormFormPageState extends ConsumerState<BuilderFormFormPage> {
 
     final Map<String, dynamic> payload = <String, dynamic>{
       'title': _titleCtrl.text.trim(),
-      'description': _descriptionCtrl.text.trim().isEmpty ? null : _descriptionCtrl.text.trim(),
+      'description': _descriptionCtrl.text.trim().isEmpty
+          ? null
+          : _descriptionCtrl.text.trim(),
       'status': _status,
     };
 
@@ -127,7 +129,8 @@ class _BuilderFormFormPageState extends ConsumerState<BuilderFormFormPage> {
               decoration: const InputDecoration(labelText: 'Status'),
               items: const <DropdownMenuItem<String>>[
                 DropdownMenuItem<String>(value: 'DRAFT', child: Text('Draft')),
-                DropdownMenuItem<String>(value: 'PUBLISHED', child: Text('Published')),
+                DropdownMenuItem<String>(
+                    value: 'PUBLISHED', child: Text('Published')),
               ],
               onChanged: (String? v) {
                 if (v != null) setState(() => _status = v);

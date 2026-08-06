@@ -40,7 +40,8 @@ class ProjectsRepositoryImpl implements ProjectsRepository {
       final List<Map<String, dynamic>> jsonItems = page.data
           .map((dynamic e) => (e as dynamic).toJson() as Map<String, dynamic>)
           .toList(growable: false);
-      await _cache.write(_tenantId, namespace, query.cacheKey, <String, Object?>{
+      await _cache
+          .write(_tenantId, namespace, query.cacheKey, <String, Object?>{
         'data': jsonItems,
         'meta': page.meta.toJson(),
       });
@@ -48,9 +49,11 @@ class ProjectsRepositoryImpl implements ProjectsRepository {
         Cacheable<Paginated<T>>(value: page),
       );
     } on NetworkException catch (error) {
-      final cached = _cache.read<Map<String, dynamic>>(_tenantId, namespace, query.cacheKey);
+      final cached = _cache.read<Map<String, dynamic>>(
+          _tenantId, namespace, query.cacheKey);
       if (cached == null) {
-        return Result<Cacheable<Paginated<T>>>.err(mapExceptionToFailure(error));
+        return Result<Cacheable<Paginated<T>>>.err(
+            mapExceptionToFailure(error));
       }
       return Result<Cacheable<Paginated<T>>>.ok(
         Cacheable<Paginated<T>>(
@@ -93,8 +96,12 @@ class ProjectsRepositoryImpl implements ProjectsRepository {
 
   @override
   Future<Result<Cacheable<Paginated<Project>>>> listProjects(ListQuery query) =>
-      _paginated(_projectNamespace, query, () => _remote.listProjects(query),
-        ProjectModel.fromJson,);
+      _paginated(
+        _projectNamespace,
+        query,
+        () => _remote.listProjects(query),
+        ProjectModel.fromJson,
+      );
 
   @override
   Future<Result<Project>> getProject(String id) =>
@@ -114,19 +121,27 @@ class ProjectsRepositoryImpl implements ProjectsRepository {
 
   @override
   Future<Result<Cacheable<Paginated<Task>>>> listTasks(ListQuery q) =>
-      _paginated(_taskNamespace, q, () => _remote.listTasks(q),
-        TaskModel.fromJson,);
+      _paginated(
+        _taskNamespace,
+        q,
+        () => _remote.listTasks(q),
+        TaskModel.fromJson,
+      );
 
   @override
   Future<Result<Cacheable<Paginated<Task>>>> listProjectTasks(
-    String projectId, ListQuery q,) =>
-      _paginated('$_taskNamespace.$projectId', q,
+    String projectId,
+    ListQuery q,
+  ) =>
+      _paginated(
+        '$_taskNamespace.$projectId',
+        q,
         () => _remote.listProjectTasks(projectId, q),
-        TaskModel.fromJson,);
+        TaskModel.fromJson,
+      );
 
   @override
-  Future<Result<Task>> getTask(String id) =>
-      _single(() => _remote.getTask(id));
+  Future<Result<Task>> getTask(String id) => _single(() => _remote.getTask(id));
 
   @override
   Future<Result<Task>> createTask(Map<String, dynamic> p) =>
@@ -142,15 +157,24 @@ class ProjectsRepositoryImpl implements ProjectsRepository {
 
   @override
   Future<Result<Cacheable<Paginated<Milestone>>>> listMilestones(ListQuery q) =>
-      _paginated(_milestoneNamespace, q, () => _remote.listMilestones(q),
-        MilestoneModel.fromJson,);
+      _paginated(
+        _milestoneNamespace,
+        q,
+        () => _remote.listMilestones(q),
+        MilestoneModel.fromJson,
+      );
 
   @override
   Future<Result<Cacheable<Paginated<Milestone>>>> listProjectMilestones(
-    String projectId, ListQuery q,) =>
-      _paginated('$_milestoneNamespace.$projectId', q,
+    String projectId,
+    ListQuery q,
+  ) =>
+      _paginated(
+        '$_milestoneNamespace.$projectId',
+        q,
         () => _remote.listProjectMilestones(projectId, q),
-        MilestoneModel.fromJson,);
+        MilestoneModel.fromJson,
+      );
 
   @override
   Future<Result<Milestone>> getMilestone(String id) =>
@@ -161,7 +185,8 @@ class ProjectsRepositoryImpl implements ProjectsRepository {
       _write(() => _remote.createMilestone(p));
 
   @override
-  Future<Result<Milestone>> updateMilestone(String id, Map<String, dynamic> p) =>
+  Future<Result<Milestone>> updateMilestone(
+          String id, Map<String, dynamic> p) =>
       _write(() => _remote.updateMilestone(id, p));
 
   @override
@@ -170,8 +195,12 @@ class ProjectsRepositoryImpl implements ProjectsRepository {
 
   @override
   Future<Result<Cacheable<Paginated<Timesheet>>>> listTimesheets(ListQuery q) =>
-      _paginated(_timesheetNamespace, q, () => _remote.listTimesheets(q),
-        TimesheetModel.fromJson,);
+      _paginated(
+        _timesheetNamespace,
+        q,
+        () => _remote.listTimesheets(q),
+        TimesheetModel.fromJson,
+      );
 
   @override
   Future<Result<Timesheet>> getTimesheet(String id) =>
@@ -182,7 +211,8 @@ class ProjectsRepositoryImpl implements ProjectsRepository {
       _write(() => _remote.createTimesheet(p));
 
   @override
-  Future<Result<Timesheet>> updateTimesheet(String id, Map<String, dynamic> p) =>
+  Future<Result<Timesheet>> updateTimesheet(
+          String id, Map<String, dynamic> p) =>
       _write(() => _remote.updateTimesheet(id, p));
 
   @override
@@ -195,10 +225,14 @@ class ProjectsRepositoryImpl implements ProjectsRepository {
 
   @override
   Future<Result<Cacheable<Paginated<ProjectBudget>>>> listProjectBudgets(
-    String projectId,) =>
-      _paginated('$_budgetNamespace.$projectId', const ListQuery(limit: 100),
+    String projectId,
+  ) =>
+      _paginated(
+        '$_budgetNamespace.$projectId',
+        const ListQuery(limit: 100),
         () => _remote.listProjectBudgets(projectId),
-        ProjectBudgetModel.fromJson,);
+        ProjectBudgetModel.fromJson,
+      );
 
   @override
   Future<Result<ProjectBudget>> getProjectBudget(String id) =>
@@ -210,7 +244,9 @@ class ProjectsRepositoryImpl implements ProjectsRepository {
 
   @override
   Future<Result<ProjectBudget>> updateProjectBudget(
-    String id, Map<String, dynamic> p,) =>
+    String id,
+    Map<String, dynamic> p,
+  ) =>
       _write(() => _remote.updateProjectBudget(id, p));
 
   @override
@@ -219,10 +255,14 @@ class ProjectsRepositoryImpl implements ProjectsRepository {
 
   @override
   Future<Result<Cacheable<Paginated<ProjectRisk>>>> listProjectRisks(
-    String projectId,) =>
-      _paginated('$_riskNamespace.$projectId', const ListQuery(limit: 100),
+    String projectId,
+  ) =>
+      _paginated(
+        '$_riskNamespace.$projectId',
+        const ListQuery(limit: 100),
         () => _remote.listProjectRisks(projectId),
-        ProjectRiskModel.fromJson,);
+        ProjectRiskModel.fromJson,
+      );
 
   @override
   Future<Result<ProjectRisk>> getProjectRisk(String id) =>
@@ -234,7 +274,9 @@ class ProjectsRepositoryImpl implements ProjectsRepository {
 
   @override
   Future<Result<ProjectRisk>> updateProjectRisk(
-    String id, Map<String, dynamic> p,) =>
+    String id,
+    Map<String, dynamic> p,
+  ) =>
       _write(() => _remote.updateProjectRisk(id, p));
 
   @override
@@ -243,21 +285,29 @@ class ProjectsRepositoryImpl implements ProjectsRepository {
 
   @override
   Future<Result<Cacheable<Paginated<ProjectPortfolio>>>> listProjectPortfolios(
-    ListQuery q,) =>
-      _paginated(_portfolioNamespace, q, () => _remote.listProjectPortfolios(q),
-        ProjectPortfolioModel.fromJson,);
+    ListQuery q,
+  ) =>
+      _paginated(
+        _portfolioNamespace,
+        q,
+        () => _remote.listProjectPortfolios(q),
+        ProjectPortfolioModel.fromJson,
+      );
 
   @override
   Future<Result<ProjectPortfolio>> getProjectPortfolio(String id) =>
       _single(() => _remote.getProjectPortfolio(id));
 
   @override
-  Future<Result<ProjectPortfolio>> createProjectPortfolio(Map<String, dynamic> p) =>
+  Future<Result<ProjectPortfolio>> createProjectPortfolio(
+          Map<String, dynamic> p) =>
       _write(() => _remote.createProjectPortfolio(p));
 
   @override
   Future<Result<ProjectPortfolio>> updateProjectPortfolio(
-    String id, Map<String, dynamic> p,) =>
+    String id,
+    Map<String, dynamic> p,
+  ) =>
       _write(() => _remote.updateProjectPortfolio(id, p));
 
   @override

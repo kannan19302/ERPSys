@@ -36,7 +36,8 @@ final Provider<SalesRepository> salesRepositoryProvider =
 class SalesListState<T extends Equatable> extends Equatable {
   const SalesListState({
     this.items = const <Never>[],
-    this.meta = const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
+    this.meta =
+        const PaginationMeta(page: 1, limit: 25, total: 0, totalPages: 0),
     this.query = const ListQuery(sort: '-createdAt'),
     this.isLoading = true,
     this.isLoadingMore = false,
@@ -121,7 +122,9 @@ class QuotationsController extends Notifier<SalesListState<Quotation>> {
 
     state = result.fold(
       (Failure failure) => state.copyWith(
-        isLoading: false, failure: failure, items: const <Quotation>[],
+        isLoading: false,
+        failure: failure,
+        items: const <Quotation>[],
       ),
       (Cacheable<Paginated<Quotation>> page) => state.copyWith(
         items: page.value.data,
@@ -179,7 +182,8 @@ class QuotationsController extends Notifier<SalesListState<Quotation>> {
     return result;
   }
 
-  Future<Result<Quotation>> update(String id, Map<String, dynamic> payload) async {
+  Future<Result<Quotation>> update(
+      String id, Map<String, dynamic> payload) async {
     final Result<Quotation> result =
         await SaveQuotationUseCase(ref.read(salesRepositoryProvider))(
       SaveSalesParams(id: id, payload: payload),
@@ -250,7 +254,9 @@ class SalesOrdersController extends Notifier<SalesListState<SalesOrder>> {
 
     state = result.fold(
       (Failure failure) => state.copyWith(
-        isLoading: false, failure: failure, items: const <SalesOrder>[],
+        isLoading: false,
+        failure: failure,
+        items: const <SalesOrder>[],
       ),
       (Cacheable<Paginated<SalesOrder>> page) => state.copyWith(
         items: page.value.data,
@@ -306,7 +312,8 @@ class SalesOrdersController extends Notifier<SalesListState<SalesOrder>> {
     return result;
   }
 
-  Future<Result<SalesOrder>> save(Map<String, dynamic> payload, {String? id}) async {
+  Future<Result<SalesOrder>> save(Map<String, dynamic> payload,
+      {String? id}) async {
     final Result<SalesOrder> result =
         await SaveSalesOrderUseCase(ref.read(salesRepositoryProvider))(
       SaveSalesParams(id: id, payload: payload),
@@ -356,7 +363,9 @@ class DeliveryNotesController extends Notifier<SalesListState<DeliveryNote>> {
 
     state = result.fold(
       (Failure failure) => state.copyWith(
-        isLoading: false, failure: failure, items: const <DeliveryNote>[],
+        isLoading: false,
+        failure: failure,
+        items: const <DeliveryNote>[],
       ),
       (Paginated<DeliveryNote> page) => state.copyWith(
         items: page.data,
@@ -474,7 +483,9 @@ class SalesReturnsController extends Notifier<SalesListState<SalesReturn>> {
 
     state = result.fold(
       (Failure failure) => state.copyWith(
-        isLoading: false, failure: failure, items: const <SalesReturn>[],
+        isLoading: false,
+        failure: failure,
+        items: const <SalesReturn>[],
       ),
       (Paginated<SalesReturn> page) => state.copyWith(
         items: page.data,
@@ -599,7 +610,9 @@ class OpportunitiesController extends Notifier<SalesListState<Opportunity>> {
 
     state = result.fold(
       (Failure failure) => state.copyWith(
-        isLoading: false, failure: failure, items: const <Opportunity>[],
+        isLoading: false,
+        failure: failure,
+        items: const <Opportunity>[],
       ),
       (Paginated<Opportunity> page) => state.copyWith(
         items: page.data,
@@ -653,7 +666,8 @@ class OpportunitiesController extends Notifier<SalesListState<Opportunity>> {
     refresh();
   }
 
-  Future<Result<Opportunity>> save(Map<String, dynamic> payload, {String? id}) async {
+  Future<Result<Opportunity>> save(Map<String, dynamic> payload,
+      {String? id}) async {
     final Result<Opportunity> result =
         await SaveOpportunityUseCase(ref.read(salesRepositoryProvider))(
       SaveSalesParams(id: id, payload: payload),
@@ -706,8 +720,8 @@ final FutureProvider<List<SalesPipeline>> salesPipelinesProvider =
 
 final FutureProviderFamily<SalesPipeline, String> salesPipelineDetailProvider =
     FutureProvider.family<SalesPipeline, String>((Ref ref, String id) async {
-  final Result<SalesPipeline> result =
-      await GetSalesPipelineDetailUseCase(ref.watch(salesRepositoryProvider))(id);
+  final Result<SalesPipeline> result = await GetSalesPipelineDetailUseCase(
+      ref.watch(salesRepositoryProvider))(id);
   return result.fold(
     (Failure failure) => throw failure,
     (SalesPipeline p) => p,

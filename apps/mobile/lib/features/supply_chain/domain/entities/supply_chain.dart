@@ -163,8 +163,16 @@ class SupplyChainRoute extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, name, origin, destination, carrierId, carrierName,
-        transitTime, cost, isActive, createdAt,
+        id,
+        name,
+        origin,
+        destination,
+        carrierId,
+        carrierName,
+        transitTime,
+        cost,
+        isActive,
+        createdAt,
       ];
 }
 
@@ -199,8 +207,18 @@ class DockAppointment extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, warehouseId, warehouseName, carrierId, carrierName,
-        scheduledAt, arrivedAt, departedAt, status, reference, notes, createdAt,
+        id,
+        warehouseId,
+        warehouseName,
+        carrierId,
+        carrierName,
+        scheduledAt,
+        arrivedAt,
+        departedAt,
+        status,
+        reference,
+        notes,
+        createdAt,
       ];
 }
 
@@ -233,8 +251,17 @@ class WarehouseTransfer extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, fromWarehouseId, fromWarehouseName, toWarehouseId, toWarehouseName,
-        productId, productName, quantity, status, reference, createdAt,
+        id,
+        fromWarehouseId,
+        fromWarehouseName,
+        toWarehouseId,
+        toWarehouseName,
+        productId,
+        productName,
+        quantity,
+        status,
+        reference,
+        createdAt,
       ];
 }
 
@@ -259,6 +286,12 @@ class TrackingEvent extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        id, shipmentId, location, status, timestamp, description, createdAt,
+        id,
+        shipmentId,
+        location,
+        status,
+        timestamp,
+        description,
+        createdAt,
       ];
 }

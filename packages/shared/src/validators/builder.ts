@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 // ── Builder Field ──
 export const builderFieldSchema = z.object({
@@ -31,7 +31,9 @@ export const builderAnalyticsEventSchema = z.object({
   entityType: z.string().optional(),
   metadata: z.record(z.unknown()).optional(),
 });
-export type BuilderAnalyticsEventInput = z.infer<typeof builderAnalyticsEventSchema>;
+export type BuilderAnalyticsEventInput = z.infer<
+  typeof builderAnalyticsEventSchema
+>;
 
 // ── Builder Form ──
 export const createBuilderFormSchema = z.object({
@@ -59,10 +61,14 @@ export const createSchemaRegistrySchema = z.object({
   settings: z.record(z.unknown()).optional(),
   status: z.string().optional(),
 });
-export type CreateSchemaRegistryInput = z.infer<typeof createSchemaRegistrySchema>;
+export type CreateSchemaRegistryInput = z.infer<
+  typeof createSchemaRegistrySchema
+>;
 
 export const updateSchemaRegistrySchema = createSchemaRegistrySchema.partial();
-export type UpdateSchemaRegistryInput = z.infer<typeof updateSchemaRegistrySchema>;
+export type UpdateSchemaRegistryInput = z.infer<
+  typeof updateSchemaRegistrySchema
+>;
 
 // ── Page Registry ──
 export const createPageRegistrySchema = z.object({
@@ -86,12 +92,20 @@ export type UpdatePageRegistryInput = z.infer<typeof updatePageRegistrySchema>;
 export const restorePageRegistryHistorySchema = z.object({
   historyIndex: z.number().int().nonnegative(),
 });
-export type RestorePageRegistryHistoryInput = z.infer<typeof restorePageRegistryHistorySchema>;
+export type RestorePageRegistryHistoryInput = z.infer<
+  typeof restorePageRegistryHistorySchema
+>;
 
 // ── Data Import ──
 export const createDataImportSchema = z.object({
   name: z.string().min(1),
-  targetModel: z.enum(['customer', 'vendor', 'product', 'employee', 'warehouse']),
+  targetModel: z.enum([
+    "customer",
+    "vendor",
+    "product",
+    "employee",
+    "warehouse",
+  ]),
   fileName: z.string().min(1),
   fileSize: z.number().nonnegative(),
   totalRows: z.number().int().nonnegative(),
@@ -121,10 +135,14 @@ export const createWebCollectionSchema = z.object({
   settings: z.record(z.unknown()).optional(),
   status: z.string().optional(),
 });
-export type CreateWebCollectionInput = z.infer<typeof createWebCollectionSchema>;
+export type CreateWebCollectionInput = z.infer<
+  typeof createWebCollectionSchema
+>;
 
 export const updateWebCollectionSchema = createWebCollectionSchema.partial();
-export type UpdateWebCollectionInput = z.infer<typeof updateWebCollectionSchema>;
+export type UpdateWebCollectionInput = z.infer<
+  typeof updateWebCollectionSchema
+>;
 
 // ── Web Collection Item ──
 export const createWebCollectionItemSchema = z.object({
@@ -134,10 +152,15 @@ export const createWebCollectionItemSchema = z.object({
   featured: z.boolean().optional(),
   sortOrder: z.number().optional(),
 });
-export type CreateWebCollectionItemInput = z.infer<typeof createWebCollectionItemSchema>;
+export type CreateWebCollectionItemInput = z.infer<
+  typeof createWebCollectionItemSchema
+>;
 
-export const updateWebCollectionItemSchema = createWebCollectionItemSchema.partial();
-export type UpdateWebCollectionItemInput = z.infer<typeof updateWebCollectionItemSchema>;
+export const updateWebCollectionItemSchema =
+  createWebCollectionItemSchema.partial();
+export type UpdateWebCollectionItemInput = z.infer<
+  typeof updateWebCollectionItemSchema
+>;
 
 export const seedWebCollectionSchema = z.object({
   preset: z.string().min(1),
@@ -151,16 +174,22 @@ export const createWebFormSubmissionSchema = z.object({
   data: z.record(z.unknown()).default({}),
   meta: z.record(z.unknown()).optional(),
 });
-export type CreateWebFormSubmissionInput = z.infer<typeof createWebFormSubmissionSchema>;
+export type CreateWebFormSubmissionInput = z.infer<
+  typeof createWebFormSubmissionSchema
+>;
 
 // ── Web Checkout ──
 export const webCheckoutSchema = z.object({
-  items: z.array(z.object({
-    price: z.number().nonnegative(),
-    qty: z.number().int().positive(),
-    name: z.string().optional(),
-    sku: z.string().optional(),
-  })).optional(),
+  items: z
+    .array(
+      z.object({
+        price: z.number().nonnegative(),
+        qty: z.number().int().positive(),
+        name: z.string().optional(),
+        sku: z.string().optional(),
+      }),
+    )
+    .optional(),
   customer: z.record(z.unknown()),
   currency: z.string().optional(),
   notes: z.string().optional(),
@@ -199,7 +228,7 @@ export type AddAppDataModelInput = z.infer<typeof addAppDataModelSchema>;
 export const publishModuleSchema = z.object({
   scope: z.string().min(1),
   version: z.string().optional(),
-  bump: z.enum(['major', 'minor', 'patch']).optional(),
+  bump: z.enum(["major", "minor", "patch"]).optional(),
   changelog: z.string().optional(),
   category: z.string().optional(),
   longDescription: z.string().optional(),
@@ -228,10 +257,15 @@ export const createBuilderWorkflowSchema = z.object({
   settings: z.record(z.unknown()).optional(),
   status: z.string().optional(),
 });
-export type CreateBuilderWorkflowInput = z.infer<typeof createBuilderWorkflowSchema>;
+export type CreateBuilderWorkflowInput = z.infer<
+  typeof createBuilderWorkflowSchema
+>;
 
-export const updateBuilderWorkflowSchema = createBuilderWorkflowSchema.partial();
-export type UpdateBuilderWorkflowInput = z.infer<typeof updateBuilderWorkflowSchema>;
+export const updateBuilderWorkflowSchema =
+  createBuilderWorkflowSchema.partial();
+export type UpdateBuilderWorkflowInput = z.infer<
+  typeof updateBuilderWorkflowSchema
+>;
 
 // ── Builder Dashboard ──
 export const createBuilderDashboardSchema = z.object({
@@ -241,10 +275,15 @@ export const createBuilderDashboardSchema = z.object({
   refreshRate: z.number().optional(),
   status: z.string().optional(),
 });
-export type CreateBuilderDashboardInput = z.infer<typeof createBuilderDashboardSchema>;
+export type CreateBuilderDashboardInput = z.infer<
+  typeof createBuilderDashboardSchema
+>;
 
-export const updateBuilderDashboardSchema = createBuilderDashboardSchema.partial();
-export type UpdateBuilderDashboardInput = z.infer<typeof updateBuilderDashboardSchema>;
+export const updateBuilderDashboardSchema =
+  createBuilderDashboardSchema.partial();
+export type UpdateBuilderDashboardInput = z.infer<
+  typeof updateBuilderDashboardSchema
+>;
 
 // ── Builder Module ──
 export const createBuilderModuleSchema = z.object({
@@ -255,10 +294,14 @@ export const createBuilderModuleSchema = z.object({
   color: z.string().optional(),
   scope: z.string().optional(),
 });
-export type CreateBuilderModuleInput = z.infer<typeof createBuilderModuleSchema>;
+export type CreateBuilderModuleInput = z.infer<
+  typeof createBuilderModuleSchema
+>;
 
 export const updateBuilderModuleSchema = createBuilderModuleSchema.partial();
-export type UpdateBuilderModuleInput = z.infer<typeof updateBuilderModuleSchema>;
+export type UpdateBuilderModuleInput = z.infer<
+  typeof updateBuilderModuleSchema
+>;
 
 // ── Automation Rule ──
 export const createAutomationRuleSchema = z.object({
@@ -270,10 +313,14 @@ export const createAutomationRuleSchema = z.object({
   actions: z.array(z.unknown()).optional(),
   settings: z.record(z.unknown()).optional(),
 });
-export type CreateAutomationRuleInput = z.infer<typeof createAutomationRuleSchema>;
+export type CreateAutomationRuleInput = z.infer<
+  typeof createAutomationRuleSchema
+>;
 
 export const updateAutomationRuleSchema = createAutomationRuleSchema.partial();
-export type UpdateAutomationRuleInput = z.infer<typeof updateAutomationRuleSchema>;
+export type UpdateAutomationRuleInput = z.infer<
+  typeof updateAutomationRuleSchema
+>;
 
 // ── Web Page ──
 export const createWebPageSchema = z.object({

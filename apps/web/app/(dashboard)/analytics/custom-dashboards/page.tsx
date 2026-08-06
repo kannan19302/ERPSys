@@ -120,7 +120,7 @@ export default function AnalyticsCustomDashboardsPage() {
               textAlign: "center",
             }}
           >
-            <p style={{ color: "#64748b" }}>
+            <p style={{ color: "var(--color-text-secondary)" }}>
               No custom dashboards created yet.
             </p>
           </Card>
@@ -135,7 +135,7 @@ export default function AnalyticsCustomDashboardsPage() {
                   marginBottom: "8px",
                 }}
               >
-                <LayoutDashboard size={20} color="#3b82f6" />
+                <LayoutDashboard size={20} color="var(--color-primary)" />
                 <h4 style={{ fontSize: "16px", fontWeight: 600 }}>
                   {dash.name}
                 </h4>
@@ -143,7 +143,7 @@ export default function AnalyticsCustomDashboardsPage() {
               <p
                 style={{
                   fontSize: "13px",
-                  color: "#64748b",
+                  color: "var(--color-text-secondary)",
                   margin: "0 0 16px 0",
                 }}
               >

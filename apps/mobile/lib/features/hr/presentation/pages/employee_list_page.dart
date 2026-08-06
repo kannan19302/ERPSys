@@ -92,7 +92,8 @@ class _EmployeeListPageState extends ConsumerState<EmployeeListPage> {
       ),
       body: Column(
         children: <Widget>[
-          if (state.cachedAt != null) StaleDataBanner(cachedAt: state.cachedAt!),
+          if (state.cachedAt != null)
+            StaleDataBanner(cachedAt: state.cachedAt!),
           Padding(
             padding: const EdgeInsets.fromLTRB(
               Spacing.x4,
@@ -142,16 +143,17 @@ class _EmployeeListPageState extends ConsumerState<EmployeeListPage> {
                 const SizedBox(width: Spacing.x2),
                 Expanded(
                   child: _DepartmentFilter(
-                    departments: departmentsAsync.valueOrNull ?? const <Department>[],
+                    departments:
+                        departmentsAsync.valueOrNull ?? const <Department>[],
                     value: _departmentFilter,
                     onChanged: (String? v) {
                       setState(() => _departmentFilter = v);
                       final Map<String, String> filters = <String, String>{};
-                      if (_statusFilter != null &&
-                          _statusFilter!.isNotEmpty) {
+                      if (_statusFilter != null && _statusFilter!.isNotEmpty) {
                         filters['status'] = _statusFilter!;
                       }
-                      if (v != null && v.isNotEmpty) filters['departmentId'] = v;
+                      if (v != null && v.isNotEmpty)
+                        filters['departmentId'] = v;
                       controller.applyFilters(filters);
                     },
                   ),
@@ -313,7 +315,12 @@ class _StatusFilter extends StatelessWidget {
         labelText: 'Status',
       ),
       isExpanded: true,
-      items: <String>['', EmployeeStatus.active, EmployeeStatus.inactive, EmployeeStatus.terminated]
+      items: <String>[
+        '',
+        EmployeeStatus.active,
+        EmployeeStatus.inactive,
+        EmployeeStatus.terminated
+      ]
           .map(
             (String v) => DropdownMenuItem<String>(
               value: v,

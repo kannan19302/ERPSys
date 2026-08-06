@@ -114,20 +114,25 @@ export default function RevenueIntelligencePage() {
             <div className="ui-grid-3" style={{ gap: "1rem" }}>
               <div
                 style={{
-                  background: "#f0fdf4",
+                  background: "var(--color-success-light)",
                   padding: "1rem",
                   borderRadius: 8,
                   textAlign: "center",
                 }}
               >
-                <div style={{ fontSize: "0.8rem", color: "#666" }}>
+                <div
+                  style={{
+                    fontSize: "0.8rem",
+                    color: "var(--color-text-secondary)",
+                  }}
+                >
                   Won Deals
                 </div>
                 <div
                   style={{
                     fontSize: "1.5rem",
                     fontWeight: 700,
-                    color: "#10b981",
+                    color: "var(--chart-9)",
                   }}
                 >
                   {digest.summary?.totalWon}
@@ -138,20 +143,25 @@ export default function RevenueIntelligencePage() {
               </div>
               <div
                 style={{
-                  background: "#fef2f2",
+                  background: "var(--color-danger-light)",
                   padding: "1rem",
                   borderRadius: 8,
                   textAlign: "center",
                 }}
               >
-                <div style={{ fontSize: "0.8rem", color: "#666" }}>
+                <div
+                  style={{
+                    fontSize: "0.8rem",
+                    color: "var(--color-text-secondary)",
+                  }}
+                >
                   Lost Deals
                 </div>
                 <div
                   style={{
                     fontSize: "1.5rem",
                     fontWeight: 700,
-                    color: "#ef4444",
+                    color: "var(--chart-4)",
                   }}
                 >
                   {digest.summary?.totalLost}
@@ -162,20 +172,25 @@ export default function RevenueIntelligencePage() {
               </div>
               <div
                 style={{
-                  background: "#eff6ff",
+                  background: "var(--color-info-light)",
                   padding: "1rem",
                   borderRadius: 8,
                   textAlign: "center",
                 }}
               >
-                <div style={{ fontSize: "0.8rem", color: "#666" }}>
+                <div
+                  style={{
+                    fontSize: "0.8rem",
+                    color: "var(--color-text-secondary)",
+                  }}
+                >
                   Win Rate
                 </div>
                 <div
                   style={{
                     fontSize: "1.5rem",
                     fontWeight: 700,
-                    color: "#3b82f6",
+                    color: "var(--color-primary)",
                   }}
                 >
                   {digest.summary?.winRate}%
@@ -305,12 +320,14 @@ export default function RevenueIntelligencePage() {
                 fontSize: "2rem",
                 fontWeight: 700,
                 color:
-                  forecastAccuracy.accuracyRate >= 80 ? "#10b981" : "#f59e0b",
+                  forecastAccuracy.accuracyRate >= 80
+                    ? "var(--chart-9)"
+                    : "var(--chart-3)",
               }}
             >
               {forecastAccuracy.accuracyRate}%
             </div>
-            <p style={{ color: "#666" }}>
+            <p style={{ color: "var(--color-text-secondary)" }}>
               Accuracy rate across {forecastAccuracy.totalForecasts} forecasts
             </p>
             {forecastAccuracy.forecasts?.map((f: any, i: number) => (
@@ -366,7 +383,7 @@ export default function RevenueIntelligencePage() {
                 <div
                   style={{
                     fontSize: "0.85rem",
-                    color: "#666",
+                    color: "var(--color-text-secondary)",
                     marginTop: "0.25rem",
                   }}
                 >

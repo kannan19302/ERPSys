@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException, Logger } from "@nestjs/common";
 import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 import { randomBytes, createHash, randomUUID } from "node:crypto";
 
 interface CorsConfigRecord {
@@ -42,7 +43,7 @@ export class ApiPlatformDeepService {
   private healthChecks: HealthCheckRecord[] = [];
 
   async listApiKeys(tenantId: string) {
-    return prisma.apiKey.findMany({
+    return idpPrisma.apiKey.findMany({
       where: { tenantId },
       select: {
         id: true,
@@ -60,7 +61,7 @@ export class ApiPlatformDeepService {
     const plainKey = randomBytes(24).toString("hex");
     const prefix = plainKey.substring(0, 8);
     const hash = createHash("sha256").update(plainKey).digest("hex");
-    const record = await prisma.apiKey.create({
+    const record = await idpPrisma.apiKey.create({
       data: {
         tenantId,
         name: data.name,
@@ -80,14 +81,14 @@ export class ApiPlatformDeepService {
     };
   }
   async updateApiKey(tenantId: string, id: string, data: any) {
-    const k = await prisma.apiKey.findFirst({ where: { id, tenantId } });
+    const k = await idpPrisma.apiKey.findFirst({ where: { id, tenantId } });
     if (!k) throw new NotFoundException("API key not found");
-    return prisma.apiKey.update({ where: { id }, data });
+    return idpPrisma.apiKey.update({ where: { id }, data });
   }
   async deleteApiKey(tenantId: string, id: string) {
-    const k = await prisma.apiKey.findFirst({ where: { id, tenantId } });
+    const k = await idpPrisma.apiKey.findFirst({ where: { id, tenantId } });
     if (!k) throw new NotFoundException("API key not found");
-    return prisma.apiKey.delete({ where: { id } });
+    return idpPrisma.apiKey.delete({ where: { id } });
   }
 
   async listRateLimits(tenantId: string) {

@@ -275,7 +275,8 @@ export default function Customer360Page() {
                     <div
                       className="ui-w-2 ui-h-2 ui-rounded-full ui-mt-2"
                       style={{
-                        backgroundColor: event.stage?.color || "#6b7280",
+                        backgroundColor:
+                          event.stage?.color || "var(--color-text-secondary)",
                       }}
                     />
                     <div className="ui-flex-1">

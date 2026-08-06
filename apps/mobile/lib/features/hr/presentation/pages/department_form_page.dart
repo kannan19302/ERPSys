@@ -41,11 +41,12 @@ class _DepartmentFormPageState extends ConsumerState<DepartmentFormPage> {
   }
 
   void _loadDepartment() {
-    final List<Department>? depts =
-        ref.read(departmentsProvider).valueOrNull;
-    final Department? dept = depts?.where(
-      (Department d) => d.id == widget.departmentId,
-    ).firstOrNull;
+    final List<Department>? depts = ref.read(departmentsProvider).valueOrNull;
+    final Department? dept = depts
+        ?.where(
+          (Department d) => d.id == widget.departmentId,
+        )
+        .firstOrNull;
     if (dept != null) {
       _nameCtrl.text = dept.name;
       _descCtrl.text = dept.description ?? '';
@@ -67,14 +68,14 @@ class _DepartmentFormPageState extends ConsumerState<DepartmentFormPage> {
 
     final Map<String, dynamic> payload = <String, dynamic>{
       'name': _nameCtrl.text.trim(),
-      'description': _descCtrl.text.trim().isEmpty ? null : _descCtrl.text.trim(),
+      'description':
+          _descCtrl.text.trim().isEmpty ? null : _descCtrl.text.trim(),
       if (_parentDeptId != null) 'parentDepartmentId': _parentDeptId,
       if (_headEmployeeId != null) 'headEmployeeId': _headEmployeeId,
     };
 
     final HrRepository repo = ref.read(hrRepositoryProvider);
-    final Result<Department> result =
-        await SaveDepartmentUseCase(repo)(
+    final Result<Department> result = await SaveDepartmentUseCase(repo)(
       SaveDepartmentParams(id: widget.departmentId, payload: payload),
     );
 
@@ -96,8 +97,10 @@ class _DepartmentFormPageState extends ConsumerState<DepartmentFormPage> {
 
   @override
   Widget build(BuildContext context) {
-    final AsyncValue<List<Department>> asyncDepts = ref.watch(departmentsProvider);
-    final List<Department> allDepts = asyncDepts.valueOrNull ?? const <Department>[];
+    final AsyncValue<List<Department>> asyncDepts =
+        ref.watch(departmentsProvider);
+    final List<Department> allDepts =
+        asyncDepts.valueOrNull ?? const <Department>[];
 
     return Scaffold(
       appBar: AppBar(
@@ -136,33 +139,38 @@ class _DepartmentFormPageState extends ConsumerState<DepartmentFormPage> {
                 ...allDepts
                     .where((Department d) => d.id != widget.departmentId)
                     .map((Department d) => d.id),
-              ].map(
-                (String? v) => DropdownMenuItem<String>(
-                  value: v,
-                  child: Text(
-                    v == null
-                        ? 'None'
-                        : allDepts
-                                .where((Department d) => d.id == v)
-                                .firstOrNull
-                                ?.name ??
-                            v,
-                  ),
-                ),
-              ).toList(),
+              ]
+                  .map(
+                    (String? v) => DropdownMenuItem<String>(
+                      value: v,
+                      child: Text(
+                        v == null
+                            ? 'None'
+                            : allDepts
+                                    .where((Department d) => d.id == v)
+                                    .firstOrNull
+                                    ?.name ??
+                                v,
+                      ),
+                    ),
+                  )
+                  .toList(),
               onChanged: (String? v) => setState(() => _parentDeptId = v),
             ),
             const SizedBox(height: Spacing.x4),
             DropdownButtonFormField<String>(
               initialValue: _headEmployeeId,
-              decoration: const InputDecoration(labelText: 'Head of Department'),
+              decoration:
+                  const InputDecoration(labelText: 'Head of Department'),
               isExpanded: true,
-              items: <String?>[null].map(
-                (String? v) => DropdownMenuItem<String>(
-                  value: v,
-                  child: Text(v ?? 'Not assigned'),
-                ),
-              ).toList(),
+              items: <String?>[null]
+                  .map(
+                    (String? v) => DropdownMenuItem<String>(
+                      value: v,
+                      child: Text(v ?? 'Not assigned'),
+                    ),
+                  )
+                  .toList(),
               onChanged: (String? v) => setState(() => _headEmployeeId = v),
             ),
             const SizedBox(height: Spacing.x4),

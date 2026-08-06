@@ -1,4 +1,18 @@
 packages:
   - "apps/*"
+  - "apps/extensions/*"
+  # packages/* stays a workspace member until consumers have genuinely switched.
+  #
+  # It was removed so the apps would consume @unerp/* from the self-hosted
+  # registry, which is the Phase 3 end state — but that registry runs on
+  # localhost, and CI has no such thing. Every `pnpm install --frozen-lockfile`
+  # on a runner resolved the scope against the runner's own localhost and
+  # failed, and the root db:generate/db:deploy/db:seed scripts silently matched
+  # no project, because a pnpm filter selects workspace projects and not
+  # installed dependencies.
+  #
+  # § 14 is explicit that the monorepo must remain buildable at each extraction
+  # tag until its consumers have switched. CI is the proof of that, so the
+  # switch cannot land before the registry is reachable from CI.
   - "packages/*"
   - "tools/*"

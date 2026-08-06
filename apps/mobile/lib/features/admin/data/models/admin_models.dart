@@ -46,7 +46,10 @@ class AdminUserModel extends AdminUser {
       avatar: json['avatar'] as String?,
       status: json['status'] as String? ?? 'ACTIVE',
       lastLoginAt: DateTime.tryParse('${json['lastLoginAt']}'),
-      roles: (json['roles'] as List<dynamic>?)?.map((e) => e.toString()).toList(growable: false) ?? const [],
+      roles: (json['roles'] as List<dynamic>?)
+              ?.map((e) => e.toString())
+              .toList(growable: false) ??
+          const [],
       createdAt: DateTime.tryParse('${json['createdAt']}'),
       updatedAt: DateTime.tryParse('${json['updatedAt']}'),
     );
@@ -86,7 +89,8 @@ class AdminRoleModel extends AdminRole {
       name: json['name'] as String? ?? '',
       description: json['description'] as String?,
       isSystem: json['isSystem'] as bool? ?? false,
-      permissions: (json['permissions'] as List<dynamic>?)?.cast<String>() ?? const [],
+      permissions:
+          (json['permissions'] as List<dynamic>?)?.cast<String>() ?? const [],
       userCount: asInt(json['userCount']),
       createdAt: DateTime.tryParse('${json['createdAt']}'),
       updatedAt: DateTime.tryParse('${json['updatedAt']}'),
@@ -259,7 +263,8 @@ class AdminApiKeyModel extends AdminApiKey {
       id: id,
       name: json['name'] as String? ?? '',
       key: json['key'] as String?,
-      permissions: (json['permissions'] as List<dynamic>?)?.cast<String>() ?? const [],
+      permissions:
+          (json['permissions'] as List<dynamic>?)?.cast<String>() ?? const [],
       lastUsedAt: DateTime.tryParse('${json['lastUsedAt']}'),
       expiresAt: DateTime.tryParse('${json['expiresAt']}'),
       isActive: asBool(json['isActive']),

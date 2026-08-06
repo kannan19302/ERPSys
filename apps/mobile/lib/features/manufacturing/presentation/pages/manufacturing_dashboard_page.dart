@@ -1,9 +1,8 @@
-
 import 'package:flutter/material.dart';
 
 class ManufacturingDashboardPage extends StatelessWidget {
   const ManufacturingDashboardPage({super.key});
-  
+
   static const String routeName = 'manufacturing';
   static const String routePath = '/manufacturing';
   @override

@@ -1,16 +1,16 @@
-import { test as base, Page } from '@playwright/test';
-import { LoginPage } from '../pages/login.page';
-import { DashboardPage } from '../pages/dashboard.page';
-import { SalesOrderPage } from '../pages/sales-order.page';
-import { InvoicePage } from '../pages/invoice.page';
-import { PaymentPage } from '../pages/payment.page';
-import { PurchaseOrderPage } from '../pages/purchase-order.page';
-import { GoodsReceiptPage } from '../pages/goods-receipt.page';
-import { GLJournalPage } from '../pages/gl-journal.page';
-import { InventoryPage } from '../pages/inventory.page';
+import { test as base, Page } from "@playwright/test";
+import { LoginPage } from "../pages/login.page";
+import { DashboardPage } from "../pages/dashboard.page";
+import { SalesOrderPage } from "../pages/sales-order.page";
+import { InvoicePage } from "../pages/invoice.page";
+import { PaymentPage } from "../pages/payment.page";
+import { PurchaseOrderPage } from "../pages/purchase-order.page";
+import { GoodsReceiptPage } from "../pages/goods-receipt.page";
+import { GLJournalPage } from "../pages/gl-journal.page";
+import { InventoryPage } from "../pages/inventory.page";
 
-const ADMIN_EMAIL = process.env.E2E_EMAIL || 'admin@unerp.dev';
-const ADMIN_PASSWORD = process.env.E2E_PASSWORD || 'admin123';
+const ADMIN_EMAIL = process.env.E2E_EMAIL || "admin@unerp.dev";
+const ADMIN_PASSWORD = process.env.E2E_PASSWORD || "admin123";
 
 type JourneyFixtures = {
   loginPage: LoginPage;

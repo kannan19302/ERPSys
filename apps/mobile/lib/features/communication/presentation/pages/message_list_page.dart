@@ -31,7 +31,8 @@ class _MessageListPageState extends ConsumerState<MessageListPage> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(messageListControllerProvider(widget.channelId));
-    final controller = ref.read(messageListControllerProvider(widget.channelId).notifier);
+    final controller =
+        ref.read(messageListControllerProvider(widget.channelId).notifier);
     final t = context.tokens;
 
     return Scaffold(
@@ -46,7 +47,8 @@ class _MessageListPageState extends ConsumerState<MessageListPage> {
               color: t.bgElevated,
               border: Border(top: BorderSide(color: t.border)),
             ),
-            padding: const EdgeInsets.fromLTRB(Spacing.x4, Spacing.x2, Spacing.x4, Spacing.x4),
+            padding: const EdgeInsets.fromLTRB(
+                Spacing.x4, Spacing.x2, Spacing.x4, Spacing.x4),
             child: SafeArea(
               top: false,
               child: Row(
@@ -130,31 +132,33 @@ class _MessageTile extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(children: [
-            CircleAvatar(
-              radius: 14,
-              child: Text(
-                message.senderName.isNotEmpty
-                    ? message.senderName[0].toUpperCase()
-                    : '?',
-                style: const TextStyle(fontSize: TypeScale.xs),
+          Row(
+            children: [
+              CircleAvatar(
+                radius: 14,
+                child: Text(
+                  message.senderName.isNotEmpty
+                      ? message.senderName[0].toUpperCase()
+                      : '?',
+                  style: const TextStyle(fontSize: TypeScale.xs),
+                ),
               ),
-            ),
-            const SizedBox(width: Spacing.x2),
-            Expanded(
-              child: Text(
-                message.senderName,
-                style: Theme.of(context).textTheme.labelLarge,
+              const SizedBox(width: Spacing.x2),
+              Expanded(
+                child: Text(
+                  message.senderName,
+                  style: Theme.of(context).textTheme.labelLarge,
+                ),
               ),
-            ),
-            Text(
-              Formatters.relative(message.createdAt),
-              style: TextStyle(
-                color: t.textTertiary,
-                fontSize: TypeScale.xs,
+              Text(
+                Formatters.relative(message.createdAt),
+                style: TextStyle(
+                  color: t.textTertiary,
+                  fontSize: TypeScale.xs,
+                ),
               ),
-            ),
-          ],),
+            ],
+          ),
           const SizedBox(height: Spacing.x2),
           Text(message.content),
           if (message.editedAt != null) ...[

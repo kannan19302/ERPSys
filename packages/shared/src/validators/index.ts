@@ -205,7 +205,9 @@ export const onboardingChecklistResponseSchema = z.object({
   checklistOrder: z.array(z.string()),
   priorityAppSlugs: z.array(z.string()),
 });
-export type OnboardingChecklistResponse = z.infer<typeof onboardingChecklistResponseSchema>;
+export type OnboardingChecklistResponse = z.infer<
+  typeof onboardingChecklistResponseSchema
+>;
 
 // ── Organization Schemas ──
 
@@ -1091,8 +1093,8 @@ export const createCustomerTagSchema = z.object({
 export type CreateCustomerTagInput = z.infer<typeof createCustomerTagSchema>;
 
 // ── Builder Module Schemas ──
-export * from './builder.js';
-export * from './builder-expansion.js';
-export * from './ai.js';
-export * from './communication-expansion.js';
-export * from './drive.js';
+export * from "./builder.js";
+export * from "./builder-expansion.js";
+export * from "./ai.js";
+export * from "./communication-expansion.js";
+export * from "./drive.js";

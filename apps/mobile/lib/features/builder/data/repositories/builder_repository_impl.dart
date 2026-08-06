@@ -37,7 +37,8 @@ class BuilderRepositoryImpl implements BuilderRepository {
       final jsonItems = page.data
           .map((dynamic e) => (e as dynamic).toJson() as Map<String, dynamic>)
           .toList(growable: false);
-      await _cache.write(_tenantId, namespace, query.cacheKey, <String, Object?>{
+      await _cache
+          .write(_tenantId, namespace, query.cacheKey, <String, Object?>{
         'data': jsonItems,
         'meta': page.meta.toJson(),
       });
@@ -45,9 +46,11 @@ class BuilderRepositoryImpl implements BuilderRepository {
         Cacheable<Paginated<T>>(value: page),
       );
     } on NetworkException catch (error) {
-      final cached = _cache.read<Map<String, dynamic>>(_tenantId, namespace, query.cacheKey);
+      final cached = _cache.read<Map<String, dynamic>>(
+          _tenantId, namespace, query.cacheKey);
       if (cached == null) {
-        return Result<Cacheable<Paginated<T>>>.err(mapExceptionToFailure(error));
+        return Result<Cacheable<Paginated<T>>>.err(
+            mapExceptionToFailure(error));
       }
       return Result<Cacheable<Paginated<T>>>.ok(
         Cacheable<Paginated<T>>(
@@ -90,10 +93,12 @@ class BuilderRepositoryImpl implements BuilderRepository {
 
   @override
   Future<Result<Cacheable<Paginated<BuilderForm>>>> listForms(ListQuery q) =>
-      _paginated(_formNamespace, q, () => _remote.listForms(q), BuilderFormModel.fromJson);
+      _paginated(_formNamespace, q, () => _remote.listForms(q),
+          BuilderFormModel.fromJson);
 
   @override
-  Future<Result<BuilderForm>> getForm(String id) => _single(() => _remote.getForm(id));
+  Future<Result<BuilderForm>> getForm(String id) =>
+      _single(() => _remote.getForm(id));
 
   @override
   Future<Result<BuilderForm>> createForm(Map<String, dynamic> p) =>
@@ -104,14 +109,17 @@ class BuilderRepositoryImpl implements BuilderRepository {
       _write(() => _remote.updateForm(id, p));
 
   @override
-  Future<Result<void>> deleteForm(String id) => _delete(() => _remote.deleteForm(id));
+  Future<Result<void>> deleteForm(String id) =>
+      _delete(() => _remote.deleteForm(id));
 
   @override
   Future<Result<Cacheable<Paginated<BuilderPage>>>> listPages(ListQuery q) =>
-      _paginated(_pageNamespace, q, () => _remote.listPages(q), BuilderPageModel.fromJson);
+      _paginated(_pageNamespace, q, () => _remote.listPages(q),
+          BuilderPageModel.fromJson);
 
   @override
-  Future<Result<BuilderPage>> getPage(String id) => _single(() => _remote.getPage(id));
+  Future<Result<BuilderPage>> getPage(String id) =>
+      _single(() => _remote.getPage(id));
 
   @override
   Future<Result<BuilderPage>> createPage(Map<String, dynamic> p) =>
@@ -122,41 +130,52 @@ class BuilderRepositoryImpl implements BuilderRepository {
       _write(() => _remote.updatePage(id, p));
 
   @override
-  Future<Result<void>> deletePage(String id) => _delete(() => _remote.deletePage(id));
+  Future<Result<void>> deletePage(String id) =>
+      _delete(() => _remote.deletePage(id));
 
   @override
-  Future<Result<Cacheable<Paginated<BuilderWorkflow>>>> listWorkflows(ListQuery q) =>
-      _paginated(_workflowNamespace, q, () => _remote.listWorkflows(q), BuilderWorkflowModel.fromJson);
+  Future<Result<Cacheable<Paginated<BuilderWorkflow>>>> listWorkflows(
+          ListQuery q) =>
+      _paginated(_workflowNamespace, q, () => _remote.listWorkflows(q),
+          BuilderWorkflowModel.fromJson);
 
   @override
-  Future<Result<BuilderWorkflow>> getWorkflow(String id) => _single(() => _remote.getWorkflow(id));
+  Future<Result<BuilderWorkflow>> getWorkflow(String id) =>
+      _single(() => _remote.getWorkflow(id));
 
   @override
   Future<Result<BuilderWorkflow>> createWorkflow(Map<String, dynamic> p) =>
       _write(() => _remote.createWorkflow(p));
 
   @override
-  Future<Result<BuilderWorkflow>> updateWorkflow(String id, Map<String, dynamic> p) =>
+  Future<Result<BuilderWorkflow>> updateWorkflow(
+          String id, Map<String, dynamic> p) =>
       _write(() => _remote.updateWorkflow(id, p));
 
   @override
-  Future<Result<void>> deleteWorkflow(String id) => _delete(() => _remote.deleteWorkflow(id));
+  Future<Result<void>> deleteWorkflow(String id) =>
+      _delete(() => _remote.deleteWorkflow(id));
 
   @override
-  Future<Result<Cacheable<Paginated<BuilderTemplate>>>> listTemplates(ListQuery q) =>
-      _paginated(_templateNamespace, q, () => _remote.listTemplates(q), BuilderTemplateModel.fromJson);
+  Future<Result<Cacheable<Paginated<BuilderTemplate>>>> listTemplates(
+          ListQuery q) =>
+      _paginated(_templateNamespace, q, () => _remote.listTemplates(q),
+          BuilderTemplateModel.fromJson);
 
   @override
-  Future<Result<BuilderTemplate>> getTemplate(String id) => _single(() => _remote.getTemplate(id));
+  Future<Result<BuilderTemplate>> getTemplate(String id) =>
+      _single(() => _remote.getTemplate(id));
 
   @override
   Future<Result<BuilderTemplate>> createTemplate(Map<String, dynamic> p) =>
       _write(() => _remote.createTemplate(p));
 
   @override
-  Future<Result<BuilderTemplate>> updateTemplate(String id, Map<String, dynamic> p) =>
+  Future<Result<BuilderTemplate>> updateTemplate(
+          String id, Map<String, dynamic> p) =>
       _write(() => _remote.updateTemplate(id, p));
 
   @override
-  Future<Result<void>> deleteTemplate(String id) => _delete(() => _remote.deleteTemplate(id));
+  Future<Result<void>> deleteTemplate(String id) =>
+      _delete(() => _remote.deleteTemplate(id));
 }

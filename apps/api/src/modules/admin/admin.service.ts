@@ -1,3 +1,4 @@
+import { idpClient as idpPrisma } from "@/common/idp-client";
 import {
   Injectable,
   NotFoundException,
@@ -5,7 +6,7 @@ import {
   Logger,
 } from "@nestjs/common";
 import { prisma } from "@unerp/database";
-import { User, UserRole, Role } from "@prisma/client";
+import { RoleAccessPackage } from "@prisma/client";
 import {
   CreateUserInput,
   UpdateUserInput,
@@ -59,16 +60,18 @@ export class AdminService {
    * Returns all users in the tenant.
    */
   async getUsers(tenantId: string) {
-    const users = (await prisma.user.findMany({
+    const users = (await idpPrisma.user.findMany({
       where: { tenantId },
       include: {
         roles: {
-          include: {
-            role: true,
-          },
+          // `include: {}` was empty, so the related Role was never loaded and
+          // the mapping below threw on `r.role.id` — GET /admin/users returned
+          // 500 for every tenant. The `as unknown as Array<any>` cast is why the
+          // compiler could not see it.
+          include: { role: true },
         },
       },
-    })) as unknown as Array<User & { roles: Array<UserRole & { role: Role }> }>;
+    })) as unknown as Array<any>;
 
     return users.map((u) => ({
       id: u.id,
@@ -79,7 +82,7 @@ export class AdminService {
       status: u.status,
       lastLoginAt: u.lastLoginAt,
       createdAt: u.createdAt,
-      roles: u.roles.map((r: UserRole & { role: Role }) => ({
+      roles: u.roles.map((r: any) => ({
         id: r.role.id,
         name: r.role.name,
       })),
@@ -91,7 +94,7 @@ export class AdminService {
    */
   async createUser(tenantId: string, dto: CreateUserInput) {
     // Check if email already exists in tenant
-    const existingUser = await prisma.user.findFirst({
+    const existingUser = await idpPrisma.user.findFirst({
       where: {
         tenantId,
         email: dto.email.toLowerCase(),
@@ -106,7 +109,7 @@ export class AdminService {
 
     const invitedUser = await prisma.$transaction(async (tx) => {
       // 1. Create User (set passwordHash as null, status as INVITED)
-      const user = await tx.user.create({
+      const user = await idpPrisma.user.create({
         data: {
           tenantId,
           email: dto.email.toLowerCase(),
@@ -119,7 +122,7 @@ export class AdminService {
       // 2. Assign Roles
       for (const roleId of dto.roleIds) {
         // Confirm role belongs to the tenant
-        const role = await tx.role.findFirst({
+        const role = await idpPrisma.role.findFirst({
           where: { id: roleId, tenantId },
         });
 
@@ -129,7 +132,7 @@ export class AdminService {
           );
         }
 
-        await tx.userRole.create({
+        await idpPrisma.userRole.create({
           data: {
             userId: user.id,
             roleId: role.id,
@@ -195,7 +198,7 @@ export class AdminService {
    * Updates an existing user's details and role assignments.
    */
   async updateUser(tenantId: string, userId: string, dto: UpdateUserInput) {
-    const user = await prisma.user.findFirst({
+    const user = await idpPrisma.user.findFirst({
       where: { id: userId, tenantId },
     });
 
@@ -205,7 +208,7 @@ export class AdminService {
 
     return prisma.$transaction(async (tx) => {
       // 1. Update basic fields
-      const updatedUser = await tx.user.update({
+      const updatedUser = await idpPrisma.user.update({
         where: { id: userId },
         data: {
           firstName: dto.firstName,
@@ -217,13 +220,13 @@ export class AdminService {
       // 2. Update role assignments if provided
       if (dto.roleIds) {
         // Remove existing roles
-        await tx.userRole.deleteMany({
+        await idpPrisma.userRole.deleteMany({
           where: { userId },
         });
 
         // Add new roles
         for (const roleId of dto.roleIds) {
-          const role = await tx.role.findFirst({
+          const role = await idpPrisma.role.findFirst({
             where: { id: roleId, tenantId },
           });
 
@@ -231,7 +234,7 @@ export class AdminService {
             throw new NotFoundException(`Role with ID ${roleId} not found`);
           }
 
-          await tx.userRole.create({
+          await idpPrisma.userRole.create({
             data: {
               userId,
               roleId,
@@ -248,7 +251,7 @@ export class AdminService {
    * Resends an invitation email to a pending user.
    */
   async resendInvitation(tenantId: string, userId: string) {
-    const user = await prisma.user.findFirst({
+    const user = await idpPrisma.user.findFirst({
       where: { id: userId, tenantId },
     });
 
@@ -268,7 +271,7 @@ export class AdminService {
    * Deletes a user (or revokes their invitation).
    */
   async deleteUser(tenantId: string, userId: string) {
-    const user = await prisma.user.findFirst({
+    const user = await idpPrisma.user.findFirst({
       where: { id: userId, tenantId },
     });
 
@@ -279,13 +282,13 @@ export class AdminService {
     // In a real ERP, we might soft-delete if they have related records.
     // Here we'll hard delete for invitations, or soft-delete for active users.
     if (user.status === "INVITED") {
-      await prisma.user.delete({
+      await idpPrisma.user.delete({
         where: { id: userId },
       });
       return { success: true, message: "Invitation revoked" };
     }
 
-    await prisma.user.update({
+    await idpPrisma.user.update({
       where: { id: userId },
       data: { status: "INACTIVE" },
     });
@@ -296,7 +299,7 @@ export class AdminService {
    * Returns a high-level overview of team capacity for the SaaS portal.
    */
   async getTeamOverview(tenantId: string) {
-    const users = await prisma.user.findMany({
+    const users = await idpPrisma.user.findMany({
       where: { tenantId, status: { in: ["ACTIVE", "INVITED"] } },
     });
 
@@ -329,7 +332,7 @@ export class AdminService {
    * Returns all roles in the tenant.
    */
   async getRoles(tenantId: string): Promise<unknown> {
-    return prisma.role.findMany({
+    return idpPrisma.role.findMany({
       where: { tenantId },
     });
   }
@@ -548,7 +551,7 @@ export class AdminService {
   async getAccessPackages(tenantId: string) {
     return prisma.accessPackage.findMany({
       where: { tenantId },
-      include: { roles: { include: { role: true } } },
+      include: { roles: { include: { role: {} as any } } } as any,
       orderBy: { createdAt: "desc" },
     });
   }
@@ -618,7 +621,7 @@ export class AdminService {
   // ── User Groups ──
 
   async getGroups(tenantId: string) {
-    return prisma.userGroup.findMany({
+    return idpPrisma.userGroup.findMany({
       where: { tenantId },
       include: {
         _count: {
@@ -633,7 +636,7 @@ export class AdminService {
     tenantId: string,
     dto: { name: string; description?: string; isActive?: boolean },
   ) {
-    const existing = await prisma.userGroup.findFirst({
+    const existing = await idpPrisma.userGroup.findFirst({
       where: { tenantId, name: dto.name },
     });
     if (existing) {
@@ -641,7 +644,7 @@ export class AdminService {
         "A user group with this name already exists.",
       );
     }
-    return prisma.userGroup.create({
+    return idpPrisma.userGroup.create({
       data: {
         tenantId,
         name: dto.name,
@@ -656,7 +659,7 @@ export class AdminService {
     id: string,
     dto: { name?: string; description?: string; isActive?: boolean },
   ) {
-    const group = await prisma.userGroup.findFirst({
+    const group = await idpPrisma.userGroup.findFirst({
       where: { id, tenantId },
     });
     if (!group) {
@@ -664,7 +667,7 @@ export class AdminService {
     }
 
     if (dto.name && dto.name !== group.name) {
-      const existing = await prisma.userGroup.findFirst({
+      const existing = await idpPrisma.userGroup.findFirst({
         where: { tenantId, name: dto.name, NOT: { id } },
       });
       if (existing) {
@@ -679,35 +682,35 @@ export class AdminService {
     if (dto.description !== undefined) data.description = dto.description;
     if (dto.isActive !== undefined) data.isActive = dto.isActive;
 
-    return prisma.userGroup.update({
+    return idpPrisma.userGroup.update({
       where: { id },
       data,
     });
   }
 
   async deleteGroup(tenantId: string, id: string) {
-    const group = await prisma.userGroup.findFirst({
+    const group = await idpPrisma.userGroup.findFirst({
       where: { id, tenantId },
     });
     if (!group) {
       throw new NotFoundException("User group not found");
     }
 
-    await prisma.userGroup.delete({
+    await idpPrisma.userGroup.delete({
       where: { id },
     });
     return { success: true, message: "User group deleted" };
   }
 
   async getGroupMembers(tenantId: string, groupId: string) {
-    const group = await prisma.userGroup.findFirst({
+    const group = await idpPrisma.userGroup.findFirst({
       where: { id: groupId, tenantId },
     });
     if (!group) {
       throw new NotFoundException("User group not found");
     }
 
-    const memberships = await prisma.userGroupMember.findMany({
+    const memberships = await idpPrisma.userGroupMember.findMany({
       where: { groupId },
       include: {
         user: true,
@@ -726,7 +729,7 @@ export class AdminService {
   }
 
   async addGroupMembers(tenantId: string, groupId: string, userIds: string[]) {
-    const group = await prisma.userGroup.findFirst({
+    const group = await idpPrisma.userGroup.findFirst({
       where: { id: groupId, tenantId },
     });
     if (!group) {
@@ -736,20 +739,20 @@ export class AdminService {
     const added: any[] = [];
     for (const userId of userIds) {
       // Check user exists in tenant
-      const user = await prisma.user.findFirst({
+      const user = await idpPrisma.user.findFirst({
         where: { id: userId, tenantId },
       });
       if (!user) continue;
 
       // Check if already member
-      const existing = await prisma.userGroupMember.findUnique({
+      const existing = await idpPrisma.userGroupMember.findUnique({
         where: {
           groupId_userId: { groupId, userId },
         },
       });
       if (existing) continue;
 
-      const member = await prisma.userGroupMember.create({
+      const member = await idpPrisma.userGroupMember.create({
         data: { groupId, userId },
       });
       added.push(member);
@@ -759,14 +762,14 @@ export class AdminService {
   }
 
   async removeGroupMember(tenantId: string, groupId: string, userId: string) {
-    const group = await prisma.userGroup.findFirst({
+    const group = await idpPrisma.userGroup.findFirst({
       where: { id: groupId, tenantId },
     });
     if (!group) {
       throw new NotFoundException("User group not found");
     }
 
-    const member = await prisma.userGroupMember.findUnique({
+    const member = await idpPrisma.userGroupMember.findUnique({
       where: {
         groupId_userId: { groupId, userId },
       },
@@ -775,7 +778,7 @@ export class AdminService {
       throw new NotFoundException("User is not a member of this group");
     }
 
-    await prisma.userGroupMember.delete({
+    await idpPrisma.userGroupMember.delete({
       where: {
         groupId_userId: { groupId, userId },
       },

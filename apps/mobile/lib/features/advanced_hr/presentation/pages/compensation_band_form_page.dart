@@ -13,15 +13,18 @@ class CompensationBandFormPage extends ConsumerStatefulWidget {
   static const String routeName = 'compensation-band-new';
   static const String routeEditName = 'compensation-band-edit';
   static const String routePath = '/advanced-hr/compensation-bands/new';
-  static const String routeEditPath = '/advanced-hr/compensation-bands/:id/edit';
+  static const String routeEditPath =
+      '/advanced-hr/compensation-bands/:id/edit';
 
   final String? bandId;
 
   @override
-  ConsumerState<CompensationBandFormPage> createState() => _CompensationBandFormPageState();
+  ConsumerState<CompensationBandFormPage> createState() =>
+      _CompensationBandFormPageState();
 }
 
-class _CompensationBandFormPageState extends ConsumerState<CompensationBandFormPage> {
+class _CompensationBandFormPageState
+    extends ConsumerState<CompensationBandFormPage> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _nameCtrl = TextEditingController();
   final TextEditingController _minSalaryCtrl = TextEditingController();
@@ -44,9 +47,8 @@ class _CompensationBandFormPageState extends ConsumerState<CompensationBandFormP
   }
 
   Future<void> _loadBand() async {
-    final CompensationBand? band = ref
-        .read(compensationBandDetailProvider(widget.bandId!))
-        .valueOrNull;
+    final CompensationBand? band =
+        ref.read(compensationBandDetailProvider(widget.bandId!)).valueOrNull;
     if (band != null) {
       _nameCtrl.text = band.name;
       _minSalaryCtrl.text = band.minSalary.toString();
@@ -77,7 +79,9 @@ class _CompensationBandFormPageState extends ConsumerState<CompensationBandFormP
       'name': _nameCtrl.text.trim(),
       'minSalary': double.tryParse(_minSalaryCtrl.text) ?? 0,
       'maxSalary': double.tryParse(_maxSalaryCtrl.text) ?? 0,
-      'currency': _currencyCtrl.text.trim().isEmpty ? 'USD' : _currencyCtrl.text.trim().toUpperCase(),
+      'currency': _currencyCtrl.text.trim().isEmpty
+          ? 'USD'
+          : _currencyCtrl.text.trim().toUpperCase(),
       'grade': _gradeCtrl.text.trim().isEmpty ? null : _gradeCtrl.text.trim(),
       'status': _status,
       'notes': _notesCtrl.text.trim().isEmpty ? null : _notesCtrl.text.trim(),
@@ -103,7 +107,8 @@ class _CompensationBandFormPageState extends ConsumerState<CompensationBandFormP
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(_isEditing ? 'Edit Compensation Band' : 'New Compensation Band'),
+        title: Text(
+            _isEditing ? 'Edit Compensation Band' : 'New Compensation Band'),
         actions: <Widget>[
           TextButton(
             onPressed: _saving ? null : _save,
@@ -131,7 +136,8 @@ class _CompensationBandFormPageState extends ConsumerState<CompensationBandFormP
             const SizedBox(height: Spacing.x4),
             TextFormField(
               controller: _minSalaryCtrl,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
               decoration: const InputDecoration(labelText: 'Min Salary *'),
               validator: (String? v) =>
                   v == null || v.trim().isEmpty ? 'Required' : null,
@@ -139,7 +145,8 @@ class _CompensationBandFormPageState extends ConsumerState<CompensationBandFormP
             const SizedBox(height: Spacing.x4),
             TextFormField(
               controller: _maxSalaryCtrl,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
               decoration: const InputDecoration(labelText: 'Max Salary *'),
               validator: (String? v) =>
                   v == null || v.trim().isEmpty ? 'Required' : null,
@@ -163,8 +170,10 @@ class _CompensationBandFormPageState extends ConsumerState<CompensationBandFormP
               initialValue: _status,
               decoration: const InputDecoration(labelText: 'Status'),
               items: const <DropdownMenuItem<String>>[
-                DropdownMenuItem<String>(value: 'ACTIVE', child: Text('Active')),
-                DropdownMenuItem<String>(value: 'INACTIVE', child: Text('Inactive')),
+                DropdownMenuItem<String>(
+                    value: 'ACTIVE', child: Text('Active')),
+                DropdownMenuItem<String>(
+                    value: 'INACTIVE', child: Text('Inactive')),
               ],
               onChanged: (String? v) {
                 if (v != null) setState(() => _status = v);

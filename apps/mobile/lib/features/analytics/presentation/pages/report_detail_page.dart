@@ -28,8 +28,11 @@ class ReportDetailPage extends ConsumerWidget {
       body: reportAsync.when(
         loading: () => const LoadingView(),
         error: (Object error, StackTrace _) => FailureView(
-          failure: error is Failure ? error : const ServerFailure('Could not load report.'),
-          onRetry: () => ref.invalidate(analyticsReportDetailProvider(reportId)),
+          failure: error is Failure
+              ? error
+              : const ServerFailure('Could not load report.'),
+          onRetry: () =>
+              ref.invalidate(analyticsReportDetailProvider(reportId)),
         ),
         data: (AnalyticsReport report) => _ReportDetail(report: report),
       ),
@@ -91,7 +94,8 @@ class _ReportDetail extends StatelessWidget {
               ),
               if (report.description != null) ...<Widget>[
                 const SizedBox(height: Spacing.x2),
-                Text(report.description!, style: TextStyle(color: t.textSecondary)),
+                Text(report.description!,
+                    style: TextStyle(color: t.textSecondary)),
               ],
             ],
           ),
@@ -115,8 +119,16 @@ class _ReportDetail extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               const _SectionTitle(title: 'Timeline'),
-              _FieldRow('Created', report.createdAt != null ? Formatters.dateTime(report.createdAt!) : '—'),
-              _FieldRow('Updated', report.updatedAt != null ? Formatters.dateTime(report.updatedAt!) : '—'),
+              _FieldRow(
+                  'Created',
+                  report.createdAt != null
+                      ? Formatters.dateTime(report.createdAt!)
+                      : '—'),
+              _FieldRow(
+                  'Updated',
+                  report.updatedAt != null
+                      ? Formatters.dateTime(report.updatedAt!)
+                      : '—'),
             ],
           ),
         ),

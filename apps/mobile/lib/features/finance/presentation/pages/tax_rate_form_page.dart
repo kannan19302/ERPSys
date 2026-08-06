@@ -36,13 +36,15 @@ class _TaxRateFormPageState extends ConsumerState<TaxRateFormPage> {
                     const UiSectionHeader(title: 'Tax Rate Details'),
                     TextFormField(
                       decoration: const InputDecoration(labelText: 'Name'),
-                      validator: (v) => v == null || v.isEmpty ? 'Required' : null,
+                      validator: (v) =>
+                          v == null || v.isEmpty ? 'Required' : null,
                     ),
                     const SizedBox(height: Spacing.x3),
                     TextFormField(
                       decoration: const InputDecoration(labelText: 'Rate (%)'),
                       keyboardType: TextInputType.number,
-                      validator: (v) => v == null || v.isEmpty ? 'Required' : null,
+                      validator: (v) =>
+                          v == null || v.isEmpty ? 'Required' : null,
                     ),
                     const SizedBox(height: Spacing.x3),
                     TextFormField(

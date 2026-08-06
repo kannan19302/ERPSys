@@ -89,7 +89,8 @@ Future<String> _resolveInstallId() async {
     }
     return info.packageName;
   } on Object catch (error) {
-    _log.warn('Could not resolve install id', data: <String, Object?>{'error': '$error'});
+    _log.warn('Could not resolve install id',
+        data: <String, Object?>{'error': '$error'});
     return 'unknown-install';
   }
 }

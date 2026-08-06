@@ -1,5 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 
 /**
  * CRM Sales Enablement service.
@@ -72,7 +73,9 @@ export class CrmEnablementService {
   ): Promise<
     Array<{ competitorName: string; strengths: string[]; weaknesses: string[] }>
   > {
-    const list = await prisma.battlecard.findMany({ where: { tenantId } });
+    const list = await (prisma as any).battlecard.findMany({
+      where: { tenantId },
+    });
     return list.map((item) => ({
       competitorName: item.competitor || "",
       strengths: item.strengths ? (item.strengths as string[]) : [],
@@ -83,14 +86,14 @@ export class CrmEnablementService {
   async getLeaderboard(
     tenantId: string,
   ): Promise<Array<{ repName: string; wonAmount: number; dealCount: number }>> {
-    const wonOpps = await prisma.opportunity.findMany({
+    const wonOpps = await (prisma as any).opportunity.findMany({
       where: { tenantId, stage: "CLOSED_WON", deletedAt: null },
     });
 
     const userIds = wonOpps
       .map((opp) => opp.assignedToId)
       .filter((id): id is string => !!id);
-    const users = await prisma.user.findMany({
+    const users = await (idpPrisma as any).user.findMany({
       where: { id: { in: userIds } },
       select: { id: true, firstName: true, lastName: true },
     });
@@ -101,7 +104,7 @@ export class CrmEnablementService {
     const repMap = new Map<string, { wonAmount: number; dealCount: number }>();
     for (const opp of wonOpps) {
       if (!opp.assignedToId) continue;
-      const repName = userMap.get(opp.assignedToId) ?? "Unassigned";
+      const repName = String(userMap.get(opp.assignedToId) ?? "Unassigned");
       const entry = repMap.get(repName) || { wonAmount: 0, dealCount: 0 };
       entry.wonAmount += Number(opp.amount || 0);
       entry.dealCount += 1;

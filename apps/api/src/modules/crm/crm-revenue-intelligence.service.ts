@@ -1,5 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 import { EventEmitter2 } from "@nestjs/event-emitter";
 import { Prisma } from "@prisma/client";
 
@@ -163,7 +164,7 @@ export class CrmRevenueIntelligenceService {
   }
 
   private async resolveManagers(tenantId: string): Promise<string[]> {
-    const roles = await prisma.role.findMany({
+    const roles = await idpPrisma.role.findMany({
       where: { tenantId },
       select: { id: true, permissions: true },
     });
@@ -177,7 +178,7 @@ export class CrmRevenueIntelligenceService {
       .map((role) => role.id);
     if (managerRoleIds.length === 0) return [];
 
-    const userRoles = await prisma.userRole.findMany({
+    const userRoles = await idpPrisma.userRole.findMany({
       where: {
         roleId: { in: managerRoleIds },
         user: { tenantId, deletedAt: null, status: "ACTIVE" },

@@ -45,7 +45,8 @@ class DeliveryNoteDetailPage extends ConsumerWidget {
           failure: error is Failure
               ? error
               : const ServerFailure('Could not load delivery note.'),
-          onRetry: () => ref.invalidate(deliveryNoteDetailProvider(deliveryNoteId)),
+          onRetry: () =>
+              ref.invalidate(deliveryNoteDetailProvider(deliveryNoteId)),
         ),
         data: (DeliveryNote note) => _DeliveryNoteDetail(note: note, ref: ref),
       ),
@@ -139,11 +140,13 @@ class _DeliveryNoteDetail extends ConsumerWidget {
             children: <Widget>[
               const UiSectionHeader(title: 'Customer'),
               Text(note.customerName),
-              if (note.shippingAddress != null && note.shippingAddress!.isNotEmpty) ...[
+              if (note.shippingAddress != null &&
+                  note.shippingAddress!.isNotEmpty) ...[
                 const SizedBox(height: Spacing.x2),
                 Text(
                   'Shipping: ${note.shippingAddress!}',
-                  style: TextStyle(color: t.textSecondary, fontSize: TypeScale.sm),
+                  style:
+                      TextStyle(color: t.textSecondary, fontSize: TypeScale.sm),
                 ),
               ],
             ],
@@ -214,8 +217,8 @@ class _DeliveryNoteDetail extends ConsumerWidget {
     result.fold(
       (failure) => ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text(failure.message))),
-      (_) => ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('Delivery note submitted'))),
+      (_) => ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Delivery note submitted'))),
     );
   }
 }

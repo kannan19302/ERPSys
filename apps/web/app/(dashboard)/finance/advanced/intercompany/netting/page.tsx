@@ -190,19 +190,19 @@ export default function IntercompanyNettingPage() {
                 label: "Unmatched AR Invoices",
                 value: String(invoices.length),
                 icon: <Info size={20} />,
-                color: "#3b82f6",
+                color: "var(--color-primary)",
               },
               {
                 label: "Unmatched AP Schedules",
                 value: String(schedules.length),
                 icon: <ArrowRightLeft size={20} />,
-                color: "#f59e0b",
+                color: "var(--chart-3)",
               },
               {
                 label: "Matched Pairs (Pending Netting)",
                 value: String(stats.matchedCount),
                 icon: <ShieldCheck size={20} />,
-                color: "#22c55e",
+                color: "var(--chart-2)",
               },
             ]}
           />

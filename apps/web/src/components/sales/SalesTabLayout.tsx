@@ -14,7 +14,7 @@ import {
   BarChart3,
   TrendingUp,
 } from "lucide-react";
-import type { ModuleTab } from "@unerp/ui-layout";
+import type { ModuleTab } from "@unerp/ui/layout";
 
 export {
   ModuleTabLayout as SalesTabLayout,
@@ -22,7 +22,7 @@ export {
   type ModuleTabLayoutProps as SalesTabLayoutProps,
   SubTabBar,
   type SubTab,
-} from "@unerp/ui-layout";
+} from "@unerp/ui/layout";
 
 export const SALES_TABS: ModuleTab[] = [
   {

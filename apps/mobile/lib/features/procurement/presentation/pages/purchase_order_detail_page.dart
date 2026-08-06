@@ -36,7 +36,9 @@ class PurchaseOrderDetailPage extends ConsumerWidget {
       body: poAsync.when(
         loading: () => const LoadingView(),
         error: (error, _) => FailureView(
-          failure: error is Failure ? error : const ServerFailure('Could not load PO.'),
+          failure: error is Failure
+              ? error
+              : const ServerFailure('Could not load PO.'),
           onRetry: () => ref.invalidate(purchaseOrderDetailProvider(poId)),
         ),
         data: (po) => _PurchaseOrderDetail(po: po),
@@ -51,16 +53,23 @@ class PurchaseOrderDetailPage extends ConsumerWidget {
         title: const Text('Delete PO?'),
         content: const Text('This cannot be undone.'),
         actions: [
-          TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('Cancel')),
-          FilledButton(onPressed: () => Navigator.of(ctx).pop(true), child: const Text('Delete')),
+          TextButton(
+              onPressed: () => Navigator.of(ctx).pop(false),
+              child: const Text('Cancel')),
+          FilledButton(
+              onPressed: () => Navigator.of(ctx).pop(true),
+              child: const Text('Delete')),
         ],
       ),
     );
     if (confirmed != true || !context.mounted) return;
-    final result = await ref.read(purchaseOrderListControllerProvider.notifier).delete(poId);
+    final result = await ref
+        .read(purchaseOrderListControllerProvider.notifier)
+        .delete(poId);
     if (!context.mounted) return;
     result.fold(
-      (f) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(f.message))),
+      (f) => ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(f.message))),
       (_) => Navigator.of(context).pop(),
     );
   }
@@ -76,58 +85,82 @@ class _PurchaseOrderDetail extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.all(Spacing.x4),
       children: [
-        UiCard(child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(children: [
-              Expanded(child: Text(po.poNumber, style: Theme.of(context).textTheme.titleLarge)),
-              UiStatusBadge(label: po.status, tone: _statusTone(po.status)),
-            ],),
-            const SizedBox(height: Spacing.x1),
-            Text(po.vendorName, style: TextStyle(color: t.textSecondary)),
-          ],
-        ),),
+        UiCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                      child: Text(po.poNumber,
+                          style: Theme.of(context).textTheme.titleLarge)),
+                  UiStatusBadge(label: po.status, tone: _statusTone(po.status)),
+                ],
+              ),
+              const SizedBox(height: Spacing.x1),
+              Text(po.vendorName, style: TextStyle(color: t.textSecondary)),
+            ],
+          ),
+        ),
         const SizedBox(height: Spacing.x4),
-        UiCard(child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const UiSectionHeader(title: 'Items'),
-            ...po.items.map((item) => Padding(
-              padding: const EdgeInsets.symmetric(vertical: Spacing.x1),
-              child: Row(children: [
-                Expanded(child: Text(item.productName ?? 'Item')),
-                Text('${item.quantity} \u00d7 \$${item.rate.toStringAsFixed(2)}'),
-                const SizedBox(width: Spacing.x2),
-                Text('\$${item.amount.toStringAsFixed(2)}',
-                    style: Theme.of(context).textTheme.labelLarge,),
-              ],),
-            ),),
-            const Divider(height: Spacing.x4),
-            _Row('Subtotal', Formatters.currency(po.subtotal)),
-            _Row('Tax', Formatters.currency(po.taxTotal)),
-            _Row('Total', Formatters.currency(po.totalAmount)),
-          ],
-        ),),
+        UiCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const UiSectionHeader(title: 'Items'),
+              ...po.items.map(
+                (item) => Padding(
+                  padding: const EdgeInsets.symmetric(vertical: Spacing.x1),
+                  child: Row(
+                    children: [
+                      Expanded(child: Text(item.productName ?? 'Item')),
+                      Text(
+                          '${item.quantity} \u00d7 \$${item.rate.toStringAsFixed(2)}'),
+                      const SizedBox(width: Spacing.x2),
+                      Text(
+                        '\$${item.amount.toStringAsFixed(2)}',
+                        style: Theme.of(context).textTheme.labelLarge,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const Divider(height: Spacing.x4),
+              _Row('Subtotal', Formatters.currency(po.subtotal)),
+              _Row('Tax', Formatters.currency(po.taxTotal)),
+              _Row('Total', Formatters.currency(po.totalAmount)),
+            ],
+          ),
+        ),
         const SizedBox(height: Spacing.x4),
-        UiCard(child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const UiSectionHeader(title: 'Details'),
-            _Row('Currency', po.currency),
-            if (po.orderDate != null) _Row('Order date', Formatters.dateTime(po.orderDate!)),
-            if (po.expectedDate != null) _Row('Expected', Formatters.dateTime(po.expectedDate!)),
-            if (po.notes != null && po.notes!.isNotEmpty) _Row('Notes', po.notes!),
-            if (po.createdAt != null) _Row('Created', Formatters.dateTime(po.createdAt!)),
-          ],
-        ),),
+        UiCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const UiSectionHeader(title: 'Details'),
+              _Row('Currency', po.currency),
+              if (po.orderDate != null)
+                _Row('Order date', Formatters.dateTime(po.orderDate!)),
+              if (po.expectedDate != null)
+                _Row('Expected', Formatters.dateTime(po.expectedDate!)),
+              if (po.notes != null && po.notes!.isNotEmpty)
+                _Row('Notes', po.notes!),
+              if (po.createdAt != null)
+                _Row('Created', Formatters.dateTime(po.createdAt!)),
+            ],
+          ),
+        ),
       ],
     );
   }
 
   UiTone _statusTone(String status) => switch (status) {
-        'DRAFT' => UiTone.neutral, 'SUBMITTED' => UiTone.info,
-        'APPROVED' => UiTone.success, 'RECEIVED' => UiTone.success,
-        'CANCELLED' => UiTone.danger, _ => UiTone.neutral,
+        'DRAFT' => UiTone.neutral,
+        'SUBMITTED' => UiTone.info,
+        'APPROVED' => UiTone.success,
+        'RECEIVED' => UiTone.success,
+        'CANCELLED' => UiTone.danger,
+        _ => UiTone.neutral,
       };
 }
 
@@ -140,10 +173,13 @@ class _Row extends StatelessWidget {
     final t = context.tokens;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: Spacing.x1_5),
-      child: Row(children: [
-        Expanded(child: Text(label, style: TextStyle(color: t.textSecondary))),
-        Text(value, style: Theme.of(context).textTheme.labelLarge),
-      ],),
+      child: Row(
+        children: [
+          Expanded(
+              child: Text(label, style: TextStyle(color: t.textSecondary))),
+          Text(value, style: Theme.of(context).textTheme.labelLarge),
+        ],
+      ),
     );
   }
 }

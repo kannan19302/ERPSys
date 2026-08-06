@@ -1,0 +1,26 @@
+.s1 {
+  display: flex;
+  gap: var(--space-2);
+}
+.s2 {
+  font-size: 11px;
+  padding: var(--space-1) var(--space-2-5);
+}
+.s3 {
+  color: var(--color-danger-hover);
+  font-size: 11px;
+  padding: var(--space-1) var(--space-2-5);
+}
+.s4 {
+  font-weight: 600;
+  margin: 0;
+}
+.s5 {
+  background: var(--color-bg-subtle);
+  border-radius: var(--radius-md);
+  font-family: monospace;
+  font-size: var(--text-xs);
+  margin: 0;
+  overflow-x: auto;
+  padding: var(--space-3);
+}

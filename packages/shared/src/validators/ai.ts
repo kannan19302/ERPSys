@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 // ── AI Models ──
 export const createAiModelSchema = z.object({
@@ -48,7 +48,9 @@ export const createAiConversationSchema = z.object({
   context: z.record(z.unknown()).optional(),
   metadata: z.record(z.unknown()).optional(),
 });
-export type CreateAiConversationInput = z.infer<typeof createAiConversationSchema>;
+export type CreateAiConversationInput = z.infer<
+  typeof createAiConversationSchema
+>;
 
 export const sendAiMessageSchema = z.object({
   conversationId: z.string().min(1),
@@ -90,7 +92,9 @@ export const createAiTrainingJobSchema = z.object({
   dataset: z.unknown().optional(),
   config: z.record(z.unknown()).optional(),
 });
-export type CreateAiTrainingJobInput = z.infer<typeof createAiTrainingJobSchema>;
+export type CreateAiTrainingJobInput = z.infer<
+  typeof createAiTrainingJobSchema
+>;
 
 // ── AI Intent Classification ──
 export const classifyIntentSchema = z.object({
@@ -102,34 +106,52 @@ export const createIntentTrainingDataSchema = z.object({
   intent: z.string().min(1),
   text: z.string().min(1),
   language: z.string().optional(),
-  entities: z.array(z.object({
-    entity: z.string(),
-    value: z.string(),
-    startPos: z.number().int().optional(),
-    endPos: z.number().int().optional(),
-  })).optional(),
+  entities: z
+    .array(
+      z.object({
+        entity: z.string(),
+        value: z.string(),
+        startPos: z.number().int().optional(),
+        endPos: z.number().int().optional(),
+      }),
+    )
+    .optional(),
 });
-export type CreateIntentTrainingDataInput = z.infer<typeof createIntentTrainingDataSchema>;
+export type CreateIntentTrainingDataInput = z.infer<
+  typeof createIntentTrainingDataSchema
+>;
 
-export const updateIntentTrainingDataSchema = createIntentTrainingDataSchema.partial();
-export type UpdateIntentTrainingDataInput = z.infer<typeof updateIntentTrainingDataSchema>;
+export const updateIntentTrainingDataSchema =
+  createIntentTrainingDataSchema.partial();
+export type UpdateIntentTrainingDataInput = z.infer<
+  typeof updateIntentTrainingDataSchema
+>;
 
 // ── AI NLU Training Data ──
 export const createNluTrainingDataSchema = z.object({
   intent: z.string().min(1),
   text: z.string().min(1),
-  language: z.string().default('en'),
-  entities: z.array(z.object({
-    entity: z.string(),
-    value: z.string(),
-    startPos: z.number().int().optional(),
-    endPos: z.number().int().optional(),
-  })).optional(),
+  language: z.string().default("en"),
+  entities: z
+    .array(
+      z.object({
+        entity: z.string(),
+        value: z.string(),
+        startPos: z.number().int().optional(),
+        endPos: z.number().int().optional(),
+      }),
+    )
+    .optional(),
 });
-export type CreateNluTrainingDataInput = z.infer<typeof createNluTrainingDataSchema>;
+export type CreateNluTrainingDataInput = z.infer<
+  typeof createNluTrainingDataSchema
+>;
 
-export const updateNluTrainingDataSchema = createNluTrainingDataSchema.partial();
-export type UpdateNluTrainingDataInput = z.infer<typeof updateNluTrainingDataSchema>;
+export const updateNluTrainingDataSchema =
+  createNluTrainingDataSchema.partial();
+export type UpdateNluTrainingDataInput = z.infer<
+  typeof updateNluTrainingDataSchema
+>;
 
 // ── AI Model Accuracy Metrics ──
 export const recordAiModelAccuracySchema = z.object({
@@ -138,4 +160,6 @@ export const recordAiModelAccuracySchema = z.object({
   value: z.number(),
   metadata: z.record(z.unknown()).optional(),
 });
-export type RecordAiModelAccuracyInput = z.infer<typeof recordAiModelAccuracySchema>;
+export type RecordAiModelAccuracyInput = z.infer<
+  typeof recordAiModelAccuracySchema
+>;

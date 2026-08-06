@@ -324,6 +324,73 @@ mandatory per-module reduction quota on every feature cycle. See
 [`ARCHITECTURE_REVIEW.md § R1`](ARCHITECTURE_REVIEW.md). _This is the program's highest-priority
 technical debt and the ratchet may not be relaxed._
 
+**ADR-006 — The suppression ratchet scans whole workspaces, and its baseline was re-established
+once to make that possible.** `ACCEPTED 2026-08-04.`
+
+`scripts/ci/check-suppressions.mjs` previously scanned a hand-written list of four paths:
+`apps/api/src`, `apps/web/app`, `apps/web/src`, `packages`. When the platform split introduced
+`apps/idp`, `apps/console`, `apps/developer` and `apps/extensions`, every one of them fell
+outside that list. Roughly 480 `any` occurrences and four `@ts-nocheck` files were invisible
+while the gate still reported green — including `@ts-nocheck` on all four extension entrypoints,
+which only surfaced under a manual scan. **A ratchet that a new directory can walk around is not
+a ratchet**, and this is precisely the failure mode ADR-005 exists to prevent.
+
+_Decision:_ the scan roots become the pnpm workspace roots — `apps` and `packages` — so any
+future application or package is covered by construction rather than by remembering to edit a
+list.
+
+_Consequence, stated plainly:_ this is the one and only permitted upward movement of the
+baseline, and it is a **coverage** change, not a debt increase. The counted total rises from
+12,493 to 13,009 `any` because ~484 pre-existing occurrences became visible for the first time;
+the remaining +32 is genuine new debt from the split and is owed back under the normal quota.
+`@ts-nocheck` remains at 0 across the wider scope. From this baseline the numbers may only fall,
+as ADR-005 requires. Any future increase still needs its own ADR.
+
+**Amendment, 2026-08-04 — the builder UI is duplicated, and the count reflects that.**
+The platform split moved the builder _pages_ into `apps/developer` but left the components,
+stores and hooks they import in `apps/web`, so `apps/developer` did not compile at all. The
+25 component files were copied across to make it build. That duplication is counted twice by the
+ratchet — a further +54 `any` for code that already existed — and is folded into this baseline
+rather than hidden.
+
+It is temporary debt with a known resolution, recorded so it is not mistaken for new code: the
+authoring surfaces (`PageBuilderWorkspace`, `BuilderSidebar`, `BuilderProperties`, the editor
+workspaces) belong to `apps/developer`, while the runtime renderers (`PublicPageRenderer`,
+`DynamicFormRenderer`, `blocks/*`) are consumed by six `apps/web` pages — published tenant sites,
+public forms and custom module routes — and must be **extracted into a shared package**, not
+copied. Until that extraction, edits must be made in both places. Deleting either copy today
+breaks a build.
+
+**ADR-007 — The hardcoded-pixel ratchet counts declarations, not lines, and its baseline is
+re-expressed once in that unit.** `ACCEPTED 2026-08-06.`
+
+`Static (format)` had been failing on the Phase 0–3 branch: 202 files were unformatted, 155 of
+them CSS. Running the repository's own formatter over them expanded single-line rules —
+`.s2 { height: 16px; width: 16px; }` became three lines — and the pixel ratchet, which counted
+one hit per matching **line**, rose from 2,257 to 2,324. Not one hardcoded pixel had been
+written.
+
+**A gate that fails on `pnpm format` is measuring the wrong thing.** Both obvious ways out are
+worse than the problem: bumping the baseline to absorb 67 phantom violations destroys the meaning
+of the number, and skipping the formatting leaves a CI check red for the life of the branch. The
+rule is about pixel values, and the unit of a pixel value is a declaration — one property, one
+value — which is the same count however the file is wrapped.
+
+_Decision:_ `hardcodedSpacing` counts declarations. Comments are stripped, custom-property
+definitions (`--space-4: 16px`) stay exempt because a token definition is exactly where a pixel
+value belongs, and `0px`/`1px` hairlines remain permitted.
+
+_Consequence, stated plainly:_ the baseline moves from **2,257 (lines) to 2,315 (declarations)**,
+and this is a change of unit, not of debt. It is measured, not asserted: the new counter run
+against the tree **before** the formatting commit reports 2,315, and against the tree after it
+reports 2,315. The formatting added zero. From this baseline the number may only fall, and any
+future increase still needs its own ADR.
+
+The 2,315 remain genuinely owed. § 14's reasoning stands: unlike the 1,296 exact spacing values
+already migrated, these are odd values with no token, font sizes, border widths and pixels inside
+TSX, and substituting them needs visual-regression coverage that does not yet exist. This ADR
+makes the number trustworthy; it does not make it acceptable.
+
 ---
 
 ## 10. Amendment log

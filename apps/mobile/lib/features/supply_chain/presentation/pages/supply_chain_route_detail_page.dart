@@ -21,7 +21,9 @@ class SupplyChainRouteDetailPage extends ConsumerWidget {
       body: async.when(
         loading: () => const LoadingView(),
         error: (Object error, _) => FailureView(
-          failure: error is Failure ? error : const ServerFailure('Could not load route.'),
+          failure: error is Failure
+              ? error
+              : const ServerFailure('Could not load route.'),
           onRetry: () => ref.invalidate(routeDetailProvider(routeId)),
         ),
         data: (SupplyChainRoute route) => _RouteDetail(route: route),
@@ -43,13 +45,17 @@ class _RouteDetail extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(children: [
-                Expanded(child: Text(route.name, style: Theme.of(context).textTheme.titleLarge)),
-                UiStatusBadge(
-                  label: route.isActive ? 'Active' : 'Inactive',
-                  tone: route.isActive ? UiTone.success : UiTone.neutral,
-                ),
-              ],),
+              Row(
+                children: [
+                  Expanded(
+                      child: Text(route.name,
+                          style: Theme.of(context).textTheme.titleLarge)),
+                  UiStatusBadge(
+                    label: route.isActive ? 'Active' : 'Inactive',
+                    tone: route.isActive ? UiTone.success : UiTone.neutral,
+                  ),
+                ],
+              ),
             ],
           ),
         ),
@@ -62,7 +68,11 @@ class _RouteDetail extends StatelessWidget {
               _Row('Origin', route.origin),
               _Row('Destination', route.destination),
               _Row('Carrier', route.carrierName ?? '—'),
-              _Row('Transit time', route.transitTime != null ? '${route.transitTime} days' : '—'),
+              _Row(
+                  'Transit time',
+                  route.transitTime != null
+                      ? '${route.transitTime} days'
+                      : '—'),
               _Row('Cost', '\$${route.cost.toStringAsFixed(2)}'),
             ],
           ),
@@ -73,7 +83,11 @@ class _RouteDetail extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const UiSectionHeader(title: 'Details'),
-              _Row('Created', route.createdAt != null ? Formatters.date(route.createdAt!) : '—'),
+              _Row(
+                  'Created',
+                  route.createdAt != null
+                      ? Formatters.date(route.createdAt!)
+                      : '—'),
             ],
           ),
         ),
@@ -91,10 +105,13 @@ class _Row extends StatelessWidget {
     final t = context.tokens;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: Spacing.x1_5),
-      child: Row(children: [
-        Expanded(child: Text(label, style: TextStyle(color: t.textSecondary))),
-        Text(value, style: Theme.of(context).textTheme.labelLarge),
-      ],),
+      child: Row(
+        children: [
+          Expanded(
+              child: Text(label, style: TextStyle(color: t.textSecondary))),
+          Text(value, style: Theme.of(context).textTheme.labelLarge),
+        ],
+      ),
     );
   }
 }

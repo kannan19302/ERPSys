@@ -1,4 +1,4 @@
-import type { WriteEventParams } from './outbox.schema.js';
+import type { WriteEventParams } from "./outbox.schema.js";
 
 export interface OutboxDeliveryRow {
   id: string;
@@ -82,7 +82,7 @@ export class OutboxService {
           tenantId: params.tenantId,
           outboxEventId: event.id,
           destination,
-          status: 'PENDING',
+          status: "PENDING",
           availableAt: new Date(),
         })),
         skipDuplicates: true,

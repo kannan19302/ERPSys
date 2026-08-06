@@ -1,8 +1,9 @@
-import { PrismaClient, Prisma } from '@prisma/client';
+import { PrismaClient, Prisma } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-const DEFAULT_PASSWORD_HASH = '$2a$10$QNgJRZXhmjzcu16TQaaR4.EfRNWCFvCxE0Jvqvy/IKIgwq.BgSMJG';
+const DEFAULT_PASSWORD_HASH =
+  "$2a$10$QNgJRZXhmjzcu16TQaaR4.EfRNWCFvCxE0Jvqvy/IKIgwq.BgSMJG";
 
 async function withTenantContext<T>(
   tenantId: string,
@@ -35,7 +36,7 @@ async function main() {
   console.log(`Demo Tenant created: ${demoTenant.name} (${demoTenant.id})`);
 
   // Create roles
-  const dbRole = await withTenantContext(demoTenant.id, (tx) => 
+  const dbRole = await withTenantContext(demoTenant.id, (tx) =>
     tx.role.upsert({
       where: { tenantId_name: { tenantId: demoTenant.id, name: "Admin" } },
       update: {},
@@ -46,13 +47,18 @@ async function main() {
         isSystem: true,
         permissions: JSON.stringify(["*"]),
       },
-    })
+    }),
   );
 
   // Create users
   const adminUser = await withTenantContext(demoTenant.id, (tx) =>
     tx.user.upsert({
-      where: { tenantId_email: { tenantId: demoTenant.id, email: "admin@demo.unerp.dev" } },
+      where: {
+        tenantId_email: {
+          tenantId: demoTenant.id,
+          email: "admin@demo.unerp.dev",
+        },
+      },
       update: {},
       create: {
         tenantId: demoTenant.id,
@@ -62,7 +68,7 @@ async function main() {
         lastName: "Admin",
         status: "ACTIVE",
       },
-    })
+    }),
   );
 
   await prisma.userRole.upsert({
@@ -73,7 +79,12 @@ async function main() {
 
   const salesUser = await withTenantContext(demoTenant.id, (tx) =>
     tx.user.upsert({
-      where: { tenantId_email: { tenantId: demoTenant.id, email: "sales@demo.unerp.dev" } },
+      where: {
+        tenantId_email: {
+          tenantId: demoTenant.id,
+          email: "sales@demo.unerp.dev",
+        },
+      },
       update: {},
       create: {
         tenantId: demoTenant.id,
@@ -83,7 +94,7 @@ async function main() {
         lastName: "Sales",
         status: "ACTIVE",
       },
-    })
+    }),
   );
 
   await prisma.userRole.upsert({

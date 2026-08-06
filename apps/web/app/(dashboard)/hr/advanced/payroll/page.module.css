@@ -1,5 +1,5 @@
 .s0 {
-  padding: 8px 16px;
+  padding: var(--space-2) var(--space-4);
   background: var(--color-primary-light);
   color: var(--color-primary);
   border-radius: var(--radius-md);
@@ -37,7 +37,7 @@
 
 .s7 {
   color: var(--color-text-tertiary);
-  margin-bottom: 8px;
+  margin-bottom: var(--space-2);
 }
 
 .s8 {
@@ -88,20 +88,20 @@
 
 .s16 {
   margin: 0 0 var(--space-2);
-  font-size: 12px;
+  font-size: var(--text-xs);
 }
 
 .s17 {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 12px;
+  font-size: var(--text-xs);
   background: var(--color-bg-sunken);
-  padding: 6px 12px;
+  padding: var(--space-1-5) var(--space-3);
   border-radius: var(--radius-sm);
 }
 
 .s18 {
   display: flex;
-  gap: 16px;
+  gap: var(--space-4);
 }

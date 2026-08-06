@@ -17,7 +17,7 @@ import {
   TrendingDown,
 } from "lucide-react";
 import { RouteGuard, useApiClient } from "@unerp/framework";
-import { SubTabBar } from "@unerp/ui-layout";
+import { SubTabBar } from "@unerp/ui/layout";
 import { useSearchParams } from "next/navigation";
 
 import { Package as InventoryModuleIcon } from "lucide-react";

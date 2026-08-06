@@ -12,9 +12,12 @@ class SaasPortalSupportTicketDetailPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       appBar: AppBar(title: const Text('Support Ticket')),
-      body: ListView(padding: const EdgeInsets.all(Spacing.x4), children: [
-        Text('Ticket: $ticketId'),
-      ],),
+      body: ListView(
+        padding: const EdgeInsets.all(Spacing.x4),
+        children: [
+          Text('Ticket: $ticketId'),
+        ],
+      ),
     );
   }
 }

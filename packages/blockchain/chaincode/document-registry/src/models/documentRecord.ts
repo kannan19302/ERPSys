@@ -6,7 +6,7 @@
  */
 export interface DocumentRecord {
   /** Composite key prefix */
-  docType: 'DocumentRecord';
+  docType: "DocumentRecord";
   /** Unique document identifier (from PostgreSQL) */
   documentId: string;
   /** UniERP tenant that owns this document */

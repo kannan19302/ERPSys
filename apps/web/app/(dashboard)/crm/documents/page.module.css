@@ -44,7 +44,10 @@
   cursor: pointer;
   font-size: var(--text-xs);
   font-weight: var(--weight-semibold);
-  transition: background-color var(--duration-fast) var(--ease-default), color var(--duration-fast) var(--ease-default), border-color var(--duration-fast) var(--ease-default);
+  transition:
+    background-color var(--duration-fast) var(--ease-default),
+    color var(--duration-fast) var(--ease-default),
+    border-color var(--duration-fast) var(--ease-default);
 }
 
 .entityTab:hover,

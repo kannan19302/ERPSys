@@ -22,9 +22,8 @@ class ConnectivityNetworkInfo implements NetworkInfo {
       _hasConnection(await _connectivity.checkConnectivity());
 
   @override
-  Stream<bool> get onConnectivityChanged => _connectivity.onConnectivityChanged
-      .map(_hasConnection)
-      .distinct();
+  Stream<bool> get onConnectivityChanged =>
+      _connectivity.onConnectivityChanged.map(_hasConnection).distinct();
 
   static bool _hasConnection(List<ConnectivityResult> results) =>
       results.any((ConnectivityResult r) => r != ConnectivityResult.none);

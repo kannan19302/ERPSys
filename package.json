@@ -12,7 +12,7 @@
   "packageManager": "pnpm@9.15.4",
   "scripts": {
     "build": "turbo run build",
-    "dev": "turbo run dev",
+    "dev": "node scripts/dev.mjs",
     "dev:web": "turbo run dev --filter=@unerp/web",
     "dev:api": "turbo run dev --filter=@unerp/api",
     "docker:up": "docker compose -f docker-compose.dev.yml up -d --build",
@@ -63,7 +63,13 @@
     "check:licenses": "node scripts/ci/check-licenses.mjs",
     "check:migrations": "node scripts/ci/check-migration-safety.mjs",
     "check:rls": "node scripts/check-rls-verify.mjs",
-    "debt:report": "node scripts/ci/check-suppressions.mjs --report && node scripts/ci/check-policy.mjs"
+    "debt:report": "node scripts/ci/check-suppressions.mjs --report && node scripts/ci/check-policy.mjs",
+    "check:cdc": "node scripts/ci/cdc-harness.mjs",
+    "check:cdc:record": "node scripts/ci/cdc-harness.mjs --record",
+    "dev:down": "node scripts/dev.mjs --down",
+    "dev:reset": "node scripts/dev.mjs --reset",
+    "smoke": "node scripts/ci/smoke-journey.mjs",
+    "check:resolution": "node scripts/ci/check-node-resolution.mjs"
   },
   "devDependencies": {
     "@changesets/cli": "^2.31.0",
@@ -96,5 +102,18 @@
   "engines": {
     "node": ">=22.0.0",
     "pnpm": ">=9.0.0"
+  },
+  "dependencies": {
+    "isolated-vm": "^7.0.0"
+  },
+  "pnpm": {
+    "overrides": {
+      "next": "^15.5.22",
+      "brace-expansion@1": "1.1.12",
+      "brace-expansion@2": "2.0.2",
+      "fast-uri": ">=3.1.3",
+      "postcss": ">=8.4.31",
+      "socket.io-parser": ">=4.2.4"
+    }
   }
 }

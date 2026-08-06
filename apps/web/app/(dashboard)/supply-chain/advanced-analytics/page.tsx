@@ -11,7 +11,7 @@ import {
   Select,
   Spinner,
 } from "@unerp/ui";
-import { SubTabBar, type SubTab } from "@unerp/ui-layout";
+import { SubTabBar, type SubTab } from "@unerp/ui/layout";
 import { Brain, AlertTriangle, TrendingUp, BarChart3 } from "lucide-react";
 import { RouteGuard, useApiClient } from "@unerp/framework";
 

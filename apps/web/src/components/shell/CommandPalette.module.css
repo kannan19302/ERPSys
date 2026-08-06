@@ -8,7 +8,7 @@
   padding-top: 15vh;
   background: rgba(0, 0, 0, 0.4);
   backdrop-filter: blur(2px);
-  WebkitBackdropFilter: blur(2px);
+  webkitbackdropfilter: blur(2px);
 }
 
 .modalCard {
@@ -43,8 +43,8 @@
 
 .kbd {
   font-size: 10px;
-  padding: 2px 6px;
-  border-radius: 4px;
+  padding: var(--space-half) var(--space-1-5);
+  border-radius: var(--radius-sm);
   border: 1px solid var(--color-border);
   color: var(--color-text-tertiary);
   font-family: var(--font-mono);

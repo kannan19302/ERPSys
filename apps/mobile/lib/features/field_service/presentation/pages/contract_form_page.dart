@@ -34,7 +34,8 @@ class _ContractFormPageState extends ConsumerState<ContractFormPage> {
   }
 
   Future<void> _loadExisting() async {
-    final contract = await ref.read(serviceContractDetailProvider(widget.id!).future);
+    final contract =
+        await ref.read(serviceContractDetailProvider(widget.id!).future);
     if (!mounted) return;
     _contractNumberController.text = contract.contractNumber;
     _customerNameController.text = contract.customerName;
@@ -68,7 +69,8 @@ class _ContractFormPageState extends ConsumerState<ContractFormPage> {
       'contractNumber': _contractNumberController.text.trim(),
       'customerName': _customerNameController.text.trim(),
       'serviceType': _serviceTypeController.text.trim(),
-      'contractValue': double.tryParse(_contractValueController.text.trim()) ?? 0,
+      'contractValue':
+          double.tryParse(_contractValueController.text.trim()) ?? 0,
       'billingCycle': _billingCycleController.text.trim(),
       'terms': _termsController.text.trim(),
       'notes': _notesController.text.trim(),
@@ -76,11 +78,14 @@ class _ContractFormPageState extends ConsumerState<ContractFormPage> {
       if (_startDate != null) 'startDate': _startDate!.toIso8601String(),
       if (_endDate != null) 'endDate': _endDate!.toIso8601String(),
     };
-    final result = await ref.read(serviceContractListControllerProvider.notifier).save(payload, id: widget.id);
+    final result = await ref
+        .read(serviceContractListControllerProvider.notifier)
+        .save(payload, id: widget.id);
     if (!mounted) return;
     setState(() => _isLoading = false);
     result.fold(
-      (f) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(f.message))),
+      (f) => ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(f.message))),
       (_) => Navigator.of(context).pop(true),
     );
   }
@@ -94,7 +99,8 @@ class _ContractFormPageState extends ConsumerState<ContractFormPage> {
       );
     }
     return Scaffold(
-      appBar: AppBar(title: Text(widget.id != null ? 'Edit Contract' : 'New Contract')),
+      appBar: AppBar(
+          title: Text(widget.id != null ? 'Edit Contract' : 'New Contract')),
       body: Form(
         key: _formKey,
         child: ListView(
@@ -103,14 +109,17 @@ class _ContractFormPageState extends ConsumerState<ContractFormPage> {
             UiTextField(
               label: 'Contract Number',
               controller: _contractNumberController,
-              validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+              validator: (v) =>
+                  (v == null || v.trim().isEmpty) ? 'Required' : null,
             ),
             UiTextField(
               label: 'Customer Name',
               controller: _customerNameController,
-              validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+              validator: (v) =>
+                  (v == null || v.trim().isEmpty) ? 'Required' : null,
             ),
-            UiTextField(label: 'Service Type', controller: _serviceTypeController),
+            UiTextField(
+                label: 'Service Type', controller: _serviceTypeController),
             UiDropdownField(
               label: 'Status',
               itemLabel: (v) => v.toString(),
@@ -133,14 +142,20 @@ class _ContractFormPageState extends ConsumerState<ContractFormPage> {
               controller: _contractValueController,
               keyboardType: TextInputType.number,
             ),
-            UiTextField(label: 'Billing Cycle', controller: _billingCycleController),
-            UiTextField(label: 'Terms', controller: _termsController, maxLines: 3),
-            UiTextField(label: 'Notes', controller: _notesController, maxLines: 3),
+            UiTextField(
+                label: 'Billing Cycle', controller: _billingCycleController),
+            UiTextField(
+                label: 'Terms', controller: _termsController, maxLines: 3),
+            UiTextField(
+                label: 'Notes', controller: _notesController, maxLines: 3),
             const SizedBox(height: 24),
             ElevatedButton(
               onPressed: _isLoading ? null : _submit,
               child: _isLoading
-                  ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2))
                   : const Text('Save'),
             ),
           ],

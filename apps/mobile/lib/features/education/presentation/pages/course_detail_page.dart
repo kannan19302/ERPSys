@@ -20,8 +20,11 @@ class CourseDetailPage extends ConsumerWidget {
       appBar: AppBar(title: const Text('Course')),
       body: async.when(
         loading: () => const LoadingView(),
-        error: (e, _) => FailureView(failure: e is Failure ? e : const ServerFailure('Could not load course.'),
-          onRetry: () => ref.invalidate(courseDetailProvider(courseId)),),
+        error: (e, _) => FailureView(
+          failure:
+              e is Failure ? e : const ServerFailure('Could not load course.'),
+          onRetry: () => ref.invalidate(courseDetailProvider(courseId)),
+        ),
         data: (Course c) => _CourseDetail(course: c),
       ),
     );
@@ -38,34 +41,70 @@ class _CourseDetail extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.all(Spacing.x4),
       children: [
-        Container(width: double.infinity, padding: const EdgeInsets.all(Spacing.x4),
-          decoration: BoxDecoration(color: t.bgElevated, borderRadius: Radii.card, border: Border.all(color: t.border)),
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Row(children: [
-              Expanded(child: Text(course.name, style: Theme.of(context).textTheme.titleLarge)),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: Spacing.x2_5, vertical: Spacing.x1),
-                decoration: BoxDecoration(color: course.status == 'ACTIVE' ? t.successLight : t.bgSunken, borderRadius: Radii.pill),
-                child: Text(course.status, style: TextStyle(color: course.status == 'ACTIVE' ? t.success : t.textSecondary,
-                  fontSize: TypeScale.xs, fontWeight: TypeScale.medium,),),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(Spacing.x4),
+          decoration: BoxDecoration(
+              color: t.bgElevated,
+              borderRadius: Radii.card,
+              border: Border.all(color: t.border)),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                      child: Text(course.name,
+                          style: Theme.of(context).textTheme.titleLarge)),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: Spacing.x2_5, vertical: Spacing.x1),
+                    decoration: BoxDecoration(
+                        color: course.status == 'ACTIVE'
+                            ? t.successLight
+                            : t.bgSunken,
+                        borderRadius: Radii.pill),
+                    child: Text(
+                      course.status,
+                      style: TextStyle(
+                        color: course.status == 'ACTIVE'
+                            ? t.success
+                            : t.textSecondary,
+                        fontSize: TypeScale.xs,
+                        fontWeight: TypeScale.medium,
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ],),
-            const SizedBox(height: Spacing.x1),
-            Text(course.code, style: TextStyle(color: t.textSecondary)),
-          ],),
+              const SizedBox(height: Spacing.x1),
+              Text(course.code, style: TextStyle(color: t.textSecondary)),
+            ],
+          ),
         ),
         const SizedBox(height: Spacing.x4),
-        Container(width: double.infinity, padding: const EdgeInsets.all(Spacing.x4),
-          decoration: BoxDecoration(color: t.bgElevated, borderRadius: Radii.card, border: Border.all(color: t.border)),
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            const Text('Details', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-            const SizedBox(height: Spacing.x3),
-            _FieldRow('Department', course.department ?? '—'),
-            _FieldRow('Instructor', course.instructor ?? '—'),
-            _FieldRow('Credits', '${course.credits}'),
-            _FieldRow('Duration', '${course.durationHours} hours'),
-            if (course.description != null) ...[_FieldRow('Description', course.description!)],
-          ],),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(Spacing.x4),
+          decoration: BoxDecoration(
+              color: t.bgElevated,
+              borderRadius: Radii.card,
+              border: Border.all(color: t.border)),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('Details',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+              const SizedBox(height: Spacing.x3),
+              _FieldRow('Department', course.department ?? '—'),
+              _FieldRow('Instructor', course.instructor ?? '—'),
+              _FieldRow('Credits', '${course.credits}'),
+              _FieldRow('Duration', '${course.durationHours} hours'),
+              if (course.description != null) ...[
+                _FieldRow('Description', course.description!)
+              ],
+            ],
+          ),
         ),
       ],
     );
@@ -74,13 +113,17 @@ class _CourseDetail extends StatelessWidget {
 
 class _FieldRow extends StatelessWidget {
   const _FieldRow(this.l, this.v);
-  final String l; final String v;
+  final String l;
+  final String v;
   @override
   Widget build(BuildContext context) {
     final t = context.tokens;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: Spacing.x1_5),
-      child: Row(children: [Expanded(child: Text(l, style: TextStyle(color: t.textSecondary))), Text(v, style: Theme.of(context).textTheme.labelLarge)]),
+      child: Row(children: [
+        Expanded(child: Text(l, style: TextStyle(color: t.textSecondary))),
+        Text(v, style: Theme.of(context).textTheme.labelLarge)
+      ]),
     );
   }
 }

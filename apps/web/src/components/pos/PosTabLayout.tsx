@@ -11,7 +11,7 @@ import {
   Settings,
   DollarSign,
 } from "lucide-react";
-import type { ModuleTab } from "@unerp/ui-layout";
+import type { ModuleTab } from "@unerp/ui/layout";
 
 export {
   ModuleTabLayout as PosTabLayout,
@@ -19,7 +19,7 @@ export {
   type ModuleTabLayoutProps as PosTabLayoutProps,
   SubTabBar,
   type SubTab,
-} from "@unerp/ui-layout";
+} from "@unerp/ui/layout";
 
 export const POS_TABS: ModuleTab[] = [
   {

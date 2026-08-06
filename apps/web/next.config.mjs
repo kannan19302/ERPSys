@@ -1,6 +1,11 @@
 
 /** @type {import('next').NextConfig} */
 const apiBaseUrl = process.env.API_URL || 'http://localhost:3001';
+// Authentication lives in its own service. § 5.2 gives each plane a separate
+// identity realm, so /auth/* is served by the IdP rather than by the business
+// API — and proxying every /api/v1/* path to the API meant registration and
+// login 404'd against a service that never owned them.
+const idpBaseUrl = process.env.IDP_URL || 'http://localhost:3005';
 
 const nextConfig = {
   // Force webpack to poll for file changes instead of relying on inotify,
@@ -16,40 +21,38 @@ const nextConfig = {
     return config;
   },
   reactStrictMode: true,
-  // transpilePackages: only include packages that:
-  //   1. Ship TypeScript source (need webpack transpilation)
-  //   2. Have NO CSS module imports (safe for edge runtime / middleware)
+  // @unerp/ui and @unerp/framework must be TRANSPILED, not treated as external.
   //
-  // @unerp/ui and @unerp/framework CANNOT be here because their dist/index.js
-  // re-exports @unerp/ui-components which requires CSS module .css files.
-  // The Next.js edge runtime (middleware) cannot handle CSS modules, causing
-  // the middleware compilation to hang indefinitely.
+  // They ship CSS modules beside their compiled components. As server-external
+  // packages Node `require()`s them raw and chokes on the first stylesheet —
+  // `SyntaxError: Unexpected token '.'`, pointing at the `.class` selector in
+  // button.module.css, which reads like a corrupt build and is Node being handed
+  // CSS and asked to parse JavaScript. Webpack has to own these so the CSS
+  // modules are processed rather than required.
   //
-  // Instead, @unerp/ui and @unerp/framework are treated as server externals:
-  // Next.js will use their pre-built dist/index.js without bundling.
+  // The previous comment here warned that transpiling them hung the middleware
+  // compile indefinitely. That was true in the monorepo, and it is no longer:
+  // the middleware compiles in about a second now. The hang was the bind-mounted
+  // Docker filesystem, not the transpilation — running natively (§ 12) took the
+  // same compile from 962s to 1s.
+  // The design system must be TRANSPILED, not externalised.
+  //
+  // It ships React components. An external package is `require()`d at runtime
+  // and resolves its own React, so the server graph and the client graph end up
+  // with two copies and every hook fails with
+  // `Cannot read properties of null (reading 'useState')`. Webpack has to own
+  // it so there is one React.
+  //
+  // It could not be transpiled while its compiled output `require()`d CSS
+  // modules; that is fixed at the source now — the design system resolves CSS
+  // modules at build time, so dist/ imports no CSS at all.
   transpilePackages: [
     '@unerp/shared',
     '@unerp/auth',
-  ],
-  // Tell Next.js to NOT bundle these workspace packages on the server/edge:
-  // use their pre-built dist/ files directly via require().
-  serverExternalPackages: [
     '@unerp/ui',
-    '@unerp/ui-tokens',
-    '@unerp/ui-theme',
-    '@unerp/ui-components',
-    '@unerp/ui-layout',
-    '@unerp/ui-charts',
-    '@unerp/ui-data-grid',
-    '@unerp/ui-dashboard',
-    '@unerp/ui-notifications',
-    '@unerp/ui-hooks',
-    '@unerp/ui-utils',
-    '@unerp/ui-icons',
-    '@unerp/ui-form-engine',
-    '@unerp/ui-workflow',
     '@unerp/framework',
   ],
+
   experimental: {
     // NOTE: '@unerp/ui' was previously listed here alongside being in
     // transpilePackages. Applying both experimental.optimizePackageImports
@@ -70,6 +73,12 @@ const nextConfig = {
       {
         source: '/mfa-push-sw.js',
         destination: '/mfa-push-sw',
+      },
+      // Auth first: order matters, because the catch-all below would otherwise
+      // swallow these and send them to the API.
+      {
+        source: '/api/v1/auth/:path*',
+        destination: `${idpBaseUrl}/api/v1/auth/:path*`,
       },
       {
         source: '/api/v1/:path*',

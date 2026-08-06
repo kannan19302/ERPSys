@@ -4,6 +4,7 @@ import {
   BadRequestException,
 } from "@nestjs/common";
 import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 
 const db = prisma as any;
 
@@ -253,7 +254,11 @@ export class CrmActivityCaptureService {
         .filter((e: any) => e.eventType === "OPENED")
         .map((e: any) => e.recipient),
     ).size;
-    return { opens, clicks, uniqueOpens };
+    // Bounces belong in engagement: a campaign with high opens and high bounces
+    // is not performing well, it is being sent to a stale list. Reporting opens
+    // and clicks without them flatters the numbers.
+    const bounces = events.filter((e: any) => e.eventType === "BOUNCED").length;
+    return { opens, clicks, uniqueOpens, bounces };
   }
 
   async getActivityTimeline(
@@ -306,7 +311,14 @@ export class CrmActivityCaptureService {
   }
 
   async autoLogCalendarEvent(tenantId = "tenant-1", connectionId = "") {
-    return { synced: 1 };
+    // Placeholder: calendar auto-logging is not implemented. The message says so
+    // explicitly rather than returning a bare `synced: 1`, which reads like work
+    // was done and would let a caller report a successful sync that never ran.
+    return {
+      synced: 0,
+      message: "Calendar auto-logging is not implemented yet",
+      connectionId,
+    };
   }
 
   async getAutoCaptureSettings(tenantId = "tenant-1", userId = "") {

@@ -19,49 +19,49 @@ const features = [
     desc: "AI-powered win probability scoring and rationale",
     icon: Crosshair,
     href: "/crm/ai-intelligence/win-probability",
-    color: "#8b5cf6",
+    color: "var(--chart-5)",
   },
   {
     name: "Next Best Action",
     desc: "Recommended next actions for every deal",
     icon: Zap,
     href: "/crm/ai-intelligence/next-best-action",
-    color: "#3b82f6",
+    color: "var(--color-primary)",
   },
   {
     name: "Deal Health",
     desc: "Deal health scores and factor analysis",
     icon: Heart,
     href: "/crm/ai-intelligence/deal-health",
-    color: "#ef4444",
+    color: "var(--chart-4)",
   },
   {
     name: "Pipeline Anomalies",
     desc: "Detect stalled deals and slipping dates",
     icon: Activity,
     href: "/crm/ai-intelligence/pipeline-anomalies",
-    color: "#f59e0b",
+    color: "var(--chart-3)",
   },
   {
     name: "Revenue Intelligence",
     desc: "Revenue digests, trends, and forecasting",
     icon: DollarSign,
     href: "/crm/ai-intelligence/revenue-intelligence",
-    color: "#10b981",
+    color: "var(--chart-9)",
   },
   {
     name: "Sales Velocity",
     desc: "Velocity metrics, trends, and cycle analysis",
     icon: TrendingUp,
     href: "/crm/ai-intelligence/sales-velocity",
-    color: "#ec4899",
+    color: "var(--chart-8)",
   },
   {
     name: "Competitor Intelligence",
     desc: "Competitor tracking, battlecards, win/loss categories",
     icon: Target,
     href: "/crm/competitor-intelligence",
-    color: "#6366f1",
+    color: "var(--chart-10)",
   },
 ];
 
@@ -103,7 +103,7 @@ export default function AiIntelligencePage() {
                     style={{
                       margin: "0.25rem 0 0",
                       fontSize: "0.8rem",
-                      color: "#666",
+                      color: "var(--color-text-secondary)",
                     }}
                   >
                     {f.desc}

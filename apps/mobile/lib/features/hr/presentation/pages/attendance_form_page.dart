@@ -44,18 +44,17 @@ class _AttendanceFormPageState extends ConsumerState<AttendanceFormPage> {
   void _load() {
     final AttendanceListState state =
         ref.read(attendanceListControllerProvider);
-    final Attendance? a = state.items.where(
-      (Attendance at) => at.id == widget.attendanceId,
-    ).firstOrNull;
+    final Attendance? a = state.items
+        .where(
+          (Attendance at) => at.id == widget.attendanceId,
+        )
+        .firstOrNull;
     if (a != null) {
       _employeeCtrl.text = a.employeeName;
       _selectedDate = a.date;
-      _clockIn = a.clockIn != null
-          ? TimeOfDay.fromDateTime(a.clockIn!)
-          : null;
-      _clockOut = a.clockOut != null
-          ? TimeOfDay.fromDateTime(a.clockOut!)
-          : null;
+      _clockIn = a.clockIn != null ? TimeOfDay.fromDateTime(a.clockIn!) : null;
+      _clockOut =
+          a.clockOut != null ? TimeOfDay.fromDateTime(a.clockOut!) : null;
       _status = a.status;
       _notesCtrl.text = a.notes ?? '';
     }
@@ -74,14 +73,20 @@ class _AttendanceFormPageState extends ConsumerState<AttendanceFormPage> {
 
     final DateTime? clockInDt = _clockIn != null
         ? DateTime(
-            _selectedDate.year, _selectedDate.month, _selectedDate.day,
-            _clockIn!.hour, _clockIn!.minute,
+            _selectedDate.year,
+            _selectedDate.month,
+            _selectedDate.day,
+            _clockIn!.hour,
+            _clockIn!.minute,
           )
         : null;
     final DateTime? clockOutDt = _clockOut != null
         ? DateTime(
-            _selectedDate.year, _selectedDate.month, _selectedDate.day,
-            _clockOut!.hour, _clockOut!.minute,
+            _selectedDate.year,
+            _selectedDate.month,
+            _selectedDate.day,
+            _clockOut!.hour,
+            _clockOut!.minute,
           )
         : null;
     final double? hours = clockInDt != null && clockOutDt != null
@@ -181,12 +186,14 @@ class _AttendanceFormPageState extends ConsumerState<AttendanceFormPage> {
                 AttendanceStatus.absent,
                 AttendanceStatus.late,
                 AttendanceStatus.halfDay,
-              ].map(
-                (String v) => DropdownMenuItem<String>(
+              ]
+                  .map(
+                    (String v) => DropdownMenuItem<String>(
 //                   selectedDate: v,
-                  child: Text(_statusLabel(v)),
-                ),
-              ).toList(),
+                      child: Text(_statusLabel(v)),
+                    ),
+                  )
+                  .toList(),
               onChanged: (String? v) {
                 if (v != null) setState(() => _status = v);
               },

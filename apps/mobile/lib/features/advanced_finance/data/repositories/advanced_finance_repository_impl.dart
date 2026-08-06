@@ -18,11 +18,14 @@ class AdvancedFinanceRepositoryImpl implements AdvancedFinanceRepository {
         _tenantId = tenantId;
 
   static const String _mcRateNamespace = 'advanced-finance.currency-rates';
-  static const String _consolidationNamespace = 'advanced-finance.consolidation';
+  static const String _consolidationNamespace =
+      'advanced-finance.consolidation';
   static const String _intercompanyNamespace = 'advanced-finance.intercompany';
   static const String _costAllocNamespace = 'advanced-finance.cost-allocations';
-  static const String _revenueRecogNamespace = 'advanced-finance.revenue-recognition';
-  static const String _budgetVersionNamespace = 'advanced-finance.budget-versions';
+  static const String _revenueRecogNamespace =
+      'advanced-finance.revenue-recognition';
+  static const String _budgetVersionNamespace =
+      'advanced-finance.budget-versions';
   static const String _closeTaskNamespace = 'advanced-finance.close-tasks';
   static const String _auditTrailNamespace = 'advanced-finance.audit-trails';
 
@@ -41,7 +44,8 @@ class AdvancedFinanceRepositoryImpl implements AdvancedFinanceRepository {
       final jsonItems = page.data
           .map((dynamic e) => (e as dynamic).toJson() as Map<String, dynamic>)
           .toList(growable: false);
-      await _cache.write(_tenantId, namespace, query.cacheKey, <String, Object?>{
+      await _cache
+          .write(_tenantId, namespace, query.cacheKey, <String, Object?>{
         'data': jsonItems,
         'meta': page.meta.toJson(),
       });
@@ -49,9 +53,11 @@ class AdvancedFinanceRepositoryImpl implements AdvancedFinanceRepository {
         Cacheable<Paginated<T>>(value: page),
       );
     } on NetworkException catch (error) {
-      final cached = _cache.read<Map<String, dynamic>>(_tenantId, namespace, query.cacheKey);
+      final cached = _cache.read<Map<String, dynamic>>(
+          _tenantId, namespace, query.cacheKey);
       if (cached == null) {
-        return Result<Cacheable<Paginated<T>>>.err(mapExceptionToFailure(error));
+        return Result<Cacheable<Paginated<T>>>.err(
+            mapExceptionToFailure(error));
       }
       return Result<Cacheable<Paginated<T>>>.ok(
         Cacheable<Paginated<T>>(
@@ -93,21 +99,29 @@ class AdvancedFinanceRepositoryImpl implements AdvancedFinanceRepository {
   }
 
   @override
-  Future<Result<Cacheable<Paginated<MultiCurrencyRate>>>> listMultiCurrencyRates(
-    ListQuery query,) =>
-      _paginated(_mcRateNamespace, query, () => _remote.listMultiCurrencyRates(query),
-        MultiCurrencyRateModel.fromJson,);
+  Future<Result<Cacheable<Paginated<MultiCurrencyRate>>>>
+      listMultiCurrencyRates(
+    ListQuery query,
+  ) =>
+          _paginated(
+            _mcRateNamespace,
+            query,
+            () => _remote.listMultiCurrencyRates(query),
+            MultiCurrencyRateModel.fromJson,
+          );
 
   @override
   Future<Result<MultiCurrencyRate>> getMultiCurrencyRate(String id) =>
       _single(() => _remote.getMultiCurrencyRate(id));
 
   @override
-  Future<Result<MultiCurrencyRate>> createMultiCurrencyRate(Map<String, dynamic> p) =>
+  Future<Result<MultiCurrencyRate>> createMultiCurrencyRate(
+          Map<String, dynamic> p) =>
       _write(() => _remote.createMultiCurrencyRate(p));
 
   @override
-  Future<Result<MultiCurrencyRate>> updateMultiCurrencyRate(String id, Map<String, dynamic> p) =>
+  Future<Result<MultiCurrencyRate>> updateMultiCurrencyRate(
+          String id, Map<String, dynamic> p) =>
       _write(() => _remote.updateMultiCurrencyRate(id, p));
 
   @override
@@ -115,40 +129,57 @@ class AdvancedFinanceRepositoryImpl implements AdvancedFinanceRepository {
       _delete(() => _remote.deleteMultiCurrencyRate(id));
 
   @override
-  Future<Result<Cacheable<Paginated<ConsolidationReport>>>> listConsolidationReports(
-    ListQuery query,) =>
-      _paginated(_consolidationNamespace, query,
-        () => _remote.listConsolidationReports(query),
-        ConsolidationReportModel.fromJson,);
+  Future<Result<Cacheable<Paginated<ConsolidationReport>>>>
+      listConsolidationReports(
+    ListQuery query,
+  ) =>
+          _paginated(
+            _consolidationNamespace,
+            query,
+            () => _remote.listConsolidationReports(query),
+            ConsolidationReportModel.fromJson,
+          );
 
   @override
   Future<Result<ConsolidationReport>> getConsolidationReport(String id) =>
       _single(() => _remote.getConsolidationReport(id));
 
   @override
-  Future<Result<ConsolidationReport>> createConsolidationReport(Map<String, dynamic> p) =>
+  Future<Result<ConsolidationReport>> createConsolidationReport(
+          Map<String, dynamic> p) =>
       _write(() => _remote.createConsolidationReport(p));
 
   @override
-  Future<Result<Cacheable<Paginated<IntercompanyAgreement>>>> listIntercompanyAgreements(
-    ListQuery query,) =>
-      _paginated(_intercompanyNamespace, query,
-        () => _remote.listIntercompanyAgreements(query),
-        IntercompanyAgreementModel.fromJson,);
+  Future<Result<Cacheable<Paginated<IntercompanyAgreement>>>>
+      listIntercompanyAgreements(
+    ListQuery query,
+  ) =>
+          _paginated(
+            _intercompanyNamespace,
+            query,
+            () => _remote.listIntercompanyAgreements(query),
+            IntercompanyAgreementModel.fromJson,
+          );
 
   @override
   Future<Result<IntercompanyAgreement>> getIntercompanyAgreement(String id) =>
       _single(() => _remote.getIntercompanyAgreement(id));
 
   @override
-  Future<Result<IntercompanyAgreement>> createIntercompanyAgreement(Map<String, dynamic> p) =>
+  Future<Result<IntercompanyAgreement>> createIntercompanyAgreement(
+          Map<String, dynamic> p) =>
       _write(() => _remote.createIntercompanyAgreement(p));
 
   @override
   Future<Result<Cacheable<Paginated<CostAllocation>>>> listCostAllocations(
-    ListQuery query,) =>
-      _paginated(_costAllocNamespace, query, () => _remote.listCostAllocations(query),
-        CostAllocationModel.fromJson,);
+    ListQuery query,
+  ) =>
+      _paginated(
+        _costAllocNamespace,
+        query,
+        () => _remote.listCostAllocations(query),
+        CostAllocationModel.fromJson,
+      );
 
   @override
   Future<Result<CostAllocation>> getCostAllocation(String id) =>
@@ -159,22 +190,30 @@ class AdvancedFinanceRepositoryImpl implements AdvancedFinanceRepository {
       _write(() => _remote.createCostAllocation(p));
 
   @override
-  Future<Result<CostAllocation>> updateCostAllocation(String id, Map<String, dynamic> p) =>
+  Future<Result<CostAllocation>> updateCostAllocation(
+          String id, Map<String, dynamic> p) =>
       _write(() => _remote.updateCostAllocation(id, p));
 
   @override
-  Future<Result<Cacheable<Paginated<RevenueRecognitionEntry>>>> listRevenueRecognitionEntries(
-    ListQuery query,) =>
-      _paginated(_revenueRecogNamespace, query,
-        () => _remote.listRevenueRecognitionEntries(query),
-        RevenueRecognitionEntryModel.fromJson,);
+  Future<Result<Cacheable<Paginated<RevenueRecognitionEntry>>>>
+      listRevenueRecognitionEntries(
+    ListQuery query,
+  ) =>
+          _paginated(
+            _revenueRecogNamespace,
+            query,
+            () => _remote.listRevenueRecognitionEntries(query),
+            RevenueRecognitionEntryModel.fromJson,
+          );
 
   @override
-  Future<Result<RevenueRecognitionEntry>> getRevenueRecognitionEntry(String id) =>
+  Future<Result<RevenueRecognitionEntry>> getRevenueRecognitionEntry(
+          String id) =>
       _single(() => _remote.getRevenueRecognitionEntry(id));
 
   @override
-  Future<Result<RevenueRecognitionEntry>> createRevenueRecognitionEntry(Map<String, dynamic> p) =>
+  Future<Result<RevenueRecognitionEntry>> createRevenueRecognitionEntry(
+          Map<String, dynamic> p) =>
       _write(() => _remote.createRevenueRecognitionEntry(p));
 
   @override
@@ -183,9 +222,14 @@ class AdvancedFinanceRepositoryImpl implements AdvancedFinanceRepository {
 
   @override
   Future<Result<Cacheable<Paginated<BudgetVersion>>>> listBudgetVersions(
-    ListQuery query,) =>
-      _paginated(_budgetVersionNamespace, query, () => _remote.listBudgetVersions(query),
-        BudgetVersionModel.fromJson,);
+    ListQuery query,
+  ) =>
+      _paginated(
+        _budgetVersionNamespace,
+        query,
+        () => _remote.listBudgetVersions(query),
+        BudgetVersionModel.fromJson,
+      );
 
   @override
   Future<Result<BudgetVersion>> getBudgetVersion(String id) =>
@@ -196,17 +240,24 @@ class AdvancedFinanceRepositoryImpl implements AdvancedFinanceRepository {
       _write(() => _remote.createBudgetVersion(p));
 
   @override
-  Future<Result<Cacheable<Paginated<FinancialCloseTask>>>> listFinancialCloseTasks(
-    ListQuery query,) =>
-      _paginated(_closeTaskNamespace, query, () => _remote.listFinancialCloseTasks(query),
-        FinancialCloseTaskModel.fromJson,);
+  Future<Result<Cacheable<Paginated<FinancialCloseTask>>>>
+      listFinancialCloseTasks(
+    ListQuery query,
+  ) =>
+          _paginated(
+            _closeTaskNamespace,
+            query,
+            () => _remote.listFinancialCloseTasks(query),
+            FinancialCloseTaskModel.fromJson,
+          );
 
   @override
   Future<Result<FinancialCloseTask>> getFinancialCloseTask(String id) =>
       _single(() => _remote.getFinancialCloseTask(id));
 
   @override
-  Future<Result<FinancialCloseTask>> createFinancialCloseTask(Map<String, dynamic> p) =>
+  Future<Result<FinancialCloseTask>> createFinancialCloseTask(
+          Map<String, dynamic> p) =>
       _write(() => _remote.createFinancialCloseTask(p));
 
   @override
@@ -215,9 +266,14 @@ class AdvancedFinanceRepositoryImpl implements AdvancedFinanceRepository {
 
   @override
   Future<Result<Cacheable<Paginated<AuditTrailEntry>>>> listAuditTrails(
-    ListQuery query,) =>
-      _paginated(_auditTrailNamespace, query, () => _remote.listAuditTrails(query),
-        AuditTrailEntryModel.fromJson,);
+    ListQuery query,
+  ) =>
+      _paginated(
+        _auditTrailNamespace,
+        query,
+        () => _remote.listAuditTrails(query),
+        AuditTrailEntryModel.fromJson,
+      );
 
   @override
   Future<Result<AuditTrailEntry>> getAuditTrail(String id) =>

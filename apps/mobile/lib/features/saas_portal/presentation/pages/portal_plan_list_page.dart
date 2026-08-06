@@ -28,7 +28,8 @@ class _PortalPlanListPageState extends ConsumerState<PortalPlanListPage> {
     );
   }
 
-  Widget _body(PortalPlanListState state, PortalPlanListController controller, Palette t) {
+  Widget _body(PortalPlanListState state, PortalPlanListController controller,
+      Palette t) {
     if (state.isLoading && state.items.isEmpty) return const LoadingView();
     final failure = state.failure;
     if (failure != null && state.items.isEmpty) {
@@ -50,32 +51,46 @@ class _PortalPlanListPageState extends ConsumerState<PortalPlanListPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(children: [
-                Expanded(
-                  child: Text(plan.name,
-                      style: Theme.of(context).textTheme.titleSmall,),
-                ),
-                if (plan.isPopular)
-                  const UiStatusBadge(label: 'POPULAR', tone: UiTone.success),
-              ],),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      plan.name,
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
+                  ),
+                  if (plan.isPopular)
+                    const UiStatusBadge(label: 'POPULAR', tone: UiTone.success),
+                ],
+              ),
               const SizedBox(height: Spacing.x1),
-              Text('\$${plan.price.toStringAsFixed(2)} / ${plan.billingInterval}',
-                  style: TextStyle(color: t.textSecondary, fontSize: TypeScale.lg),),
+              Text(
+                '\$${plan.price.toStringAsFixed(2)} / ${plan.billingInterval}',
+                style:
+                    TextStyle(color: t.textSecondary, fontSize: TypeScale.lg),
+              ),
               if (plan.description != null) ...[
                 const SizedBox(height: Spacing.x1),
-                Text(plan.description!,
-                    style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs),),
+                Text(
+                  plan.description!,
+                  style:
+                      TextStyle(color: t.textTertiary, fontSize: TypeScale.xs),
+                ),
               ],
               if (plan.features.isNotEmpty) ...[
                 const SizedBox(height: Spacing.x2),
-                ...plan.features.map((f) => Padding(
-                  padding: const EdgeInsets.only(bottom: Spacing.x1),
-                  child: Row(children: [
-                    Icon(Icons.check, size: TypeScale.sm, color: t.success),
-                    const SizedBox(width: Spacing.x1),
-                    Text(f, style: const TextStyle(fontSize: TypeScale.xs)),
-                  ],),
-                ),),
+                ...plan.features.map(
+                  (f) => Padding(
+                    padding: const EdgeInsets.only(bottom: Spacing.x1),
+                    child: Row(
+                      children: [
+                        Icon(Icons.check, size: TypeScale.sm, color: t.success),
+                        const SizedBox(width: Spacing.x1),
+                        Text(f, style: const TextStyle(fontSize: TypeScale.xs)),
+                      ],
+                    ),
+                  ),
+                ),
               ],
             ],
           ),

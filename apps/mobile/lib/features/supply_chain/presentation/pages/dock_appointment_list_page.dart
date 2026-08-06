@@ -14,10 +14,12 @@ class DockAppointmentListPage extends ConsumerStatefulWidget {
   static const String routeName = 'dock-appointments';
   static const String routePath = '/supply-chain/dock-appointments';
   @override
-  ConsumerState<DockAppointmentListPage> createState() => _DockAppointmentListPageState();
+  ConsumerState<DockAppointmentListPage> createState() =>
+      _DockAppointmentListPageState();
 }
 
-class _DockAppointmentListPageState extends ConsumerState<DockAppointmentListPage> {
+class _DockAppointmentListPageState
+    extends ConsumerState<DockAppointmentListPage> {
   final TextEditingController _search = TextEditingController();
   String? _statusFilter;
 
@@ -56,7 +58,8 @@ class _DockAppointmentListPageState extends ConsumerState<DockAppointmentListPag
             initialValue: state.query.sort,
             onSelected: controller.applySort,
             itemBuilder: (_) => _sortOptions.entries
-                .map((e) => PopupMenuItem<String>(value: e.key, child: Text(e.value)))
+                .map((e) =>
+                    PopupMenuItem<String>(value: e.key, child: Text(e.value)))
                 .toList(),
           ),
         ],
@@ -69,7 +72,8 @@ class _DockAppointmentListPageState extends ConsumerState<DockAppointmentListPag
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
+            padding: const EdgeInsets.fromLTRB(
+                Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2),
             child: TextField(
               controller: _search,
               onChanged: controller.search,
@@ -77,34 +81,50 @@ class _DockAppointmentListPageState extends ConsumerState<DockAppointmentListPag
               decoration: InputDecoration(
                 hintText: 'Search reference',
                 prefixIcon: const Icon(Icons.search),
-                suffixIcon: _search.text.isEmpty ? null : IconButton(
-                  icon: const Icon(Icons.close),
-                  onPressed: () { _search.clear(); controller.search(''); },
-                ),
+                suffixIcon: _search.text.isEmpty
+                    ? null
+                    : IconButton(
+                        icon: const Icon(Icons.close),
+                        onPressed: () {
+                          _search.clear();
+                          controller.search('');
+                        },
+                      ),
               ),
             ),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: Spacing.x4),
-            child: Row(children: [
-              Text(state.isLoading ? 'Loading...' : '${state.meta.total} appointment${state.meta.total == 1 ? '' : 's'}',
-                style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),),
-              const Spacer(),
-              DropdownButton<String?>(
-                value: _statusFilter,
-                hint: const Text('Status'),
-                underline: const SizedBox.shrink(),
-                items: [
-                  const DropdownMenuItem(value: null, child: Text('All')),
-                  ..._statusFilters.entries.map((e) => DropdownMenuItem(value: e.key, child: Text(e.value))),
-                ],
-                onChanged: (v) {
-                  setState(() => _statusFilter = v);
-                  if (v == null) { controller.applyFilters({}); }
-                  else { controller.applyFilters({'status': v}); }
-                },
-              ),
-            ],),
+            child: Row(
+              children: [
+                Text(
+                  state.isLoading
+                      ? 'Loading...'
+                      : '${state.meta.total} appointment${state.meta.total == 1 ? '' : 's'}',
+                  style:
+                      TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
+                ),
+                const Spacer(),
+                DropdownButton<String?>(
+                  value: _statusFilter,
+                  hint: const Text('Status'),
+                  underline: const SizedBox.shrink(),
+                  items: [
+                    const DropdownMenuItem(value: null, child: Text('All')),
+                    ..._statusFilters.entries.map((e) =>
+                        DropdownMenuItem(value: e.key, child: Text(e.value))),
+                  ],
+                  onChanged: (v) {
+                    setState(() => _statusFilter = v);
+                    if (v == null) {
+                      controller.applyFilters({});
+                    } else {
+                      controller.applyFilters({'status': v});
+                    }
+                  },
+                ),
+              ],
+            ),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -112,7 +132,8 @@ class _DockAppointmentListPageState extends ConsumerState<DockAppointmentListPag
     );
   }
 
-  Widget _body(DockAppointmentListState state, DockAppointmentListController controller) {
+  Widget _body(DockAppointmentListState state,
+      DockAppointmentListController controller) {
     if (state.isLoading && state.items.isEmpty) return const LoadingView();
     final failure = state.failure;
     if (failure != null && state.items.isEmpty) {
@@ -131,8 +152,10 @@ class _DockAppointmentListPageState extends ConsumerState<DockAppointmentListPag
           : 'Dock appointments scheduled in UniERP will appear here.',
       itemBuilder: (_, DockAppointment appt, __) => _AppointmentTile(
         appointment: appt,
-        onTap: () => context.pushNamed('dock-appointment-detail',
-          pathParameters: <String, String>{'id': appt.id},),
+        onTap: () => context.pushNamed(
+          'dock-appointment-detail',
+          pathParameters: <String, String>{'id': appt.id},
+        ),
       ),
     );
   }
@@ -144,12 +167,12 @@ class _AppointmentTile extends StatelessWidget {
   final VoidCallback onTap;
 
   UiTone _statusTone(String status) => switch (status) {
-    'SCHEDULED' => UiTone.info,
-    'CHECKED_IN' => UiTone.warning,
-    'COMPLETED' => UiTone.success,
-    'CANCELLED' => UiTone.danger,
-    _ => UiTone.neutral,
-  };
+        'SCHEDULED' => UiTone.info,
+        'CHECKED_IN' => UiTone.warning,
+        'COMPLETED' => UiTone.success,
+        'CANCELLED' => UiTone.danger,
+        _ => UiTone.neutral,
+      };
 
   @override
   Widget build(BuildContext context) {
@@ -163,22 +186,41 @@ class _AppointmentTile extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(children: [
-                Expanded(child: Text(appointment.reference ?? 'Dock appointment',
-                    style: Theme.of(context).textTheme.titleSmall,),),
-                UiStatusBadge(label: appointment.status, tone: _statusTone(appointment.status)),
-              ],),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      appointment.reference ?? 'Dock appointment',
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
+                  ),
+                  UiStatusBadge(
+                      label: appointment.status,
+                      tone: _statusTone(appointment.status)),
+                ],
+              ),
               const SizedBox(height: Spacing.x1),
-              Row(children: [
-                Icon(Icons.warehouse, size: TypeScale.sm, color: t.textTertiary),
-                const SizedBox(width: Spacing.x1),
-                Expanded(child: Text(appointment.warehouseName ?? '—',
-                    style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),),),
-              ],),
+              Row(
+                children: [
+                  Icon(Icons.warehouse,
+                      size: TypeScale.sm, color: t.textTertiary),
+                  const SizedBox(width: Spacing.x1),
+                  Expanded(
+                    child: Text(
+                      appointment.warehouseName ?? '—',
+                      style: TextStyle(
+                          color: t.textSecondary, fontSize: TypeScale.xs),
+                    ),
+                  ),
+                ],
+              ),
               if (appointment.scheduledAt != null) ...[
                 const SizedBox(height: Spacing.x0_5),
-                Text('Scheduled: ${Formatters.dateTime(appointment.scheduledAt!)}',
-                    style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs),),
+                Text(
+                  'Scheduled: ${Formatters.dateTime(appointment.scheduledAt!)}',
+                  style:
+                      TextStyle(color: t.textTertiary, fontSize: TypeScale.xs),
+                ),
               ],
             ],
           ),

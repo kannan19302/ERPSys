@@ -190,8 +190,12 @@ export default function SupplyChainAnalyticsPage() {
           config={{
             xAxisKey: "name",
             series: [
-              { dataKey: "rate", name: "On-Time %", color: "#22c55e" },
-              { dataKey: "delivered", name: "Delivered", color: "#6366f1" },
+              { dataKey: "rate", name: "On-Time %", color: "var(--chart-2)" },
+              {
+                dataKey: "delivered",
+                name: "Delivered",
+                color: "var(--chart-10)",
+              },
             ],
           }}
           defaultChartType="bar"

@@ -14,6 +14,7 @@ vi.mock("@unerp/database", () => ({
       create: vi.fn(),
       update: vi.fn(),
       delete: vi.fn(),
+      count: vi.fn(),
     },
     blockchainAuditTrail: {
       findMany: vi.fn(),
@@ -38,7 +39,7 @@ describe("BlockchainDeepService", () => {
 
   describe("transaction explorer", () => {
     it("should list transactions with pagination", async () => {
-      const { prisma } = require("@unerp/database");
+      const { prisma } = await import("@unerp/database");
       prisma.blockchainTransactionExplorer.findMany.mockResolvedValue([]);
       prisma.blockchainTransactionExplorer.count.mockResolvedValue(0);
       const result = await service.listTransactions("t-1", {
@@ -50,7 +51,7 @@ describe("BlockchainDeepService", () => {
     });
 
     it("should search transactions by hash", async () => {
-      const { prisma } = require("@unerp/database");
+      const { prisma } = await import("@unerp/database");
       prisma.blockchainTransactionExplorer.findMany.mockResolvedValue([]);
       prisma.blockchainTransactionExplorer.count.mockResolvedValue(0);
       await service.listTransactions("t-1", { search: "0xabc", page: 1 });
@@ -66,14 +67,14 @@ describe("BlockchainDeepService", () => {
 
   describe("smart contracts", () => {
     it("should list contracts", async () => {
-      const { prisma } = require("@unerp/database");
+      const { prisma } = await import("@unerp/database");
       prisma.blockchainSmartContract.findMany.mockResolvedValue([]);
       const result = await service.listContracts("t-1");
       expect(result).toEqual([]);
     });
 
     it("should create a contract", async () => {
-      const { prisma } = require("@unerp/database");
+      const { prisma } = await import("@unerp/database");
       prisma.blockchainSmartContract.create.mockResolvedValue({
         id: "1",
         name: "MyContract",
@@ -88,7 +89,7 @@ describe("BlockchainDeepService", () => {
 
   describe("audit trail", () => {
     it("should list audit trail entries", async () => {
-      const { prisma } = require("@unerp/database");
+      const { prisma } = await import("@unerp/database");
       prisma.blockchainAuditTrail.findMany.mockResolvedValue([]);
       prisma.blockchainAuditTrail.count.mockResolvedValue(0);
       const result = await service.listAuditTrails("t-1", {
@@ -101,7 +102,7 @@ describe("BlockchainDeepService", () => {
 
   describe("network health", () => {
     it("should get network health", async () => {
-      const { prisma } = require("@unerp/database");
+      const { prisma } = await import("@unerp/database");
       prisma.blockchainNetworkHealth.findMany.mockResolvedValue([]);
       const result = await service.getNetworkHealth();
       expect(result).toEqual([]);

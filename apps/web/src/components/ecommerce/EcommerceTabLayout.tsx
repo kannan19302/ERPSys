@@ -1,7 +1,7 @@
 "use client";
 
 import { Settings, Layers, Package } from "lucide-react";
-import type { ModuleTab } from "@unerp/ui-layout";
+import type { ModuleTab } from "@unerp/ui/layout";
 
 export {
   ModuleTabLayout as EcommerceTabLayout,
@@ -9,7 +9,7 @@ export {
   type ModuleTabLayoutProps as EcommerceTabLayoutProps,
   SubTabBar,
   type SubTab,
-} from "@unerp/ui-layout";
+} from "@unerp/ui/layout";
 
 export const ECOMMERCE_TABS: ModuleTab[] = [
   {

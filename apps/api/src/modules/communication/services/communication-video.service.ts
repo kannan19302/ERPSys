@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { prisma } from "@unerp/database";
+import { idpClient as idpPrisma } from "@/common/idp-client";
 
 @Injectable()
 export class CommunicationVideoService {
@@ -47,7 +48,7 @@ export class CommunicationVideoService {
     dto: { title: string; channelId?: string; lobby?: boolean },
   ) {
     const code = `${Math.random().toString(36).slice(2, 6)}-${Math.random().toString(36).slice(2, 6)}-${Math.random().toString(36).slice(2, 6)}`;
-    return prisma.connectMeeting.create({
+    const meeting = await prisma.connectMeeting.create({
       data: {
         tenantId,
         channelId: dto.channelId,
@@ -57,6 +58,18 @@ export class CommunicationVideoService {
         lobby: dto.lobby || false,
       },
     });
+
+    // Enrol the host. Without this the creator is not a participant of their own
+    // meeting, so participant counts are short by one and any check of the form
+    // "is this user in the meeting?" rejects the host — including the lobby
+    // admission flow, which is exactly who needs to bypass it.
+    // MeetingParticipant has no `role` column; the host is identified by
+    // ConnectMeeting.hostId, so enrolling the row is all that is needed.
+    await prisma.meetingParticipant.create({
+      data: { tenantId, meetingId: meeting.id, userId },
+    });
+
+    return meeting;
   }
 
   async endMeeting(tenantId: string, id: string) {

@@ -43,9 +43,13 @@ type SubTab = "inbox" | "thresholds";
 const API = "/admin/alerts";
 
 const SEVERITY_CFG = {
-  INFO: { color: "#3b82f6", icon: Info, label: "Info" },
-  WARNING: { color: "#f59e0b", icon: AlertTriangle, label: "Warning" },
-  CRITICAL: { color: "#dc2626", icon: AlertOctagon, label: "Critical" },
+  INFO: { color: "var(--color-primary)", icon: Info, label: "Info" },
+  WARNING: { color: "var(--chart-3)", icon: AlertTriangle, label: "Warning" },
+  CRITICAL: {
+    color: "var(--color-danger-hover)",
+    icon: AlertOctagon,
+    label: "Critical",
+  },
 } as const;
 
 const ALERT_TYPES = [
@@ -246,7 +250,7 @@ export default function AdminAlertsTab() {
     borderRadius: "var(--radius-md)",
     border: "none",
     background: "var(--color-bg-brand)",
-    color: "#fff",
+    color: "var(--color-text-inverse)",
     cursor: "pointer",
     fontSize: "var(--text-sm)",
     fontWeight: "var(--weight-medium)",
@@ -281,7 +285,10 @@ export default function AdminAlertsTab() {
         <div
           className={styles.s1}
           style={{
-            background: toast.type === "success" ? "#059669" : "#dc2626",
+            background:
+              toast.type === "success"
+                ? "var(--color-success-hover)"
+                : "var(--color-danger-hover)",
           }}
         >
           {toast.type === "success" ? (
@@ -624,7 +631,9 @@ export default function AdminAlertsTab() {
                       onClick={() => toggleActive(row as unknown as Threshold)}
                       className={styles.s29}
                       style={{
-                        background: v ? "#059669" : "var(--color-bg-tertiary)",
+                        background: v
+                          ? "var(--color-success-hover)"
+                          : "var(--color-bg-tertiary)",
                       }}
                     >
                       <span

@@ -262,7 +262,7 @@ export default function CustomerStatementPage() {
                       label: "Total Paid",
                       value: fmt(statement.totalPaid),
                       icon: <CheckCircle2 size={18} />,
-                      color: "#22c55e",
+                      color: "var(--chart-2)",
                       bg: "rgba(34,197,94,0.08)",
                     },
                     {
@@ -275,7 +275,9 @@ export default function CustomerStatementPage() {
                           <CheckCircle2 size={18} />
                         ),
                       color:
-                        statement.closingBalance > 0 ? "#ef4444" : "#22c55e",
+                        statement.closingBalance > 0
+                          ? "var(--chart-4)"
+                          : "var(--chart-2)",
                       bg:
                         statement.closingBalance > 0
                           ? "rgba(239,68,68,0.08)"
@@ -358,10 +360,10 @@ export default function CustomerStatementPage() {
                                     : "rgba(245,158,11,0.1)",
                               color:
                                 v === "PAID"
-                                  ? "#16a34a"
+                                  ? "var(--color-success-hover)"
                                   : v === "OVERDUE"
-                                    ? "#ef4444"
-                                    : "#d97706",
+                                    ? "var(--chart-4)"
+                                    : "var(--color-warning-hover)",
                             }}
                             className={styles.s18}
                           >
@@ -398,7 +400,10 @@ export default function CustomerStatementPage() {
                         render: (v) => (
                           <span
                             style={{
-                              color: Number(v) > 0 ? "#ef4444" : "#16a34a",
+                              color:
+                                Number(v) > 0
+                                  ? "var(--chart-4)"
+                                  : "var(--color-success-hover)",
                             }}
                             className={styles.s21}
                           >

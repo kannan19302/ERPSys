@@ -39,7 +39,8 @@ class _AttendanceListPageState extends ConsumerState<AttendanceListPage> {
 
   @override
   Widget build(BuildContext context) {
-    final AttendanceListState state = ref.watch(attendanceListControllerProvider);
+    final AttendanceListState state =
+        ref.watch(attendanceListControllerProvider);
     final AttendanceListController controller =
         ref.read(attendanceListControllerProvider.notifier);
     final Palette t = context.tokens;
@@ -53,10 +54,14 @@ class _AttendanceListPageState extends ConsumerState<AttendanceListPage> {
       ),
       body: Column(
         children: <Widget>[
-          if (state.cachedAt != null) StaleDataBanner(cachedAt: state.cachedAt!),
+          if (state.cachedAt != null)
+            StaleDataBanner(cachedAt: state.cachedAt!),
           Padding(
             padding: const EdgeInsets.fromLTRB(
-              Spacing.x4, Spacing.x3, Spacing.x4, Spacing.x2,
+              Spacing.x4,
+              Spacing.x3,
+              Spacing.x4,
+              Spacing.x2,
             ),
             child: TextField(
               controller: _search,
@@ -88,7 +93,8 @@ class _AttendanceListPageState extends ConsumerState<AttendanceListPage> {
                   underline: const SizedBox.shrink(),
                   items: _statusFilters.entries
                       .map(
-                        (MapEntry<String, String> e) => DropdownMenuItem<String>(
+                        (MapEntry<String, String> e) =>
+                            DropdownMenuItem<String>(
                           value: e.key,
                           child: Text(e.value),
                         ),
@@ -99,7 +105,8 @@ class _AttendanceListPageState extends ConsumerState<AttendanceListPage> {
                     if (value == null) {
                       controller.applyFilters(const <String, String>{});
                     } else {
-                      controller.applyFilters(<String, String>{'status': value});
+                      controller
+                          .applyFilters(<String, String>{'status': value});
                     }
                   },
                 ),
@@ -151,7 +158,8 @@ class _AttendanceTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final Palette t = context.tokens;
 
-    final (String statusLabel, Color statusColor, Color statusBg) = switch (attendance.status) {
+    final (String statusLabel, Color statusColor, Color statusBg) =
+        switch (attendance.status) {
       AttendanceStatus.present => ('Present', t.success, t.successLight),
       AttendanceStatus.absent => ('Absent', t.danger, t.dangerLight),
       AttendanceStatus.late => ('Late', t.warning, t.warningLight),
@@ -167,7 +175,8 @@ class _AttendanceTile extends StatelessWidget {
           CircleAvatar(
             radius: Spacing.x4,
             backgroundColor: t.bgSunken,
-            child: Icon(Icons.person_outline, color: t.textSecondary, size: TypeScale.lg),
+            child: Icon(Icons.person_outline,
+                color: t.textSecondary, size: TypeScale.lg),
           ),
           const SizedBox(width: Spacing.x3),
           Expanded(
@@ -183,12 +192,14 @@ class _AttendanceTile extends StatelessWidget {
                 const SizedBox(height: Spacing.x0_5),
                 Text(
                   Formatters.date(attendance.date),
-                  style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs),
+                  style:
+                      TextStyle(color: t.textTertiary, fontSize: TypeScale.xs),
                 ),
                 if (attendance.hoursWorked != null)
                   Text(
                     '${attendance.hoursWorked!.toStringAsFixed(1)} h',
-                    style: TextStyle(color: t.textSecondary, fontSize: TypeScale.xs),
+                    style: TextStyle(
+                        color: t.textSecondary, fontSize: TypeScale.xs),
                   ),
               ],
             ),
@@ -196,13 +207,16 @@ class _AttendanceTile extends StatelessWidget {
           const SizedBox(width: Spacing.x2),
           Container(
             padding: const EdgeInsets.symmetric(
-              horizontal: Spacing.x2_5, vertical: Spacing.x1,
+              horizontal: Spacing.x2_5,
+              vertical: Spacing.x1,
             ),
-            decoration: BoxDecoration(color: statusBg, borderRadius: Radii.pill),
+            decoration:
+                BoxDecoration(color: statusBg, borderRadius: Radii.pill),
             child: Text(
               statusLabel,
               style: TextStyle(
-                color: statusColor, fontSize: TypeScale.xs,
+                color: statusColor,
+                fontSize: TypeScale.xs,
                 fontWeight: TypeScale.medium,
               ),
             ),

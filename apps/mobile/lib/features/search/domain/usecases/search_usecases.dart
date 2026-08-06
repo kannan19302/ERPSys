@@ -4,7 +4,8 @@ import '../../../../core/usecase/usecase.dart';
 import '../entities/search.dart';
 import '../repositories/search_repository.dart';
 
-class SearchQueryUseCase extends UseCase<Cacheable<Paginated<SearchResult>>, ListQuery> {
+class SearchQueryUseCase
+    extends UseCase<Cacheable<Paginated<SearchResult>>, ListQuery> {
   const SearchQueryUseCase(this._repository);
   final SearchRepository _repository;
   @override
@@ -12,27 +13,33 @@ class SearchQueryUseCase extends UseCase<Cacheable<Paginated<SearchResult>>, Lis
       _repository.search(params);
 }
 
-class ListSearchIndexConfigsUseCase extends UseCase<Cacheable<Paginated<SearchIndexConfig>>, ListQuery> {
+class ListSearchIndexConfigsUseCase
+    extends UseCase<Cacheable<Paginated<SearchIndexConfig>>, ListQuery> {
   const ListSearchIndexConfigsUseCase(this._repository);
   final SearchRepository _repository;
   @override
-  Future<Result<Cacheable<Paginated<SearchIndexConfig>>>> call(ListQuery params) =>
+  Future<Result<Cacheable<Paginated<SearchIndexConfig>>>> call(
+          ListQuery params) =>
       _repository.listIndexConfigs(params);
 }
 
-class UpdateSearchIndexConfigUseCase extends UseCase<SearchIndexConfig, (String, Map<String, dynamic>)> {
+class UpdateSearchIndexConfigUseCase
+    extends UseCase<SearchIndexConfig, (String, Map<String, dynamic>)> {
   const UpdateSearchIndexConfigUseCase(this._repository);
   final SearchRepository _repository;
   @override
-  Future<Result<SearchIndexConfig>> call((String, Map<String, dynamic>) params) =>
+  Future<Result<SearchIndexConfig>> call(
+          (String, Map<String, dynamic>) params) =>
       _repository.updateIndexConfig(params.$1, params.$2);
 }
 
-class ListSearchSynonymsUseCase extends UseCase<Cacheable<Paginated<SearchSynonymGroup>>, ListQuery> {
+class ListSearchSynonymsUseCase
+    extends UseCase<Cacheable<Paginated<SearchSynonymGroup>>, ListQuery> {
   const ListSearchSynonymsUseCase(this._repository);
   final SearchRepository _repository;
   @override
-  Future<Result<Cacheable<Paginated<SearchSynonymGroup>>>> call(ListQuery params) =>
+  Future<Result<Cacheable<Paginated<SearchSynonymGroup>>>> call(
+          ListQuery params) =>
       _repository.listSynonyms(params);
 }
 
@@ -42,7 +49,8 @@ class SaveSearchSynonymParams {
   final Map<String, dynamic> payload;
 }
 
-class SaveSearchSynonymUseCase extends UseCase<SearchSynonymGroup, SaveSearchSynonymParams> {
+class SaveSearchSynonymUseCase
+    extends UseCase<SearchSynonymGroup, SaveSearchSynonymParams> {
   const SaveSearchSynonymUseCase(this._repository);
   final SearchRepository _repository;
   @override

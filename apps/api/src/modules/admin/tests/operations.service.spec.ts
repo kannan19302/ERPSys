@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { OperationsService } from "../operations.service";
+import { OperationsService } from "../../../platform/v1/operations.service";
 
 vi.mock("@unerp/database", () => {
   return {
@@ -182,7 +182,7 @@ describe("OperationsService", () => {
     expect(prisma.setting.upsert).toHaveBeenCalled();
   });
 
-  it("flags created backups as source: SIMULATED (no real pg_dump backs this pass — P1-1)", async () => {
+  it("flags created backups as source: SIMULATED (no real pg_dump backs this pass â€” P1-1)", async () => {
     const { prisma } = await import("@unerp/database");
     vi.mocked(prisma.setting.findUnique).mockResolvedValue(null as any);
     vi.mocked(prisma.setting.upsert).mockResolvedValue({} as any);

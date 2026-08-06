@@ -70,19 +70,19 @@ export default function AdvancedHrExitInterviewPage() {
               label: "Total Exits",
               value: insights.totalExits,
               icon: <LogOut size={18} />,
-              color: "#ef4444",
+              color: "var(--chart-4)",
             },
             {
               label: "Avg Satisfaction",
               value: `${insights.avgSatisfaction}/10`,
               icon: <Heart size={18} />,
-              color: "#f59e0b",
+              color: "var(--chart-3)",
             },
             {
               label: "Would Rehire",
               value: `${insights.rehireRate}%`,
               icon: <ThumbsUp size={18} />,
-              color: "#10b981",
+              color: "var(--chart-9)",
             },
           ].map((kpi, i) => (
             <Card
@@ -105,7 +105,13 @@ export default function AdvancedHrExitInterviewPage() {
                 {kpi.icon}
               </div>
               <div>
-                <p style={{ fontSize: "13px", color: "#64748b", margin: 0 }}>
+                <p
+                  style={{
+                    fontSize: "13px",
+                    color: "var(--color-text-secondary)",
+                    margin: 0,
+                  }}
+                >
                   {kpi.label}
                 </p>
                 <h3 style={{ fontSize: "24px", fontWeight: 700, margin: 0 }}>
@@ -123,7 +129,11 @@ export default function AdvancedHrExitInterviewPage() {
         </h3>
         {interviews.length === 0 ? (
           <p
-            style={{ color: "#64748b", textAlign: "center", padding: "32px 0" }}
+            style={{
+              color: "var(--color-text-secondary)",
+              textAlign: "center",
+              padding: "32px 0",
+            }}
           >
             No exit interviews recorded.
           </p>

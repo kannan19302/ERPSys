@@ -20,6 +20,7 @@ import {
 import { ApiTags, ApiOperation } from "@nestjs/swagger";
 import { secretForApp } from "./ext-secret.util";
 import { ExtCallbackService } from "./ext-callback.service";
+import { Public } from "../../common/decorators/public.decorator";
 
 /**
  * Callback API for extension services that need core-resident data (their app's
@@ -60,6 +61,9 @@ export class ExtCallbackController {
     summary:
       "Read an extension app's provisioned records (optional equality filters)",
   })
+  @Public(
+    "Extension gateway callback. Authenticates the caller by verifying the request signature itself, so a session guard would reject legitimate traffic.",
+  )
   @Get("records/:slug")
   async records(
     @Req() req: Request,
@@ -86,6 +90,9 @@ export class ExtCallbackController {
   }
 
   @ApiOperation({ summary: "Read several schemas in one round trip" })
+  @Public(
+    "Extension gateway callback. Authenticates the caller by verifying the request signature itself, so a session guard would reject legitimate traffic.",
+  )
   @Post("records:batch")
   async batch(@Req() req: Request, @Body() body: { slugs?: string[] }) {
     const claims = this.authorize(req);
@@ -102,6 +109,9 @@ export class ExtCallbackController {
     summary:
       "Create a record in the app's provisioned schema (requires <slug>:write scope)",
   })
+  @Public(
+    "Extension gateway callback. Authenticates the caller by verifying the request signature itself, so a session guard would reject legitimate traffic.",
+  )
   @Post("records/:slug")
   async create(
     @Req() req: Request,

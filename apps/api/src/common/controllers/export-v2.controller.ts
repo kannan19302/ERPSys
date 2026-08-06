@@ -10,6 +10,7 @@ import {
   UseGuards,
 } from "@nestjs/common";
 import { Response } from "express";
+import { JwtAuthGuard } from "../guards/jwt-auth.guard";
 import { TenantGuard } from "../guards/tenant.guard";
 import { RbacGuard } from "../guards/rbac.guard";
 import { Permissions } from "../decorators/permissions.decorator";
@@ -21,7 +22,7 @@ interface AuthenticatedRequest {
 }
 
 @Controller("export/v2")
-@UseGuards(TenantGuard, RbacGuard)
+@UseGuards(JwtAuthGuard, TenantGuard, RbacGuard)
 export class ExportV2Controller {
   constructor(private readonly exportV2Service: ExportV2Service) {}
 

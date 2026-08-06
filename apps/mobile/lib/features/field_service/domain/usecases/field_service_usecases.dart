@@ -4,7 +4,8 @@ import '../../../../core/usecase/usecase.dart';
 import '../entities/field_service.dart';
 import '../repositories/field_service_repository.dart';
 
-class ListServiceTicketsUseCase extends UseCase<Cacheable<Paginated<ServiceTicket>>, ListQuery> {
+class ListServiceTicketsUseCase
+    extends UseCase<Cacheable<Paginated<ServiceTicket>>, ListQuery> {
   const ListServiceTicketsUseCase(this._repository);
   final FieldServiceRepository _repository;
   @override
@@ -16,7 +17,8 @@ class GetServiceTicketUseCase extends UseCase<ServiceTicket, String> {
   const GetServiceTicketUseCase(this._repository);
   final FieldServiceRepository _repository;
   @override
-  Future<Result<ServiceTicket>> call(String id) => _repository.getServiceTicket(id);
+  Future<Result<ServiceTicket>> call(String id) =>
+      _repository.getServiceTicket(id);
 }
 
 class SaveServiceTicketParams {
@@ -25,7 +27,8 @@ class SaveServiceTicketParams {
   final Map<String, dynamic> payload;
 }
 
-class SaveServiceTicketUseCase extends UseCase<ServiceTicket, SaveServiceTicketParams> {
+class SaveServiceTicketUseCase
+    extends UseCase<ServiceTicket, SaveServiceTicketParams> {
   const SaveServiceTicketUseCase(this._repository);
   final FieldServiceRepository _repository;
   @override
@@ -44,7 +47,8 @@ class DeleteServiceTicketUseCase extends UseCase<void, String> {
   Future<Result<void>> call(String id) => _repository.deleteServiceTicket(id);
 }
 
-class ListTechniciansUseCase extends UseCase<Cacheable<Paginated<Technician>>, ListQuery> {
+class ListTechniciansUseCase
+    extends UseCase<Cacheable<Paginated<Technician>>, ListQuery> {
   const ListTechniciansUseCase(this._repository);
   final FieldServiceRepository _repository;
   @override
@@ -84,11 +88,13 @@ class DeleteTechnicianUseCase extends UseCase<void, String> {
   Future<Result<void>> call(String id) => _repository.deleteTechnician(id);
 }
 
-class ListServiceSchedulesUseCase extends UseCase<Cacheable<Paginated<ServiceSchedule>>, ListQuery> {
+class ListServiceSchedulesUseCase
+    extends UseCase<Cacheable<Paginated<ServiceSchedule>>, ListQuery> {
   const ListServiceSchedulesUseCase(this._repository);
   final FieldServiceRepository _repository;
   @override
-  Future<Result<Cacheable<Paginated<ServiceSchedule>>>> call(ListQuery params) =>
+  Future<Result<Cacheable<Paginated<ServiceSchedule>>>> call(
+          ListQuery params) =>
       _repository.listServiceSchedules(params);
 }
 
@@ -123,8 +129,7 @@ class DeleteServiceContractUseCase extends UseCase<void, String> {
   const DeleteServiceContractUseCase(this._repository);
   final FieldServiceRepository _repository;
   @override
-  Future<Result<void>> call(String id) =>
-      _repository.deleteServiceContract(id);
+  Future<Result<void>> call(String id) => _repository.deleteServiceContract(id);
 }
 
 class GetServiceScheduleUseCase extends UseCase<ServiceSchedule, String> {
@@ -154,11 +159,12 @@ class SaveServiceScheduleUseCase
   }
 }
 
-
-class ListServiceContractsUseCase extends UseCase<Cacheable<Paginated<ServiceContract>>, ListQuery> {
+class ListServiceContractsUseCase
+    extends UseCase<Cacheable<Paginated<ServiceContract>>, ListQuery> {
   ListServiceContractsUseCase(this.repository);
   final FieldServiceRepository repository;
   @override
-  Future<Result<Cacheable<Paginated<ServiceContract>>>> call(ListQuery params) async => throw UnimplementedError();
+  Future<Result<Cacheable<Paginated<ServiceContract>>>> call(
+          ListQuery params) async =>
+      throw UnimplementedError();
 }
-

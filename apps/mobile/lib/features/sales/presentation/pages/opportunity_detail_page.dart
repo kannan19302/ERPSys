@@ -45,7 +45,8 @@ class OpportunityDetailPage extends ConsumerWidget {
           failure: error is Failure
               ? error
               : const ServerFailure('Could not load opportunity.'),
-          onRetry: () => ref.invalidate(opportunityDetailProvider(opportunityId)),
+          onRetry: () =>
+              ref.invalidate(opportunityDetailProvider(opportunityId)),
         ),
         data: (Opportunity opp) => _OpportunityDetail(opp: opp, ref: ref),
       ),
@@ -132,8 +133,7 @@ class _OpportunityDetail extends ConsumerWidget {
               const UiSectionHeader(title: 'Deal Information'),
               if (opp.expectedRevenue != null)
                 _Row('Amount', Formatters.currency(opp.expectedRevenue!)),
-              if (opp.currency != null)
-                _Row('Currency', opp.currency!),
+              if (opp.currency != null) _Row('Currency', opp.currency!),
               if (opp.closeDate != null)
                 _Row('Expected Close', Formatters.date(opp.closeDate!)),
               _Row('Probability', '${pct.round()}%'),
@@ -163,10 +163,8 @@ class _OpportunityDetail extends ConsumerWidget {
             children: <Widget>[
               const UiSectionHeader(title: 'Contact'),
               _Row('Customer', opp.customerName),
-              if (opp.contactName != null)
-                _Row('Contact', opp.contactName!),
-              if (opp.assignedTo != null)
-                _Row('Assigned To', opp.assignedTo!),
+              if (opp.contactName != null) _Row('Contact', opp.contactName!),
+              if (opp.assignedTo != null) _Row('Assigned To', opp.assignedTo!),
             ],
           ),
         ),
@@ -223,18 +221,27 @@ class _OpportunityDetail extends ConsumerWidget {
       context: context,
       builder: (BuildContext dialogContext) => SimpleDialog(
         title: const Text('Move to stage'),
-        children: <String>['PROSPECTING', 'QUALIFICATION', 'NEGOTIATION', 'CLOSED_WON', 'CLOSED_LOST']
-            .map((String stage) => SimpleDialogOption(
-                  onPressed: () => Navigator.of(dialogContext).pop(stage),
-                  child: Text(stage),
-                ),)
+        children: <String>[
+          'PROSPECTING',
+          'QUALIFICATION',
+          'NEGOTIATION',
+          'CLOSED_WON',
+          'CLOSED_LOST'
+        ]
+            .map(
+              (String stage) => SimpleDialogOption(
+                onPressed: () => Navigator.of(dialogContext).pop(stage),
+                child: Text(stage),
+              ),
+            )
             .toList(),
       ),
     );
     if (newStage == null || !context.mounted) return;
 
-    final Result<Opportunity> result =
-        await ref.read(opportunitiesProvider.notifier).updateStage(opp.id, newStage);
+    final Result<Opportunity> result = await ref
+        .read(opportunitiesProvider.notifier)
+        .updateStage(opp.id, newStage);
     if (!context.mounted) return;
     result.fold(
       (failure) => ScaffoldMessenger.of(context)

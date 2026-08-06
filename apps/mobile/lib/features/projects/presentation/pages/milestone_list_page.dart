@@ -28,14 +28,17 @@ class _MilestoneListPageState extends ConsumerState<MilestoneListPage> {
         children: [
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: Spacing.x4),
-            child: Row(children: [
-              Text(
-                state.isLoading
-                    ? 'Loading...'
-                    : '${state.meta.total} milestone${state.meta.total == 1 ? '' : 's'}',
-                style: TextStyle(color: palette.textSecondary, fontSize: TypeScale.xs),
-              ),
-            ],),
+            child: Row(
+              children: [
+                Text(
+                  state.isLoading
+                      ? 'Loading...'
+                      : '${state.meta.total} milestone${state.meta.total == 1 ? '' : 's'}',
+                  style: TextStyle(
+                      color: palette.textSecondary, fontSize: TypeScale.xs),
+                ),
+              ],
+            ),
           ),
           Expanded(child: _body(state, controller)),
         ],
@@ -58,7 +61,8 @@ class _MilestoneListPageState extends ConsumerState<MilestoneListPage> {
       onLoadMore: controller.loadMore,
       emptyTitle: 'No milestones found',
       emptyMessage: 'Milestones created in UniERP will appear here.',
-      itemBuilder: (_, Milestone milestone, __) => _MilestoneTile(milestone: milestone),
+      itemBuilder: (_, Milestone milestone, __) =>
+          _MilestoneTile(milestone: milestone),
     );
   }
 }
@@ -78,23 +82,32 @@ class _MilestoneTile extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(children: [
-              Expanded(
-                child: Text(milestone.title,
-                    style: Theme.of(context).textTheme.titleSmall,),
-              ),
-              UiStatusBadge(
-                label: milestone.status,
-                tone: _statusTone(milestone.status),
-              ),
-            ],),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    milestone.title,
+                    style: Theme.of(context).textTheme.titleSmall,
+                  ),
+                ),
+                UiStatusBadge(
+                  label: milestone.status,
+                  tone: _statusTone(milestone.status),
+                ),
+              ],
+            ),
             const SizedBox(height: Spacing.x1),
-            Row(children: [
-              Icon(Icons.event, size: TypeScale.sm, color: t.textTertiary),
-              const SizedBox(width: Spacing.x0_5),
-              Text('Due ${Formatters.date(milestone.dueDate)}',
-                  style: TextStyle(color: t.textTertiary, fontSize: TypeScale.xs),),
-            ],),
+            Row(
+              children: [
+                Icon(Icons.event, size: TypeScale.sm, color: t.textTertiary),
+                const SizedBox(width: Spacing.x0_5),
+                Text(
+                  'Due ${Formatters.date(milestone.dueDate)}',
+                  style:
+                      TextStyle(color: t.textTertiary, fontSize: TypeScale.xs),
+                ),
+              ],
+            ),
           ],
         ),
       ),

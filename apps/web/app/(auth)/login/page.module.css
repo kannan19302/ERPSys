@@ -172,7 +172,7 @@
 .s24 {
   color: var(--color-text-tertiary);
   font-size: 10px;
-  margin: 4px 0 0;
+  margin: var(--space-1) 0 0;
 }
 .s25 {
   accent-color: var(--color-primary);
@@ -252,7 +252,7 @@
 .s33 {
   color: var(--color-text-secondary);
   font-size: var(--text-sm);
-  margin: 4px 0 0;
+  margin: var(--space-1) 0 0;
 }
 .s34 {
   display: flex;
@@ -266,7 +266,7 @@
   cursor: pointer;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--space-half);
   padding: var(--space-3);
   text-align: left;
   transition: all 0.2s ease;
@@ -313,10 +313,10 @@
 .s41 {
   color: var(--color-primary);
   display: inline;
-  margin-right: 4px;
+  margin-right: var(--space-1);
 }
 .s42 {
-  margin-left: 4px;
+  margin-left: var(--space-1);
 }
 .s43 {
   color: var(--color-primary);
@@ -325,7 +325,7 @@
   color: var(--color-primary);
   display: block;
   font-size: 11px;
-  margin-top: 2px;
+  margin-top: var(--space-half);
   text-decoration: underline;
   word-break: break-all;
 }

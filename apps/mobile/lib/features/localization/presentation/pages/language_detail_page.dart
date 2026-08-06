@@ -26,7 +26,9 @@ class LanguageDetailPage extends ConsumerWidget {
       body: languageAsync.when(
         loading: () => const LoadingView(),
         error: (Object error, StackTrace _) => FailureView(
-          failure: error is Failure ? error : const ServerFailure('Could not load language.'),
+          failure: error is Failure
+              ? error
+              : const ServerFailure('Could not load language.'),
           onRetry: () => ref.invalidate(languageDetailProvider(languageId)),
         ),
         data: (LocalizationLanguage lang) => _LanguageDetail(language: lang),
@@ -54,10 +56,12 @@ class _LanguageDetail extends StatelessWidget {
               Row(
                 children: <Widget>[
                   Expanded(
-                    child: Text(language.name, style: Theme.of(context).textTheme.titleLarge),
+                    child: Text(language.name,
+                        style: Theme.of(context).textTheme.titleLarge),
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: Spacing.x2_5, vertical: Spacing.x1),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: Spacing.x2_5, vertical: Spacing.x1),
                     decoration: BoxDecoration(
                       color: language.isActive ? t.successLight : t.bgSunken,
                       borderRadius: Radii.pill,
@@ -66,7 +70,8 @@ class _LanguageDetail extends StatelessWidget {
                       language.isActive ? 'Active' : 'Inactive',
                       style: TextStyle(
                         color: language.isActive ? t.success : t.textSecondary,
-                        fontSize: TypeScale.xs, fontWeight: TypeScale.medium,
+                        fontSize: TypeScale.xs,
+                        fontWeight: TypeScale.medium,
                       ),
                     ),
                   ),
@@ -75,7 +80,8 @@ class _LanguageDetail extends StatelessWidget {
               if (language.isDefault)
                 Padding(
                   padding: const EdgeInsets.only(top: Spacing.x2),
-                  child: Text('Default language', style: TextStyle(color: t.info, fontSize: TypeScale.xs)),
+                  child: Text('Default language',
+                      style: TextStyle(color: t.info, fontSize: TypeScale.xs)),
                 ),
             ],
           ),
@@ -87,7 +93,11 @@ class _LanguageDetail extends StatelessWidget {
             children: <Widget>[
               const _SectionTitle(title: 'Language Details'),
               _FieldRow('Code', language.code),
-              _FieldRow('Direction', language.direction == 'rtl' ? 'Right-to-Left' : 'Left-to-Right'),
+              _FieldRow(
+                  'Direction',
+                  language.direction == 'rtl'
+                      ? 'Right-to-Left'
+                      : 'Left-to-Right'),
               _FieldRow('Sort Order', '${language.sortOrder}'),
             ],
           ),
@@ -98,8 +108,16 @@ class _LanguageDetail extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               const _SectionTitle(title: 'Metadata'),
-              _FieldRow('Created', language.createdAt != null ? Formatters.dateTime(language.createdAt!) : '—'),
-              _FieldRow('Updated', language.updatedAt != null ? Formatters.dateTime(language.updatedAt!) : '—'),
+              _FieldRow(
+                  'Created',
+                  language.createdAt != null
+                      ? Formatters.dateTime(language.createdAt!)
+                      : '—'),
+              _FieldRow(
+                  'Updated',
+                  language.updatedAt != null
+                      ? Formatters.dateTime(language.updatedAt!)
+                      : '—'),
             ],
           ),
         ),
@@ -119,7 +137,9 @@ class _SectionCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(Spacing.x4),
       decoration: BoxDecoration(
-        color: t.bgElevated, borderRadius: Radii.card, border: Border.all(color: t.border),
+        color: t.bgElevated,
+        borderRadius: Radii.card,
+        border: Border.all(color: t.border),
       ),
       child: child,
     );
@@ -151,7 +171,8 @@ class _FieldRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: Spacing.x1_5),
       child: Row(
         children: <Widget>[
-          Expanded(child: Text(label, style: TextStyle(color: t.textSecondary))),
+          Expanded(
+              child: Text(label, style: TextStyle(color: t.textSecondary))),
           Text(value, style: Theme.of(context).textTheme.labelLarge),
         ],
       ),

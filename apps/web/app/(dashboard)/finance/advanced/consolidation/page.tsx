@@ -21,7 +21,7 @@ import {
   BarChart3,
 } from "lucide-react";
 import { RouteGuard, useApiClient } from "@unerp/framework";
-import { SubTabBar, type SubTab } from "@unerp/ui-layout";
+import { SubTabBar, type SubTab } from "@unerp/ui/layout";
 
 interface Entity {
   id: string;
@@ -275,9 +275,21 @@ export default function ConsolidationPage() {
             config={{
               xAxisKey: "name",
               series: [
-                { dataKey: "revenue", name: "Revenue", color: "#22c55e" },
-                { dataKey: "expenses", name: "Expenses", color: "#ef4444" },
-                { dataKey: "netIncome", name: "Net Income", color: "#6366f1" },
+                {
+                  dataKey: "revenue",
+                  name: "Revenue",
+                  color: "var(--chart-2)",
+                },
+                {
+                  dataKey: "expenses",
+                  name: "Expenses",
+                  color: "var(--chart-4)",
+                },
+                {
+                  dataKey: "netIncome",
+                  name: "Net Income",
+                  color: "var(--chart-10)",
+                },
               ],
             }}
             defaultChartType="bar"

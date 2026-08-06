@@ -104,7 +104,8 @@ class PermissionSet {
     for (final String grant in _granted) {
       if (!grant.endsWith('.*')) continue;
       final String prefix = grant.substring(0, grant.length - 2);
-      if (permission == prefix || permission.startsWith('$prefix.')) return true;
+      if (permission == prefix || permission.startsWith('$prefix.'))
+        return true;
     }
     return false;
   }

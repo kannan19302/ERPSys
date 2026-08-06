@@ -93,7 +93,8 @@ class _PaginatedListViewState<T> extends State<PaginatedListView<T>> {
     }
 
     final int headerCount = widget.header == null ? 0 : 1;
-    final bool showFooter = widget.isLoadingMore || widget.loadMoreFailure != null;
+    final bool showFooter =
+        widget.isLoadingMore || widget.loadMoreFailure != null;
 
     return RefreshIndicator(
       onRefresh: widget.onRefresh,
@@ -102,14 +103,16 @@ class _PaginatedListViewState<T> extends State<PaginatedListView<T>> {
         padding: widget.padding,
         physics: const AlwaysScrollableScrollPhysics(),
         itemCount: widget.items.length + headerCount + (showFooter ? 1 : 0),
-        separatorBuilder: (_, int index) =>
-            index < headerCount ? const SizedBox.shrink() : const SizedBox(height: Spacing.x3),
+        separatorBuilder: (_, int index) => index < headerCount
+            ? const SizedBox.shrink()
+            : const SizedBox(height: Spacing.x3),
         itemBuilder: (BuildContext context, int index) {
           if (headerCount == 1 && index == 0) return widget.header!;
 
           final int itemIndex = index - headerCount;
           if (itemIndex < widget.items.length) {
-            return widget.itemBuilder(context, widget.items[itemIndex], itemIndex);
+            return widget.itemBuilder(
+                context, widget.items[itemIndex], itemIndex);
           }
           return _Footer(
             isLoading: widget.isLoadingMore,
@@ -123,7 +126,8 @@ class _PaginatedListViewState<T> extends State<PaginatedListView<T>> {
 }
 
 class _Footer extends StatelessWidget {
-  const _Footer({required this.isLoading, required this.failure, required this.onRetry});
+  const _Footer(
+      {required this.isLoading, required this.failure, required this.onRetry});
 
   final bool isLoading;
   final Failure? failure;

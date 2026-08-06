@@ -4,11 +4,13 @@ import '../../../../core/usecase/usecase.dart';
 import '../entities/localization.dart';
 import '../repositories/localization_repository.dart';
 
-class ListTranslationsUseCase extends UseCase<Cacheable<Paginated<LocalizationTranslation>>, ListQuery> {
+class ListTranslationsUseCase
+    extends UseCase<Cacheable<Paginated<LocalizationTranslation>>, ListQuery> {
   const ListTranslationsUseCase(this._repository);
   final LocalizationRepository _repository;
   @override
-  Future<Result<Cacheable<Paginated<LocalizationTranslation>>>> call(ListQuery params) =>
+  Future<Result<Cacheable<Paginated<LocalizationTranslation>>>> call(
+          ListQuery params) =>
       _repository.listTranslations(params);
 }
 
@@ -18,7 +20,8 @@ class SaveTranslationParams {
   final Map<String, dynamic> payload;
 }
 
-class SaveTranslationUseCase extends UseCase<LocalizationTranslation, SaveTranslationParams> {
+class SaveTranslationUseCase
+    extends UseCase<LocalizationTranslation, SaveTranslationParams> {
   const SaveTranslationUseCase(this._repository);
   final LocalizationRepository _repository;
   @override
@@ -37,11 +40,13 @@ class DeleteTranslationUseCase extends UseCase<void, String> {
   Future<Result<void>> call(String id) => _repository.deleteTranslation(id);
 }
 
-class ListLanguagesUseCase extends UseCase<Cacheable<Paginated<LocalizationLanguage>>, ListQuery> {
+class ListLanguagesUseCase
+    extends UseCase<Cacheable<Paginated<LocalizationLanguage>>, ListQuery> {
   const ListLanguagesUseCase(this._repository);
   final LocalizationRepository _repository;
   @override
-  Future<Result<Cacheable<Paginated<LocalizationLanguage>>>> call(ListQuery params) =>
+  Future<Result<Cacheable<Paginated<LocalizationLanguage>>>> call(
+          ListQuery params) =>
       _repository.listLanguages(params);
 }
 
@@ -51,7 +56,8 @@ class SaveLanguageParams {
   final Map<String, dynamic> payload;
 }
 
-class SaveLanguageUseCase extends UseCase<LocalizationLanguage, SaveLanguageParams> {
+class SaveLanguageUseCase
+    extends UseCase<LocalizationLanguage, SaveLanguageParams> {
   const SaveLanguageUseCase(this._repository);
   final LocalizationRepository _repository;
   @override
@@ -70,11 +76,13 @@ class DeleteLanguageUseCase extends UseCase<void, String> {
   Future<Result<void>> call(String id) => _repository.deleteLanguage(id);
 }
 
-class ListRegionsUseCase extends UseCase<Cacheable<Paginated<LocalizationRegion>>, ListQuery> {
+class ListRegionsUseCase
+    extends UseCase<Cacheable<Paginated<LocalizationRegion>>, ListQuery> {
   const ListRegionsUseCase(this._repository);
   final LocalizationRepository _repository;
   @override
-  Future<Result<Cacheable<Paginated<LocalizationRegion>>>> call(ListQuery params) =>
+  Future<Result<Cacheable<Paginated<LocalizationRegion>>>> call(
+          ListQuery params) =>
       _repository.listRegions(params);
 }
 
