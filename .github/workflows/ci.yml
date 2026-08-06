@@ -200,6 +200,23 @@ jobs:
     env:
       DATABASE_URL: postgresql://unierp:unierp@localhost:5432/unierp_test
       DATABASE_OWNER_URL: postgresql://unierp:unierp@localhost:5432/unierp_test
+      # The two-tenant isolation assertion MUST connect as the application role.
+      #
+      # `unierp` here is the owner and a superuser, and a superuser bypasses RLS
+      # outright — `FORCE` does not apply to it — so an isolation test run over
+      # this connection proves the application-level tenant scope and not the
+      # database guarantee (§ 5.1, and the 2026-08-05 finding that established
+      # it). `unerp_api` is `NOBYPASSRLS` and is created by migration
+      # `20260718100000_create_unerp_api_role`, so it already exists on the
+      # runner by the time the suite runs.
+      #
+      # Without this the test fell back to a hardcoded
+      # `…@localhost:5432/unerp_dev`, which is the *local* database name and
+      # does not exist in CI. It failed with P1003 "Database `unerp_dev` does
+      # not exist" — so the one assertion that proves RLS at the database has
+      # never actually run on a runner, while the job step named "RLS /
+      # tenant-isolation verification" beside it reported success.
+      DATABASE_APP_URL: postgresql://unerp_api:unerp_api_password@localhost:5432/unierp_test?schema=public&connection_limit=2&pool_timeout=20
       REDIS_URL: redis://localhost:6379
     steps:
       - uses: actions/checkout@v4
@@ -282,6 +299,23 @@ jobs:
     env:
       DATABASE_URL: postgresql://unierp:unierp@localhost:5432/unierp_test
       DATABASE_OWNER_URL: postgresql://unierp:unierp@localhost:5432/unierp_test
+      # The two-tenant isolation assertion MUST connect as the application role.
+      #
+      # `unierp` here is the owner and a superuser, and a superuser bypasses RLS
+      # outright — `FORCE` does not apply to it — so an isolation test run over
+      # this connection proves the application-level tenant scope and not the
+      # database guarantee (§ 5.1, and the 2026-08-05 finding that established
+      # it). `unerp_api` is `NOBYPASSRLS` and is created by migration
+      # `20260718100000_create_unerp_api_role`, so it already exists on the
+      # runner by the time the suite runs.
+      #
+      # Without this the test fell back to a hardcoded
+      # `…@localhost:5432/unerp_dev`, which is the *local* database name and
+      # does not exist in CI. It failed with P1003 "Database `unerp_dev` does
+      # not exist" — so the one assertion that proves RLS at the database has
+      # never actually run on a runner, while the job step named "RLS /
+      # tenant-isolation verification" beside it reported success.
+      DATABASE_APP_URL: postgresql://unerp_api:unerp_api_password@localhost:5432/unierp_test?schema=public&connection_limit=2&pool_timeout=20
       REDIS_URL: redis://localhost:6379
       NEXT_PUBLIC_APP_URL: http://localhost:3000
       E2E_EMAIL: admin@unerp.dev

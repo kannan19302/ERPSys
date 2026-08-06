@@ -1293,9 +1293,40 @@ had no local way to check. Five checks were failing on the branch carrying all o
 | :--------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------- |
 | `Static (format)`      | 202 files unformatted                                                                                                                                           | ✅ fixed                                           |
 | `M3 Choreography Sync` | `setup-node` with `cache: pnpm` ran **before** pnpm was installed — the job failed at setup and had never executed its own body, hiding two more bugs inside it | ✅ fixed                                           |
-| `Static (contracts)`   | CDC expectations stale on Linux, clean on Windows; the gate said only "stale"                                                                                   | 🟡 gate now reports **what** drifted               |
-| `Analyze` (Flutter)    | `dart format --set-exit-if-changed`                                                                                                                             | ⛔ needs a Dart toolchain                          |
+| `Static (contracts)`   | CDC expectations stale on Linux, clean on Windows; the gate said only "stale"                                                                                   | ✅ fixed — cause below                             |
+| `Analyze` (Flutter)    | `dart format --set-exit-if-changed`                                                                                                                             | ✅ fixed — `flutter analyze` now runs, and fails   |
+| `Tests + coverage`     | the two-tenant isolation assertion could not reach its database                                                                                                 | ✅ fixed, and guarded                              |
 | `Supply chain`         | `pnpm audit` — 2 critical, 39 high                                                                                                                              | 🟡 **78 → 39 total, 39 → 21 high, 2 → 1 critical** |
+| `CodeQL`               | 88 open alerts, all dated 28 Jul – 1 Aug                                                                                                                        | ⛔ pre-existing on `main`, not introduced here     |
+
+> #### 🔴 The isolation test that proves § 5.1 had never run in CI
+>
+> One test failed out of 3,866, and it was **the two-tenant isolation assertion**
+> — the one this document calls the only layer that is proof rather than intent.
+> It failed with `P1003: Database "unerp_dev" does not exist`.
+>
+> The role was never the problem. `unerp_api` is created by migration
+> `20260718100000_create_unerp_api_role` and exists wherever migrations have run,
+> including on the runner. The test hardcoded a fallback connection string whose
+> **database name was the local one** — CI's is `unierp_test` — so it could not
+> connect at all.
+>
+> § 5.1 already says a two-tenant test that runs as the owner is "worse than no
+> test, because it reports a guarantee it never checked". One that cannot connect
+> is the same failure wearing a different error code, and the step named `RLS /
+tenant-isolation verification` ran green beside it throughout. That step checks
+> the **catalogue** — `ENABLE`, `FORCE`, policy counts, the app role's bypass flag
+> — which is necessary, and is not the same as watching one tenant fail to see
+> another tenant's row.
+>
+> Two fixes, because either alone leaves the trap. The URL is now **derived** from
+> `DATABASE_URL` by swapping only the credentials, so host, port and database
+> follow whatever environment the suite runs in. And before asserting isolation
+> the test queries `pg_roles` for `current_user` and requires `unerp_api`,
+> `rolsuper = false`, `rolbypassrls = false` — so an edit that silently hands it
+> the owner connection **fails loudly instead of passing vacuously**. Proven:
+> pointing `DATABASE_APP_URL` at the owner yields `expected 'unerp' to be
+'unerp_api'`.
 
 **The divergence itself is not closed, and closing it needs a decision.** The obvious repair is to
 add `format:check` to `pnpm verify`. It cannot be done as it stands: `core.autocrlf` is true and
