@@ -41,19 +41,19 @@
  * Usage:  node scripts/ci/cdc-harness.mjs [--record] [--json]
  */
 
-import fs from 'node:fs';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
-import { createRequire } from 'node:module';
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { createRequire } from "node:module";
 
 const require = createRequire(import.meta.url);
-const ts = require('typescript');
+const ts = require("typescript");
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const ROOT = path.resolve(__dirname, '../../');
+const ROOT = path.resolve(__dirname, "../../");
 
-const RECORD = process.argv.includes('--record');
-const AS_JSON = process.argv.includes('--json');
+const RECORD = process.argv.includes("--record");
+const AS_JSON = process.argv.includes("--json");
 
 /**
  * Providers: a published package whose exported surface other layers depend on.
@@ -70,11 +70,11 @@ const AS_JSON = process.argv.includes('--json');
 // while proving nothing. Source is a faithful proxy in that state: it is the
 // same tree the consumer compiles against through the workspace link.
 const DIST = (name) => {
-  const short = name.replace('@unerp/', '');
+  const short = name.replace("@unerp/", "");
   const candidates = [
-    { dir: `node_modules/${name}`, entry: 'dist/index.d.ts' },
-    { dir: `packages/${short}`, entry: 'dist/index.d.ts' },
-    { dir: `packages/${short}`, entry: 'src/index.ts' },
+    { dir: `node_modules/${name}`, entry: "dist/index.d.ts" },
+    { dir: `packages/${short}`, entry: "dist/index.d.ts" },
+    { dir: `packages/${short}`, entry: "src/index.ts" },
   ];
   return (
     candidates.find((c) => fs.existsSync(path.join(ROOT, c.dir, c.entry))) ??
@@ -83,32 +83,48 @@ const DIST = (name) => {
 };
 
 const PROVIDERS = {
-  '@unerp/contracts': DIST('@unerp/contracts'),
-  '@unerp/kernel': DIST('@unerp/kernel'),
-  '@unerp/sdk': DIST('@unerp/sdk'),
-  '@unerp/extension-api': DIST('@unerp/extension-api'),
-  '@unerp/sandbox': DIST('@unerp/sandbox'),
-  '@unerp/framework': DIST('@unerp/framework'),
-  '@unerp/database': DIST('@unerp/database'),
-  '@unerp/shared': DIST('@unerp/shared'),
-  '@unerp/auth': DIST('@unerp/auth'),
-  '@unerp/ui': { ...DIST('@unerp/ui'), subpathRoot: 'dist' },
+  "@unerp/contracts": DIST("@unerp/contracts"),
+  "@unerp/kernel": DIST("@unerp/kernel"),
+  "@unerp/sdk": DIST("@unerp/sdk"),
+  "@unerp/extension-api": DIST("@unerp/extension-api"),
+  "@unerp/sandbox": DIST("@unerp/sandbox"),
+  "@unerp/framework": DIST("@unerp/framework"),
+  "@unerp/database": DIST("@unerp/database"),
+  "@unerp/shared": DIST("@unerp/shared"),
+  "@unerp/auth": DIST("@unerp/auth"),
+  "@unerp/ui": { ...DIST("@unerp/ui"), subpathRoot: "dist" },
 };
 
 /** Consumers: anything that compiles against a provider's published artifact. */
 const CONSUMERS = [
-  { name: '@unerp/web', dir: 'apps/web', roots: ['app', 'src'] },
-  { name: '@unerp/console', dir: 'apps/console', roots: ['app', 'src'] },
-  { name: '@unerp/developer', dir: 'apps/developer', roots: ['src'] },
-  { name: '@unerp/api', dir: 'apps/api', roots: ['src'] },
-  { name: '@unerp/idp', dir: 'apps/idp', roots: ['src'] },
-  { name: '@unerp/framework', dir: 'packages/framework', roots: ['src'] },
-  { name: '@unerp/sdk', dir: 'packages/sdk', roots: ['src'] },
-  { name: '@unerp/kernel', dir: 'packages/kernel', roots: ['src'] },
-  { name: '@unerp/ext-real-estate', dir: 'apps/extensions/real-estate', roots: ['src'] },
-  { name: '@unerp/ext-education', dir: 'apps/extensions/education', roots: ['src'] },
-  { name: '@unerp/ext-healthcare', dir: 'apps/extensions/healthcare', roots: ['src'] },
-  { name: '@unerp/ext-field-service', dir: 'apps/extensions/field-service', roots: ['src'] },
+  { name: "@unerp/web", dir: "apps/web", roots: ["app", "src"] },
+  { name: "@unerp/console", dir: "apps/console", roots: ["app", "src"] },
+  { name: "@unerp/developer", dir: "apps/developer", roots: ["src"] },
+  { name: "@unerp/api", dir: "apps/api", roots: ["src"] },
+  { name: "@unerp/idp", dir: "apps/idp", roots: ["src"] },
+  { name: "@unerp/framework", dir: "packages/framework", roots: ["src"] },
+  { name: "@unerp/sdk", dir: "packages/sdk", roots: ["src"] },
+  { name: "@unerp/kernel", dir: "packages/kernel", roots: ["src"] },
+  {
+    name: "@unerp/ext-real-estate",
+    dir: "apps/extensions/real-estate",
+    roots: ["src"],
+  },
+  {
+    name: "@unerp/ext-education",
+    dir: "apps/extensions/education",
+    roots: ["src"],
+  },
+  {
+    name: "@unerp/ext-healthcare",
+    dir: "apps/extensions/healthcare",
+    roots: ["src"],
+  },
+  {
+    name: "@unerp/ext-field-service",
+    dir: "apps/extensions/field-service",
+    roots: ["src"],
+  },
 ];
 
 // ── source helpers ───────────────────────────────────────────────────────────
@@ -116,10 +132,10 @@ const CONSUMERS = [
 const parse = (file) =>
   ts.createSourceFile(
     file,
-    fs.readFileSync(file, 'utf8'),
+    fs.readFileSync(file, "utf8"),
     ts.ScriptTarget.Latest,
     true,
-    file.endsWith('.tsx') ? ts.ScriptKind.TSX : ts.ScriptKind.TS,
+    file.endsWith(".tsx") ? ts.ScriptKind.TSX : ts.ScriptKind.TS,
   );
 
 function resolveRelative(fromFile, spec) {
@@ -128,14 +144,16 @@ function resolveRelative(fromFile, spec) {
   // the .ts file beside it (`./types/index.js` → `./types/index.ts`). Missing
   // this mapping silently reports a closed provider as an open one, which turns
   // a hard gate into a warning — so it is handled explicitly.
-  const jsAsTs = base.replace(/\.jsx?$/, (m) => (m === '.jsx' ? '.tsx' : '.ts'));
+  const jsAsTs = base.replace(/\.jsx?$/, (m) =>
+    m === ".jsx" ? ".tsx" : ".ts",
+  );
   // …and the same specifier inside a published `dist` resolves to a DECLARATION
   // file, not a source file. Omitting `.d.ts` here made the harness unable to
   // follow re-exports through a published package, so it under-reported every
   // provider surface and raised false violations against symbols that were
   // present all along — a gate that cries wolf gets muted, which costs as much
   // as one that stays silent.
-  const jsAsDts = base.replace(/\.jsx?$/, '.d.ts');
+  const jsAsDts = base.replace(/\.jsx?$/, ".d.ts");
   // ORDER MATTERS. Inside a published `dist` the emitted `.js` sits beside its
   // `.d.ts`, so trying the bare specifier first resolved `./validators/index.js`
   // to the JavaScript — which carries no type exports at all. The harness then
@@ -145,15 +163,16 @@ function resolveRelative(fromFile, spec) {
   for (const candidate of [
     jsAsDts,
     `${base}.d.ts`,
-    path.join(base, 'index.d.ts'),
+    path.join(base, "index.d.ts"),
     jsAsTs,
     `${base}.ts`,
     `${base}.tsx`,
-    path.join(base, 'index.ts'),
-    path.join(base, 'index.tsx'),
+    path.join(base, "index.ts"),
+    path.join(base, "index.tsx"),
     base,
   ]) {
-    if (fs.existsSync(candidate) && fs.statSync(candidate).isFile()) return candidate;
+    if (fs.existsSync(candidate) && fs.statSync(candidate).isFile())
+      return candidate;
   }
   return null;
 }
@@ -161,10 +180,16 @@ function resolveRelative(fromFile, spec) {
 function walkSources(dir, out = []) {
   if (!fs.existsSync(dir)) return out;
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-    if (entry.name === 'node_modules' || entry.name === 'dist' || entry.name === '.next') continue;
+    if (
+      entry.name === "node_modules" ||
+      entry.name === "dist" ||
+      entry.name === ".next"
+    )
+      continue;
     const p = path.join(dir, entry.name);
     if (entry.isDirectory()) walkSources(p, out);
-    else if (/\.(ts|tsx)$/.test(entry.name) && !entry.name.endsWith('.d.ts')) out.push(p);
+    else if (/\.(ts|tsx)$/.test(entry.name) && !entry.name.endsWith(".d.ts"))
+      out.push(p);
   }
   return out;
 }
@@ -198,7 +223,7 @@ function providerSurface(entryFile, seen = new Set()) {
 
       // star re-export
       if (!spec) continue;
-      if (spec.startsWith('.')) {
+      if (spec.startsWith(".")) {
         const target = resolveRelative(entryFile, spec);
         if (!target) {
           open = true;
@@ -226,10 +251,10 @@ function providerSurface(entryFile, seen = new Set()) {
       continue;
     }
 
-    const exported = ts
-      .getCombinedModifierFlags(stmt)
+    const exported =
+      ts.getCombinedModifierFlags(stmt) &
       // eslint-disable-next-line no-bitwise
-      & ts.ModifierFlags.Export;
+      ts.ModifierFlags.Export;
     if (!exported) continue;
 
     if (ts.isVariableStatement(stmt)) {
@@ -262,8 +287,11 @@ function providerEntryFor(spec) {
   for (const [name, p] of Object.entries(PROVIDERS)) {
     if (!p.subpathRoot || !spec.startsWith(`${name}/`)) continue;
     const sub = spec.slice(name.length + 1);
-    if (sub.endsWith('.css')) return null; // stylesheet, not a symbol surface
-    const file = resolveRelative(path.join(ROOT, p.dir, p.subpathRoot, 'x'), `./${sub}`);
+    if (sub.endsWith(".css")) return null; // stylesheet, not a symbol surface
+    const file = resolveRelative(
+      path.join(ROOT, p.dir, p.subpathRoot, "x"),
+      `./${sub}`,
+    );
     return file ? { key: spec, file } : null;
   }
   return null;
@@ -273,7 +301,8 @@ const surfaceCache = new Map();
 function surfaceOf(spec) {
   const entry = providerEntryFor(spec);
   if (!entry) return null;
-  if (!surfaceCache.has(entry.file)) surfaceCache.set(entry.file, providerSurface(entry.file));
+  if (!surfaceCache.has(entry.file))
+    surfaceCache.set(entry.file, providerSurface(entry.file));
   return surfaceCache.get(entry.file);
 }
 
@@ -287,9 +316,13 @@ function computeExpectations(consumer) {
     for (const file of walkSources(path.join(ROOT, consumer.dir, root))) {
       const sf = parse(file);
       for (const stmt of sf.statements) {
-        if (!ts.isImportDeclaration(stmt) || !ts.isStringLiteral(stmt.moduleSpecifier)) continue;
+        if (
+          !ts.isImportDeclaration(stmt) ||
+          !ts.isStringLiteral(stmt.moduleSpecifier)
+        )
+          continue;
         const spec = stmt.moduleSpecifier.text;
-        if (!spec.startsWith('@unerp/')) continue;
+        if (!spec.startsWith("@unerp/")) continue;
         if (!providerEntryFor(spec)) continue;
 
         const rec = (byProvider[spec] ??= {
@@ -297,15 +330,17 @@ function computeExpectations(consumer) {
           namespaceImports: 0,
           files: new Set(),
         });
-        rec.files.add(path.relative(ROOT, file).split(path.sep).join('/'));
+        rec.files.add(path.relative(ROOT, file).split(path.sep).join("/"));
 
         const clause = stmt.importClause;
         if (!clause) continue;
-        if (clause.name) rec.symbols.add('default');
+        if (clause.name) rec.symbols.add("default");
         const b = clause.namedBindings;
         if (!b) continue;
         if (ts.isNamespaceImport(b)) rec.namespaceImports += 1;
-        else for (const el of b.elements) rec.symbols.add((el.propertyName ?? el.name).text);
+        else
+          for (const el of b.elements)
+            rec.symbols.add((el.propertyName ?? el.name).text);
       }
     }
   }
@@ -320,22 +355,79 @@ function computeExpectations(consumer) {
   }
 
   return {
-    $schema: 'https://unierp.io/schemas/cdc-expectations.json',
+    $schema: "https://unierp.io/schemas/cdc-expectations.json",
     description:
-      'Consumer-driven contract. What this package expects its providers to export. ' +
-      'Generated by scripts/ci/cdc-harness.mjs --record; replayed by providers in CI. ' +
-      'PLATFORM_ARCHITECTURE.md § 4.5 (M2).',
+      "Consumer-driven contract. What this package expects its providers to export. " +
+      "Generated by scripts/ci/cdc-harness.mjs --record; replayed by providers in CI. " +
+      "PLATFORM_ARCHITECTURE.md § 4.5 (M2).",
     consumer: consumer.name,
     providers,
   };
 }
 
-const expectationsPath = (consumer) => path.join(ROOT, consumer.dir, 'cdc', 'expectations.json');
+const expectationsPath = (consumer) =>
+  path.join(ROOT, consumer.dir, "cdc", "expectations.json");
 const stable = (obj) => `${JSON.stringify(obj, null, 2)}\n`;
+
+/**
+ * What actually changed between the published expectation and the computed one.
+ *
+ * Reports at the granularity a person fixes: providers gained or dropped,
+ * symbols gained or dropped per provider, and the two scalar counts. Falls back
+ * to naming the differing top-level field rather than claiming no difference,
+ * because "stale, but I cannot tell you how" is still more useful than silence.
+ */
+function describeDrift(published, computed) {
+  const lines = [];
+  const pubProviders = Object.keys(published.providers ?? {});
+  const newProviders = Object.keys(computed.providers ?? {});
+
+  for (const spec of newProviders.filter((s) => !pubProviders.includes(s))) {
+    lines.push(`provider added: ${spec}`);
+  }
+  for (const spec of pubProviders.filter((s) => !newProviders.includes(s))) {
+    lines.push(`provider removed: ${spec}`);
+  }
+
+  for (const spec of newProviders.filter((s) => pubProviders.includes(s))) {
+    const a = published.providers[spec];
+    const b = computed.providers[spec];
+    const added = b.symbols.filter((s) => !a.symbols.includes(s));
+    const removed = a.symbols.filter((s) => !b.symbols.includes(s));
+    if (added.length)
+      lines.push(`${spec}: symbols added — ${added.join(", ")}`);
+    if (removed.length)
+      lines.push(`${spec}: symbols removed — ${removed.join(", ")}`);
+    if (a.namespaceImports !== b.namespaceImports) {
+      lines.push(
+        `${spec}: namespaceImports ${a.namespaceImports} → ${b.namespaceImports}`,
+      );
+    }
+    if (a.consumingFiles !== b.consumingFiles) {
+      lines.push(
+        `${spec}: consumingFiles ${a.consumingFiles} → ${b.consumingFiles}`,
+      );
+    }
+  }
+
+  if (lines.length === 0) {
+    for (const key of ["$schema", "description", "consumer"]) {
+      if (stable(published[key]) !== stable(computed[key]))
+        lines.push(`${key} differs`);
+    }
+  }
+  return lines.length ? lines : ["byte difference outside the compared fields"];
+}
 
 // ── run ──────────────────────────────────────────────────────────────────────
 
-const results = { recorded: [], drifted: [], violations: [], openProviders: [], warnings: [] };
+const results = {
+  recorded: [],
+  drifted: [],
+  violations: [],
+  openProviders: [],
+  warnings: [],
+};
 
 for (const consumer of CONSUMERS) {
   if (!fs.existsSync(path.join(ROOT, consumer.dir))) continue;
@@ -351,9 +443,24 @@ for (const consumer of CONSUMERS) {
 
   // 1. the published expectation must match what the consumer actually imports
   if (!fs.existsSync(file)) {
-    results.drifted.push({ consumer: consumer.name, reason: 'no published expectation' });
-  } else if (fs.readFileSync(file, 'utf8') !== stable(expectations)) {
-    results.drifted.push({ consumer: consumer.name, reason: 'published expectation is stale' });
+    results.drifted.push({
+      consumer: consumer.name,
+      reason: "no published expectation",
+    });
+  } else if (fs.readFileSync(file, "utf8") !== stable(expectations)) {
+    results.drifted.push({
+      consumer: consumer.name,
+      reason: "published expectation is stale",
+      // "Stale" alone is not actionable, and it is least actionable exactly when
+      // it matters: a drift that reproduces on a Linux runner and not on a
+      // Windows checkout cannot be diagnosed by re-running --record locally,
+      // because locally there is nothing to see. Say what differs, so the CI log
+      // is the diagnosis rather than the start of one.
+      detail: describeDrift(
+        JSON.parse(fs.readFileSync(file, "utf8")),
+        expectations,
+      ),
+    });
   }
 
   // 2. replay every expected symbol against the provider's current surface
@@ -361,8 +468,11 @@ for (const consumer of CONSUMERS) {
     const surface = surfaceOf(spec);
     if (!surface) continue;
     if (surface.open) {
-      if (!results.openProviders.includes(spec)) results.openProviders.push(spec);
-      const missing = exp.symbols.filter((s) => s !== 'default' && !surface.symbols.has(s));
+      if (!results.openProviders.includes(spec))
+        results.openProviders.push(spec);
+      const missing = exp.symbols.filter(
+        (s) => s !== "default" && !surface.symbols.has(s),
+      );
       if (missing.length) {
         results.warnings.push(
           `${consumer.name} → ${spec}: ${missing.length} symbol(s) not enumerable (open surface)`,
@@ -371,9 +481,13 @@ for (const consumer of CONSUMERS) {
       continue;
     }
     for (const symbol of exp.symbols) {
-      if (symbol === 'default') continue;
+      if (symbol === "default") continue;
       if (!surface.symbols.has(symbol)) {
-        results.violations.push({ consumer: consumer.name, provider: spec, symbol });
+        results.violations.push({
+          consumer: consumer.name,
+          provider: spec,
+          symbol,
+        });
       }
     }
   }
@@ -384,40 +498,61 @@ if (AS_JSON) {
   process.exit(results.violations.length || results.drifted.length ? 1 : 0);
 }
 
-console.log('\nM2 — consumer-driven contracts  \x1b[2m(PLATFORM_ARCHITECTURE.md § 4.5)\x1b[0m\n');
+console.log(
+  "\nM2 — consumer-driven contracts  \x1b[2m(PLATFORM_ARCHITECTURE.md § 4.5)\x1b[0m\n",
+);
 
 if (RECORD) {
   for (const name of results.recorded) console.log(`  · recorded  ${name}`);
-  console.log(`\n  ✅ Published ${results.recorded.length} consumer expectation(s).\n`);
+  console.log(
+    `\n  ✅ Published ${results.recorded.length} consumer expectation(s).\n`,
+  );
   process.exit(0);
 }
 
-const consumersChecked = CONSUMERS.filter((c) => fs.existsSync(path.join(ROOT, c.dir))).length;
-console.log(`  Replayed ${consumersChecked} consumer expectation corpora against their providers.`);
+const consumersChecked = CONSUMERS.filter((c) =>
+  fs.existsSync(path.join(ROOT, c.dir)),
+).length;
+console.log(
+  `  Replayed ${consumersChecked} consumer expectation corpora against their providers.`,
+);
 if (results.openProviders.length) {
   console.log(
-    `  \x1b[2mOpen surfaces (absence not provable, misses are warnings): ${results.openProviders.join(', ')}\x1b[0m`,
+    `  \x1b[2mOpen surfaces (absence not provable, misses are warnings): ${results.openProviders.join(", ")}\x1b[0m`,
   );
 }
 for (const w of results.warnings) console.log(`  \x1b[33m⚠\x1b[0m  ${w}`);
 
 if (results.drifted.length) {
-  console.log('\n  \x1b[31m✗ Published expectations are out of date:\x1b[0m');
-  for (const d of results.drifted) console.log(`      · ${d.consumer} — ${d.reason}`);
-  console.log('\n    Run: node scripts/ci/cdc-harness.mjs --record');
+  console.log("\n  \x1b[31m✗ Published expectations are out of date:\x1b[0m");
+  for (const d of results.drifted) {
+    console.log(`      · ${d.consumer} — ${d.reason}`);
+    for (const line of d.detail ?? []) console.log(`          ${line}`);
+  }
+  console.log("\n    Run: node scripts/ci/cdc-harness.mjs --record");
 }
 
 if (results.violations.length) {
-  console.log('\n  \x1b[31m✗ CDC violations — a consumer expects a symbol its provider no longer exports:\x1b[0m');
+  console.log(
+    "\n  \x1b[31m✗ CDC violations — a consumer expects a symbol its provider no longer exports:\x1b[0m",
+  );
   for (const v of results.violations) {
-    console.log(`      · ${v.consumer} expects \x1b[1m${v.symbol}\x1b[0m from ${v.provider}`);
+    console.log(
+      `      · ${v.consumer} expects \x1b[1m${v.symbol}\x1b[0m from ${v.provider}`,
+    );
   }
 }
 
 if (results.drifted.length || results.violations.length) {
-  console.log('\n  This is the break the compiler would have caught before the Phase 3 split,');
-  console.log('  and will not catch after it. Fix the provider or update the consumer.\n');
+  console.log(
+    "\n  This is the break the compiler would have caught before the Phase 3 split,",
+  );
+  console.log(
+    "  and will not catch after it. Fix the provider or update the consumer.\n",
+  );
   process.exit(1);
 }
 
-console.log('\n  \x1b[32m✅ Every consumer expectation is satisfied by its provider.\x1b[0m\n');
+console.log(
+  "\n  \x1b[32m✅ Every consumer expectation is satisfied by its provider.\x1b[0m\n",
+);

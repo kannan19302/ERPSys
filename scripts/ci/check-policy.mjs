@@ -566,21 +566,31 @@ const RATCHET = [
         ...files("apps/web/app", [".css"]),
         ...files("apps/web/src", [".css"]),
       ];
+      // Counted per declaration, not per line, and this is load-bearing.
+      //
+      // The line-based version measured formatting as much as debt. Prettier
+      // expands `.s2 { height: 16px; width: 16px; }` onto separate lines, and
+      // the count for that unchanged rule went from 1 to 2. Running the
+      // repository's own formatter over 155 CSS files raised this ratchet by 67
+      // without a single new hardcoded pixel being written — a gate that fails
+      // on `pnpm format` is measuring the wrong thing, and the tempting fixes
+      // (bump the baseline, or skip the formatting) both hide that.
+      //
+      // A declaration is what the rule is actually about: one property, one
+      // value. It is the same number however the file is wrapped.
+      const DECLARATION = /(?:^|[;{])\s*(--)?([-a-zA-Z]+)\s*:\s*([^;{}]*)/g;
       for (const f of targets) {
-        read(f)
-          .split("\n")
-          .forEach((line, i) => {
-            if (/^\s*(\/\*|\*)/.test(line)) return;
-            // 0px and 1px (hairlines) are permitted; everything else must be a token.
-            if (
-              /:\s*[^;]*\b([2-9]|[1-9]\d+)px\b/.test(line) &&
-              !/--[a-z-]+\s*:/.test(line)
-            ) {
-              hits.push(
-                `${relative(ROOT, f)}:${i + 1}  ${line.trim().slice(0, 100)}`,
-              );
-            }
-          });
+        const source = read(f).replace(/\/\*[\s\S]*?\*\//g, ""); // strip comments
+        for (const [, custom, property, value] of source.matchAll(
+          DECLARATION,
+        )) {
+          if (custom) continue; // a token definition is where a px value belongs
+          // 0px and 1px (hairlines) are permitted; everything else is debt.
+          if (!/\b([2-9]|[1-9]\d+)px\b/.test(value)) continue;
+          hits.push(
+            `${relative(ROOT, f)}  ${property}: ${value.trim().slice(0, 60)}`,
+          );
+        }
       }
       return hits;
     },

@@ -361,6 +361,36 @@ public forms and custom module routes — and must be **extracted into a shared 
 copied. Until that extraction, edits must be made in both places. Deleting either copy today
 breaks a build.
 
+**ADR-007 — The hardcoded-pixel ratchet counts declarations, not lines, and its baseline is
+re-expressed once in that unit.** `ACCEPTED 2026-08-06.`
+
+`Static (format)` had been failing on the Phase 0–3 branch: 202 files were unformatted, 155 of
+them CSS. Running the repository's own formatter over them expanded single-line rules —
+`.s2 { height: 16px; width: 16px; }` became three lines — and the pixel ratchet, which counted
+one hit per matching **line**, rose from 2,257 to 2,324. Not one hardcoded pixel had been
+written.
+
+**A gate that fails on `pnpm format` is measuring the wrong thing.** Both obvious ways out are
+worse than the problem: bumping the baseline to absorb 67 phantom violations destroys the meaning
+of the number, and skipping the formatting leaves a CI check red for the life of the branch. The
+rule is about pixel values, and the unit of a pixel value is a declaration — one property, one
+value — which is the same count however the file is wrapped.
+
+_Decision:_ `hardcodedSpacing` counts declarations. Comments are stripped, custom-property
+definitions (`--space-4: 16px`) stay exempt because a token definition is exactly where a pixel
+value belongs, and `0px`/`1px` hairlines remain permitted.
+
+_Consequence, stated plainly:_ the baseline moves from **2,257 (lines) to 2,315 (declarations)**,
+and this is a change of unit, not of debt. It is measured, not asserted: the new counter run
+against the tree **before** the formatting commit reports 2,315, and against the tree after it
+reports 2,315. The formatting added zero. From this baseline the number may only fall, and any
+future increase still needs its own ADR.
+
+The 2,315 remain genuinely owed. § 14's reasoning stands: unlike the 1,296 exact spacing values
+already migrated, these are odd values with no token, font sizes, border widths and pixels inside
+TSX, and substituting them needs visual-regression coverage that does not yet exist. This ADR
+makes the number trustworthy; it does not make it acceptable.
+
 ---
 
 ## 10. Amendment log

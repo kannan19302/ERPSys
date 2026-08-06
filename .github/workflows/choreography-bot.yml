@@ -23,23 +23,34 @@ jobs:
         with:
           fetch-depth: 0
       
+      # pnpm must exist before setup-node, not after: `cache: 'pnpm'` shells out
+      # to pnpm to locate the store, so ordering these the other way round fails
+      # the job at setup with "Unable to locate executable file: pnpm" — before a
+      # single line of the bot runs. This job had never executed its own body.
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: 'pnpm'
-          
-      - name: Install pnpm
-        uses: pnpm/action-setup@v3
-        with:
-          version: 9
-          
+
       - name: Run Choreography Sync
         run: |
           echo "M3 Choreography bot activated"
-          # In the current monorepo phase, this asserts that cross-layer changes 
+          # In the current monorepo phase, this asserts that cross-layer changes
           # have matching versions and valid boundaries.
-          node scripts/ci/check-module-boundaries.mjs
+          #
+          # Through `pnpm architecture:check`, not `node scripts/...` directly:
+          # the boundary script resolves its baseline relative to the working
+          # directory, so invoking it from the repository root exits 1 on a tree
+          # that is actually clean. This job named `scripts/ci/check-module-
+          # boundaries.mjs`, which is not even where the file lives — two further
+          # bugs that the setup-order failure had been hiding, because the job
+          # never reached its own body to expose them.
+          pnpm install --frozen-lockfile
+          pnpm architecture:check
           
           # Check for missing changeset files if L0/L1 is touched.
           #

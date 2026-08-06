@@ -1282,6 +1282,57 @@ since the org and the OIDC-federated publish tokens in § 10 already exist there
 cutover survivable, and per-repo images follow from it. Until then the monorepo is the build, and
 § 14 rule 4 says that is the correct intermediate state rather than an unfinished one.
 
+### 14.2 The CI gates that were red, and what remains
+
+`pnpm verify` being green is not the same as CI being green: **CI runs several gates `verify` does
+not have.** That divergence is itself a finding — a developer who runs `verify` before pushing,
+as `CLAUDE.md` instructs, is told the change is clean and then watches CI fail on something they
+had no local way to check. Five checks were failing on the branch carrying all of Phase 0–3:
+
+| Check                  | Cause                                                                                                                                                           | State                                              |
+| :--------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------- |
+| `Static (format)`      | 202 files unformatted                                                                                                                                           | ✅ fixed                                           |
+| `M3 Choreography Sync` | `setup-node` with `cache: pnpm` ran **before** pnpm was installed — the job failed at setup and had never executed its own body, hiding two more bugs inside it | ✅ fixed                                           |
+| `Static (contracts)`   | CDC expectations stale on Linux, clean on Windows; the gate said only "stale"                                                                                   | 🟡 gate now reports **what** drifted               |
+| `Analyze` (Flutter)    | `dart format --set-exit-if-changed`                                                                                                                             | ⛔ needs a Dart toolchain                          |
+| `Supply chain`         | `pnpm audit` — 2 critical, 39 high                                                                                                                              | 🟡 **78 → 39 total, 39 → 21 high, 2 → 1 critical** |
+
+**The divergence itself is not closed, and closing it needs a decision.** The obvious repair is to
+add `format:check` to `pnpm verify`. It cannot be done as it stands: `core.autocrlf` is true and
+`.gitattributes` says `* text=auto`, so a Windows working tree is CRLF while prettier's
+`endOfLine` is `lf` — `format:check` reports **3,016** files locally against CI's 202, and adding
+it to `verify` would make `verify` permanently red on the platform § 12 names as the primary
+development environment. The real fix is `.gitattributes` forcing `eol=lf` on every extension
+prettier owns, so a Windows checkout and a Linux runner see the same bytes. That is a one-time
+whole-tree line-ending normalisation and belongs in its own change, on its own, where the diff
+can be read for what it is.
+
+**The M3 job is the one worth dwelling on.** It had been failing at `Setup Node` since it was
+written, so it never ran a single line of its own script — and that script contained two further
+defects it could not expose: it invoked `scripts/ci/check-module-boundaries.mjs`, which is not
+where that file lives, and it invoked the boundary checker from the repository root, where the
+checker resolves its baseline relative to the working directory and exits 1 on a clean tree. **A
+job that fails in setup is indistinguishable from a job that works, in every way except the
+badge.** M3 is one of the four mechanisms § 4.5 calls non-optional and ADR-011 declares the split
+void without; it has been decorative since it was added.
+
+**The supply chain is the one still red, and the reason is worth stating rather than hiding.**
+The critical that mattered is closed: `next` was pinned at `15.3.4` in `apps/console` and
+`apps/developer` — exactly, not as a range — against a React-flight RCE patched in `15.3.6`.
+`apps/web` was on a range that permitted a fixed version and resolved to the vulnerable one
+anyway, because a wide optional peer in `@unerp/ui` held the old resolution in the lockfile. A
+workspace-wide `pnpm.overrides` entry is what actually moved it, which is the honest lesson: with
+three applications and a peer-dependent package, the version that ships is decided by the
+lockfile, not by the three ranges.
+
+What remains is **1 critical and 21 high**, and it is deliberately not being closed in the same
+change. The critical is `vitest < 3.2.6` — a major upgrade across a suite of roughly 5,000 tests,
+which is precisely the kind of change that must be able to fail loudly on its own rather than
+inside a commit about something else. The highs are `vite`, `multer`, `sharp`, `xlsx`, `js-yaml`
+and `@opentelemetry/propagator-jaeger`. A dependency-upgrade pass is the next unit of work, and
+it is a gate this platform declares blocking rather than advisory — correctly, since the previous
+revision of that job carried `continue-on-error: true` and was decorative.
+
 **Phase 1 is substantially delivered.** Both the control-plane _boundary_ (reserved namespaces,
 `ControlPlaneGuard`, HARD CI gates) and the control-plane _deployable_ (`apps/console`, `apps/idp`,
 tenant-plane routes deleted) now exist. What remains is infrastructure the repository cannot

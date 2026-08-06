@@ -1,11 +1,11 @@
 {
-  "$comment": "Policy ratchet baseline. These numbers may only go DOWN. See docs/ai/ARCHITECTURE_REVIEW.md.",
-  "updatedAt": "2026-08-05",
+  "$comment": "Policy ratchet baseline. These numbers may only go DOWN. hardcodedSpacing counts declarations, not lines, per TRD ADR-007. See docs/ai/ARCHITECTURE_REVIEW.md.",
+  "updatedAt": "2026-08-06",
   "counts": {
     "rawSql": 1,
     "floatMoney": 0,
     "unguardedEndpoints": 0,
     "hardcodedColors": 309,
-    "hardcodedSpacing": 2257
+    "hardcodedSpacing": 2315
   }
 }
