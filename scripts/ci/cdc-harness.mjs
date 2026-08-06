@@ -288,11 +288,30 @@ function providerEntryFor(spec) {
     if (!p.subpathRoot || !spec.startsWith(`${name}/`)) continue;
     const sub = spec.slice(name.length + 1);
     if (sub.endsWith(".css")) return null; // stylesheet, not a symbol surface
-    const file = resolveRelative(
-      path.join(ROOT, p.dir, p.subpathRoot, "x"),
-      `./${sub}`,
-    );
-    return file ? { key: spec, file } : null;
+    // Try dist, then src — the same fallback DIST() already applies to a
+    // package's main entry, and for the same reason.
+    //
+    // Without it, whether `@unerp/ui/charts` counts as a provider depended on
+    // whether `packages/ui/dist` happened to be built. It is built on a
+    // developer machine and is not in the `Static (contracts)` CI job, which
+    // runs `pnpm install` and `pnpm db:generate` and no build — so four
+    // subpath providers silently vanished from every consumer's expectations
+    // on the runner and stayed present locally. The visible symptom was a gate
+    // that failed on CI, passed on Windows, and could not be reproduced by
+    // re-running `--record`.
+    //
+    // The invisible symptom is the one that matters: a gate whose coverage
+    // quietly depends on build state under-reports rather than fails, which is
+    // the failure mode this repository keeps rediscovering. Detection is now
+    // build-independent.
+    for (const root of [p.subpathRoot, "src"]) {
+      const file = resolveRelative(
+        path.join(ROOT, p.dir, root, "x"),
+        `./${sub}`,
+      );
+      if (file) return { key: spec, file };
+    }
+    return null;
   }
   return null;
 }
