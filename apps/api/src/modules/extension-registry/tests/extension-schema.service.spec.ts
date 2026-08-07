@@ -5,6 +5,28 @@ import { ExtensionSchemaService } from "../extension-schema.service";
 import { extensionTableName } from "@unerp/extension-api";
 
 /**
+ * The same database, reached as the `NOBYPASSRLS` application role.
+ *
+ * `unerp_api` is created by migration `20260718100000_create_unerp_api_role`,
+ * so it exists anywhere the migrations have been applied. Only the credentials
+ * change; host, port and database name are taken from `DATABASE_URL` so this
+ * follows the environment rather than assuming one.
+ */
+function appRoleUrlFrom(ownerUrl: string | undefined): string {
+  const url = new URL(
+    ownerUrl ?? "postgresql://unerp:unerp_password@localhost:5432/unerp_dev",
+  );
+  url.username = "unerp_api";
+  url.password = "unerp_api_password";
+  // This client is extra and the suite runs several forks, so bound its pool
+  // for the same reason vitest.config.ts bounds the main one.
+  url.searchParams.set("schema", "public");
+  url.searchParams.set("connection_limit", "2");
+  url.searchParams.set("pool_timeout", "20");
+  return url.toString();
+}
+
+/**
  * § 8.2 — generated extension tables must be indistinguishable from first-party
  * tables where it counts: tenant_id, RLS ENABLED and FORCED, and a policy. The
  * point of these tests is that the guarantee is checked in the catalogue and
@@ -155,16 +177,47 @@ describe("ExtensionSchemaService", () => {
     // rows, and looked like an RLS bug when it was a test-configuration bug.
     // `unerp_api` is NOBYPASSRLS, which is the role the API actually runs as,
     // so this is the configuration whose behaviour matters.
-    // connection_limit is bounded for the same reason vitest.config.ts bounds
-    // the main pool: this client is extra, and the suite runs several forks.
+    //
+    // The connection is DERIVED rather than hardcoded, and that is the second
+    // half of the same lesson. The old fallback named a literal
+    // `…@localhost:5432/unerp_dev` — the local database. CI's is
+    // `unierp_test`, so on a runner this failed with P1003 "Database
+    // `unerp_dev` does not exist", which means the one assertion that proves
+    // RLS at the database had never run in CI, while the job step called "RLS /
+    // tenant-isolation verification" reported success beside it. § 5.1 calls a
+    // two-tenant test that does not exercise the app role "worse than no test,
+    // because it reports a guarantee it never checked"; one that cannot connect
+    // at all is that failure wearing a different error code.
+    //
+    // Swapping only the credentials keeps host, port and database correct
+    // wherever this runs, so whoever renames the database next does not need to
+    // know this test exists.
     const appUrl =
-      process.env.DATABASE_APP_URL ??
-      "postgresql://unerp_api:unerp_api_password@localhost:5432/unerp_dev?schema=public&connection_limit=2&pool_timeout=20";
+      process.env.DATABASE_APP_URL ?? appRoleUrlFrom(process.env.DATABASE_URL);
     const appClient = new PrismaClient({
       datasources: { db: { url: appUrl } },
     });
 
     try {
+      // Assert the connection before asserting isolation over it.
+      //
+      // § 5.1: "a two-tenant test that runs as the owner will pass on a table
+      // with no policy at all, which makes it worse than no test — it reports a
+      // guarantee it never checked." A derivation bug, a changed password, or a
+      // future edit to `appRoleUrlFrom` could silently hand this test the owner
+      // connection again, and every assertion below would still pass. Checking
+      // the catalogue makes that vacuous pass impossible rather than merely
+      // unlikely.
+      const [role] = await appClient.$queryRaw<
+        Array<{ rolname: string; rolsuper: boolean; rolbypassrls: boolean }>
+      >(
+        Prisma.sql`SELECT rolname, rolsuper, rolbypassrls
+                   FROM pg_roles WHERE rolname = current_user`,
+      );
+      expect(role?.rolname).toBe("unerp_api");
+      expect(role?.rolsuper).toBe(false);
+      expect(role?.rolbypassrls).toBe(false);
+
       const insert = (tenantId: string, title: string) =>
         runWithTenantSession({ tenantId, userId: "spec" }, async () =>
           prisma.$executeRaw(
